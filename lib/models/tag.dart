@@ -23,6 +23,12 @@ class Tag {
         color: Color(json['color']),
       );
 
+  Tag copyWith({String? name, Color? color}) => Tag(
+        id: id,
+        name: name ?? this.name,
+        color: color ?? this.color,
+      );
+
   static List<Tag> defaultTags = [
     const Tag(id: 'work', name: '💼 Trabajo', color: Colors.blue),
     const Tag(id: 'personal', name: '🏠 Personal', color: Colors.green),

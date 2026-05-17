@@ -272,6 +272,9 @@ class _NotificationWidgetState extends State<NotificationWidget>
     final isSmallScreen = screenWidth < 400;
     final notificationColor = widget.notification.backgroundColor;
 
+    final surfaceColor = Theme.of(context).colorScheme.surface;
+    final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isSmallScreen ? 12 : 20,
@@ -308,7 +311,7 @@ class _NotificationWidgetState extends State<NotificationWidget>
                     color: Colors.transparent,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: BrainTheme.surfaceDark.withValues(alpha: 0.7),
+                        color: surfaceColor.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: notificationColor.withValues(alpha: 0.3),
@@ -370,7 +373,7 @@ class _NotificationWidgetState extends State<NotificationWidget>
                                       Text(
                                         widget.notification.message,
                                         style: TextStyle(
-                                          color: BrainTheme.textPrimary,
+                                          color: onSurfaceColor,
                                           fontWeight: FontWeight.w500,
                                           fontSize: isSmallScreen ? 14 : 15,
                                           letterSpacing: -0.2,

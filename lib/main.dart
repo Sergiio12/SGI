@@ -6,6 +6,7 @@ import 'providers/settings_provider.dart';
 import 'providers/tasks_provider.dart';
 import 'providers/projects_provider.dart';
 import 'providers/notes_provider.dart';
+import 'providers/tags_provider.dart';
 import 'providers/goals_provider.dart';
 import 'providers/search_provider.dart';
 import 'providers/dashboard_provider.dart';
@@ -30,11 +31,12 @@ void main() async {
   await settingsProvider.load();
 
   final tasksProvider = TasksProvider();
-  settingsProvider.onNotificationSettingsChanged = () =>
-      NotificationService.rescheduleAll(tasksProvider.tasks);
+  settingsProvider.onNotificationSettingsChanged =
+      () => NotificationService.rescheduleAll(tasksProvider.tasks);
 
   final projectsProvider = ProjectsProvider();
   final notesProvider = NotesProvider();
+  final tagsProvider = TagsProvider();
   final goalsProvider = GoalsProvider();
   final trashProvider = TrashProvider();
   trashProvider.register();
@@ -46,6 +48,7 @@ void main() async {
         ChangeNotifierProvider.value(value: tasksProvider),
         ChangeNotifierProvider.value(value: projectsProvider),
         ChangeNotifierProvider.value(value: notesProvider),
+        ChangeNotifierProvider.value(value: tagsProvider),
         ChangeNotifierProvider.value(value: goalsProvider),
         ChangeNotifierProvider.value(value: trashProvider),
         ChangeNotifierProvider(create: (_) {

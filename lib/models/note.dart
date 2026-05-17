@@ -5,6 +5,7 @@ enum NoteType { freeform, checklist, journal, reference, meetingNotes }
 class Note extends BrainItem {
   final String title;
   final String content;
+  final List<NoteAttachment> attachments;
   final NoteType type;
   final String notebook;
   final String? projectId;
@@ -18,6 +19,7 @@ class Note extends BrainItem {
     required super.id,
     required this.title,
     this.content = '',
+    this.attachments = const [],
     this.type = NoteType.freeform,
     this.notebook = 'General',
     this.projectId,
@@ -34,6 +36,7 @@ class Note extends BrainItem {
   Note copyWith({
     String? title,
     String? content,
+    List<NoteAttachment>? attachments,
     NoteType? type,
     String? notebook,
     String? projectId,
@@ -49,6 +52,7 @@ class Note extends BrainItem {
       id: id,
       title: title ?? this.title,
       content: content ?? this.content,
+      attachments: attachments ?? this.attachments,
       type: type ?? this.type,
       notebook: notebook ?? this.notebook,
       projectId: clearProjectId ? null : (projectId ?? this.projectId),
@@ -68,6 +72,7 @@ class Note extends BrainItem {
         'id': id,
         'title': title,
         'content': content,
+        'attachments': attachments.map((a) => a.toJson()).toList(),
         'type': type.index,
         'notebook': notebook,
         'projectId': projectId,
@@ -85,6 +90,11 @@ class Note extends BrainItem {
         id: json['id'],
         title: json['title'],
         content: json['content'] ?? '',
+        attachments: (json['attachments'] as List<dynamic>?)
+                ?.map((a) =>
+                    NoteAttachment.fromJson(Map<String, dynamic>.from(a)))
+                .toList() ??
+            [],
         type: NoteType.values[json['type'] ?? 0],
         notebook: json['notebook'] ?? 'General',
         projectId: json['projectId'],
@@ -96,5 +106,33 @@ class Note extends BrainItem {
         tags: List<String>.from(json['tags'] ?? []),
         createdAt: DateTime.parse(json['createdAt']),
         updatedAt: DateTime.parse(json['updatedAt']),
+      );
+}
+
+class NoteAttachment {
+  final String id;
+  final String fileName;
+  final String path;
+  final int size;
+
+  NoteAttachment({
+    required this.id,
+    required this.fileName,
+    required this.path,
+    required this.size,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'fileName': fileName,
+        'path': path,
+        'size': size,
+      };
+
+  factory NoteAttachment.fromJson(Map<String, dynamic> json) => NoteAttachment(
+        id: json['id'],
+        fileName: json['fileName'],
+        path: json['path'],
+        size: json['size'] ?? 0,
       );
 }

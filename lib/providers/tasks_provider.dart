@@ -50,8 +50,7 @@ class TasksProvider extends ChangeNotifier {
         _tasks.where((t) => t.status == TaskStatus.inProgress).toList();
     _inReviewTasks =
         _tasks.where((t) => t.status == TaskStatus.inReview).toList();
-    _doneTasks =
-        _tasks.where((t) => t.status == TaskStatus.completed).toList();
+    _doneTasks = _tasks.where((t) => t.status == TaskStatus.completed).toList();
     _overdueTasks = _tasks.where((t) => t.isOverdue).toList();
     _urgentTasks = _tasks
         .where((t) => t.priority == TaskPriority.urgent && t.isActive)
@@ -114,6 +113,7 @@ class TasksProvider extends ChangeNotifier {
     String? projectId,
     List<String> tags = const [],
     List<SubTask> subtasks = const [],
+    List<String> linkedNoteIds = const [],
   }) async {
     try {
       final task = Task(
@@ -127,6 +127,7 @@ class TasksProvider extends ChangeNotifier {
         reminderMinutesBefore: reminderMinutesBefore,
         projectId: projectId,
         subtasks: subtasks,
+        linkedNoteIds: linkedNoteIds,
         tags: tags,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),

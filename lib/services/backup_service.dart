@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/file_picker.dart' as fp;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -88,13 +88,13 @@ class BackupService {
     final directory = await _preferredExportDirectory();
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     final file = File('${directory.path}/second_brain_backup_$timestamp.json');
-    
+
     return file.writeAsString(jsonString, flush: true);
   }
 
   static Future<BrainBackupImport?> pickAndReadImport() async {
-    final result = await FilePicker.pickFiles(
-      type: FileType.custom,
+    final result = await fp.FilePicker.pickFiles(
+      type: fp.FileType.custom,
       allowedExtensions: const ['json'],
       allowMultiple: false,
     );
@@ -103,7 +103,7 @@ class BackupService {
     if (path == null) return null;
 
     final content = await File(path).readAsString();
-    
+
     // El procesamiento de decode y mapeo de objetos puede ser pesado, lo movemos a un Isolate
     return await Isolate.run(() {
       final decoded = jsonDecode(content);

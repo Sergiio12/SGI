@@ -4,11 +4,14 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../config/theme.dart';
+import '../../config/routes.dart';
 import '../../models/tag.dart';
 import '../../utils/notification_service_v2.dart';
 import '../../models/task.dart';
+import '../../providers/tags_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
+import '../../providers/notes_provider.dart';
 import '../../widgets/priority_indicator.dart';
 
 class TaskDetailScreen extends StatefulWidget {
@@ -33,6 +36,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   DateTime? _dueDate;
   String? _projectId;
   List<SubTask> _subtasks = [];
+  List<String> _linkedNoteIds = [];
   List<String> _selectedTags = [];
 
   bool get _isEditing => widget.taskId != null;
@@ -59,10 +63,172 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             _projectId = task.projectId;
             _subtasks = List.from(task.subtasks);
             _selectedTags = List.from(task.tags);
+            _linkedNoteIds = List.from(task.linkedNoteIds);
           });
         }
       });
     }
+    // ensure tags loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final tagsProv = context.read<TagsProvider>();
+      if (!tagsProv.isLoaded) tagsProv.loadTags();
+    });
+  }
+
+  void _showManageTagsModal() {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (ctx) {
+          final nameCtrl = TextEditingController();
+          int colorValue = BrainTheme.accentPurple.value;
+          return Padding(
+            padding:
+                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              height: 420,
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Gestionar etiquetas',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 12),
+                  Expanded(child:
+                      Consumer<TagsProvider>(builder: (context, prov, _) {
+                    return ListView(
+                      children: prov.tags
+                          .map((t) => ListTile(
+                                leading: CircleAvatar(
+                                    backgroundColor: t.color, radius: 16),
+                                title: Text(t.name),
+                                trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                          icon: const Icon(Icons.edit),
+                                          onPressed: () {
+                                            nameCtrl.text = t.name;
+                                            showDialog(
+                                                context: context,
+                                                builder: (dctx) => AlertDialog(
+                                                      title: const Text(
+                                                          'Editar etiqueta'),
+                                                      content: TextField(
+                                                          controller: nameCtrl,
+                                                          decoration:
+                                                              const InputDecoration(
+                                                                  hintText:
+                                                                      'Nombre')),
+                                                      actions: [
+                                                        TextButton(
+                                                            onPressed: () =>
+                                                                Navigator.pop(
+                                                                    dctx),
+                                                            child: const Text(
+                                                                'Cancelar')),
+                                                        FilledButton(
+                                                            onPressed:
+                                                                () async {
+                                                              await prov.updateTag(
+                                                                  t.copyWith(
+                                                                      name: nameCtrl
+                                                                          .text));
+                                                              Navigator.pop(
+                                                                  dctx);
+                                                              Navigator.pop(
+                                                                  ctx);
+                                                            },
+                                                            child: const Text(
+                                                                'Guardar'))
+                                                      ],
+                                                    ));
+                                          }),
+                                      IconButton(
+                                          icon:
+                                              const Icon(Icons.delete_outline),
+                                          onPressed: () =>
+                                              prov.deleteTag(t.id)),
+                                    ]),
+                              ))
+                          .toList(),
+                    );
+                  })),
+                  const Divider(),
+                  TextField(
+                      controller: nameCtrl,
+                      decoration:
+                          const InputDecoration(labelText: 'Nueva etiqueta')),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: FilledButton(
+                              onPressed: () async {
+                                if (nameCtrl.text.trim().isEmpty) return;
+                                await context.read<TagsProvider>().addTag(
+                                    name: nameCtrl.text.trim(),
+                                    colorValue: colorValue);
+                                nameCtrl.clear();
+                              },
+                              child: const Text('Crear')))
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  void _showTagPicker() {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (ctx) {
+          return Padding(
+            padding:
+                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              height: 480,
+              padding: const EdgeInsets.all(16),
+              child: Consumer<TagsProvider>(builder: (context, tagsProv, _) {
+                final tags = tagsProv.tags;
+                return Column(
+                  children: [
+                    const Text('Seleccionar etiquetas',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: ListView(
+                        children: tags.map((t) {
+                          final isSelected = _selectedTags.contains(t.id);
+                          return CheckboxListTile(
+                            title: Text(t.name),
+                            value: isSelected,
+                            onChanged: (v) => setState(() {
+                              if (v == true) {
+                                if (!_selectedTags.contains(t.id))
+                                  _selectedTags.add(t.id);
+                              } else {
+                                _selectedTags.remove(t.id);
+                              }
+                            }),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    FilledButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('Listo'))
+                  ],
+                );
+              }),
+            ),
+          );
+        });
   }
 
   @override
@@ -105,6 +271,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           projectId: _projectId,
           clearProjectId: _projectId == null,
           subtasks: _subtasks,
+          linkedNoteIds: _linkedNoteIds,
           tags: _selectedTags,
         ));
       }
@@ -119,6 +286,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         reminderMinutesBefore: reminderMinutes,
         projectId: _projectId,
         tags: _selectedTags,
+        linkedNoteIds: _linkedNoteIds,
         subtasks: _subtasks,
       );
     }
@@ -143,27 +311,34 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         actions: [
           if (_isEditing)
             IconButton(
-              icon:
-                  Icon(Icons.delete_outline, color: BrainTheme.accentRed),
+              icon: Icon(Icons.delete_outline, color: BrainTheme.accentRed),
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
                     backgroundColor: BrainTheme.cardDark,
-                    title: Text('Eliminar tarea', style: TextStyle(color: BrainTheme.textPrimary)),
-                    content: Text('Se moverá a la papelera. ¿Deseas continuar?', style: TextStyle(color: BrainTheme.textSecondary)),
+                    title: Text('Eliminar tarea',
+                        style: TextStyle(color: BrainTheme.textPrimary)),
+                    content: Text('Se moverá a la papelera. ¿Deseas continuar?',
+                        style: TextStyle(color: BrainTheme.textSecondary)),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                      TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text('Cancelar')),
                       FilledButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        style: FilledButton.styleFrom(backgroundColor: BrainTheme.accentRed, foregroundColor: Colors.white),
+                        style: FilledButton.styleFrom(
+                            backgroundColor: BrainTheme.accentRed,
+                            foregroundColor: Colors.white),
                         child: const Text('Eliminar'),
                       ),
                     ],
                   ),
                 );
                 if (confirm == true) {
-                  await context.read<TasksProvider>().deleteTask(widget.taskId!);
+                  await context
+                      .read<TasksProvider>()
+                      .deleteTask(widget.taskId!);
                   if (mounted) Navigator.pop(context);
                 }
               },
@@ -210,8 +385,165 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
               maxLines: null,
             ),
-            const SizedBox(height: 16),
-            Divider(color: BrainTheme.borderDark),
+            const SizedBox(height: 12),
+            // Show selected tags for the task and provide an editor
+            Row(
+              children: [
+                const _SectionTitle('Etiquetas'),
+                const Spacer(),
+                TextButton.icon(
+                    onPressed: () => _showTagPicker(),
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Editar')),
+                const SizedBox(width: 8),
+                TextButton.icon(
+                    onPressed: () => _showManageTagsModal(),
+                    icon: const Icon(Icons.settings),
+                    label: const Text('Gestionar')),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Consumer<TagsProvider>(builder: (context, tagsProv, _) {
+                final selected = tagsProv.tags
+                    .where((t) => _selectedTags.contains(t.id))
+                    .toList();
+                if (selected.isEmpty) {
+                  return Text('Sin etiquetas',
+                      style: TextStyle(color: BrainTheme.textTertiary));
+                }
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: selected.map((tag) {
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedTags.remove(tag.id)),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: tag.color.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: tag.color),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Text(tag.name, style: TextStyle(color: tag.color)),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.close, size: 14),
+                        ]),
+                      ),
+                    );
+                  }).toList(),
+                );
+              }),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const _SectionTitle('Notas vinculadas'),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: () async {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (ctx) {
+                        String query = '';
+                        return StatefulBuilder(
+                          builder: (sCtx, setS) {
+                            final notesProv = context.read<NotesProvider>();
+                            final notes = query.isEmpty
+                                ? notesProv.notes
+                                : notesProv.search(query);
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                  bottom: MediaQuery.of(ctx).viewInsets.bottom),
+                              child: Container(
+                                height: 480,
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    TextField(
+                                      decoration: const InputDecoration(
+                                          hintText: 'Buscar notas...'),
+                                      onChanged: (v) => setS(() => query = v),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Expanded(
+                                      child: ListView(
+                                        children: notes.map((n) {
+                                          final isLinked =
+                                              _linkedNoteIds.contains(n.id);
+                                          return ListTile(
+                                            title: Text(n.title,
+                                                style: TextStyle(
+                                                    color: BrainTheme
+                                                        .textPrimary)),
+                                            subtitle: Text(n.notebook,
+                                                style: TextStyle(
+                                                    color: BrainTheme
+                                                        .textTertiary)),
+                                            trailing: isLinked
+                                                ? const Icon(Icons.check,
+                                                    color: Colors.green)
+                                                : null,
+                                            onTap: () {
+                                              if (!isLinked)
+                                                setState(() =>
+                                                    _linkedNoteIds.add(n.id));
+                                              Navigator.pop(ctx);
+                                            },
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.link),
+                  label: const Text('Añadir'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (_linkedNoteIds.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 0),
+                child:
+                    Consumer<NotesProvider>(builder: (context, notesProv, _) {
+                  return Column(
+                    children: _linkedNoteIds.map((id) {
+                      final note = notesProv.getNoteById(id);
+                      if (note == null) return const SizedBox.shrink();
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Text(note.emoji),
+                        title: Text(note.title,
+                            style: TextStyle(color: BrainTheme.textPrimary)),
+                        subtitle: Text(note.notebook,
+                            style: TextStyle(color: BrainTheme.textTertiary)),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.link_off),
+                          onPressed: () =>
+                              setState(() => _linkedNoteIds.remove(id)),
+                        ),
+                        onTap: () {
+                          Navigator.pushNamed(context, AppRoutes.noteEditor,
+                              arguments: note.id);
+                        },
+                      );
+                    }).toList(),
+                  );
+                }),
+              ),
             const SizedBox(height: 16),
             _PropertyRow(
               icon: Icons.flag_outlined,

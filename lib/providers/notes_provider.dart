@@ -78,6 +78,8 @@ class NotesProvider extends ChangeNotifier {
     String? projectId,
     String emoji = '\u{1F4DD}',
     List<String> tags = const [],
+    List<NoteAttachment> attachments = const [],
+    bool isPinned = false,
   }) async {
     try {
       final now = DateTime.now();
@@ -85,11 +87,13 @@ class NotesProvider extends ChangeNotifier {
         id: _uuid.v4(),
         title: title,
         content: content,
+        attachments: attachments,
         type: type,
         notebook: notebook,
         projectId: projectId,
         emoji: emoji,
         tags: tags,
+        isPinned: isPinned,
         createdAt: now,
         updatedAt: now,
       );

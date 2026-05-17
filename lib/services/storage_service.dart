@@ -10,6 +10,7 @@ import '../models/goal.dart';
 import '../models/note.dart';
 import '../models/project.dart';
 import '../models/task.dart';
+import '../models/tag.dart';
 
 class StorageService {
   static const String _boxName = 'second_brain_store';
@@ -21,6 +22,7 @@ class StorageService {
   static const String _trashProjectsKey = 'brain_trash_projects';
   static const String _trashNotesKey = 'brain_trash_notes';
   static const String _trashGoalsKey = 'brain_trash_goals';
+  static const String _tagsKey = 'brain_tags';
 
   static Box<String>? _box;
 
@@ -32,6 +34,7 @@ class StorageService {
   static List<Project>? _cachedTrashProjects;
   static List<Note>? _cachedTrashNotes;
   static List<Goal>? _cachedTrashGoals;
+  static List<Tag>? _cachedTags;
 
   static VoidCallback? onTrashChanged;
 
@@ -137,6 +140,19 @@ class StorageService {
     return List<Goal>.from(loaded);
   }
 
+  static Future<List<Tag>> loadTags() async {
+    final cached = _cachedTags;
+    if (cached != null) return List<Tag>.from(cached);
+    final loaded = await _loadList(_tagsKey, Tag.fromJson);
+    _cachedTags = loaded;
+    return List<Tag>.from(loaded);
+  }
+
+  static Future<void> saveTags(List<Tag> tags) async {
+    _cachedTags = List<Tag>.from(tags);
+    await _saveList(_tagsKey, tags.map((t) => t.toJson()).toList());
+  }
+
   static Future<void> saveGoals(List<Goal> goals) async {
     _cachedGoals = List<Goal>.from(goals);
     await _saveList(_goalsKey, goals.map((g) => g.toJson()).toList());
@@ -168,7 +184,8 @@ class StorageService {
 
   static Future<void> saveTrashProjects(List<Project> projects) async {
     _cachedTrashProjects = List<Project>.from(projects);
-    await _saveList(_trashProjectsKey, projects.map((p) => p.toJson()).toList());
+    await _saveList(
+        _trashProjectsKey, projects.map((p) => p.toJson()).toList());
     onTrashChanged?.call();
   }
 
