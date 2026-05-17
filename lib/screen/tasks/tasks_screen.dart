@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/theme.dart';
@@ -131,7 +130,7 @@ class _TaskList extends StatelessWidget {
                 onToggle: () => provider.toggleTaskStatus(task.id),
                 onDismissed: () => provider.deleteTask(task.id),
               ),
-            ).animate().fadeIn(duration: 400.ms, delay: (index * 50).ms).slideX(begin: 0.1, end: 0, curve: Curves.easeOut);
+            );
           },
         );
       },

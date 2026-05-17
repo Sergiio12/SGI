@@ -129,11 +129,29 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
             IconButton(
               icon:
                   const Icon(Icons.delete_outline, color: BrainTheme.accentRed),
-              onPressed: () {
-                context
-                    .read<ProjectsProvider>()
-                    .deleteProject(widget.projectId!);
-                Navigator.pop(context);
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: BrainTheme.cardDark,
+                    title: const Text('Eliminar proyecto', style: TextStyle(color: BrainTheme.textPrimary)),
+                    content: const Text('Se moverá a la papelera. ¿Deseas continuar?', style: TextStyle(color: BrainTheme.textSecondary)),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                      FilledButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: FilledButton.styleFrom(backgroundColor: BrainTheme.accentRed, foregroundColor: Colors.white),
+                        child: const Text('Eliminar'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  await context
+                      .read<ProjectsProvider>()
+                      .deleteProject(widget.projectId!);
+                  if (mounted) Navigator.pop(context);
+                }
               },
             ),
           TextButton(

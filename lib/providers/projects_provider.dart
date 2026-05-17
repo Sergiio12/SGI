@@ -4,14 +4,15 @@ import 'package:uuid/uuid.dart';
 import '../models/project.dart';
 import '../models/task.dart';
 import '../services/storage_service.dart';
+import '../utils/debouncer.dart';
 import '../utils/notification_service_v2.dart';
 
 class ProjectsProvider extends ChangeNotifier {
   List<Project> _projects = [];
   final _uuid = const Uuid();
   bool _isLoaded = false;
+  final _saveDebouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
-  // Listas pre-calculadas
   List<Project> _activeProjects = [];
   List<Project> _pausedProjects = [];
   List<Project> _completedProjects = [];
@@ -54,10 +55,10 @@ class ProjectsProvider extends ChangeNotifier {
         _projects.where((p) => p.status == ProjectStatus.abandoned).toList();
   }
 
-  Future<void> _save() async {
-    await StorageService.saveProjects(_projects);
+  void _notifyAndScheduleSave() {
     _updateComputedLists();
     notifyListeners();
+    _saveDebouncer.call(() => StorageService.saveProjects(_projects));
   }
 
   Future<Project> addProject({
@@ -92,7 +93,7 @@ class ProjectsProvider extends ChangeNotifier {
         updatedAt: now,
       );
       _projects.add(project);
-      await _save();
+      _notifyAndScheduleSave();
       showSuccessNotification('Proyecto creado: ${project.title}');
       return project;
     } catch (e) {
@@ -106,7 +107,7 @@ class ProjectsProvider extends ChangeNotifier {
       final index = _projects.indexWhere((p) => p.id == project.id);
       if (index != -1) {
         _projects[index] = project;
-        await _save();
+        _notifyAndScheduleSave();
         showSuccessNotification('Proyecto actualizado');
       }
     } catch (e) {
@@ -124,12 +125,11 @@ class ProjectsProvider extends ChangeNotifier {
           _projects[index] = project.copyWith(
             taskIds: [...project.taskIds, taskId],
           );
-          await _save();
+          _notifyAndScheduleSave();
         }
       }
     } catch (e) {
       showErrorNotification('Error al agregar tarea al proyecto');
-      rethrow;
     }
   }
 
@@ -142,20 +142,53 @@ class ProjectsProvider extends ChangeNotifier {
           _projects[index] = project.copyWith(
             noteIds: [...project.noteIds, noteId],
           );
-          await _save();
+          _notifyAndScheduleSave();
         }
       }
     } catch (e) {
       showErrorNotification('Error al agregar nota al proyecto');
-      rethrow;
     }
   }
 
   Future<void> deleteProject(String projectId) async {
     try {
-      _projects.removeWhere((p) => p.id == projectId);
-      await _save();
-      showSuccessNotification('Proyecto eliminado');
+      final index = _projects.indexWhere((p) => p.id == projectId);
+      if (index == -1) return;
+      final project = _projects.removeAt(index);
+      final trash = await StorageService.loadTrashProjects();
+      trash.add(project);
+      await StorageService.saveTrashProjects(trash);
+      _notifyAndScheduleSave();
+      showSuccessNotification('Proyecto movido a la papelera');
+    } catch (e) {
+      showErrorNotification('Error al eliminar proyecto');
+      rethrow;
+    }
+  }
+
+  Future<void> restoreProject(String projectId) async {
+    try {
+      final trash = await StorageService.loadTrashProjects();
+      final index = trash.indexWhere((p) => p.id == projectId);
+      if (index != -1) {
+        final project = trash.removeAt(index);
+        _projects.add(project);
+        await StorageService.saveTrashProjects(trash);
+        _notifyAndScheduleSave();
+        showSuccessNotification('Proyecto restaurado');
+      }
+    } catch (e) {
+      showErrorNotification('Error al restaurar proyecto');
+      rethrow;
+    }
+  }
+
+  Future<void> permanentDeleteProject(String projectId) async {
+    try {
+      final trash = await StorageService.loadTrashProjects();
+      trash.removeWhere((p) => p.id == projectId);
+      await StorageService.saveTrashProjects(trash);
+      showSuccessNotification('Proyecto eliminado permanentemente');
     } catch (e) {
       showErrorNotification('Error al eliminar proyecto');
       rethrow;
@@ -164,6 +197,12 @@ class ProjectsProvider extends ChangeNotifier {
 
   Future<void> replaceAll(List<Project> projects) async {
     _projects = projects;
-    await _save();
+    _notifyAndScheduleSave();
+  }
+
+  @override
+  void dispose() {
+    _saveDebouncer.dispose();
+    super.dispose();
   }
 }

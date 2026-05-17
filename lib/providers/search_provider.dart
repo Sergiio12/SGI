@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 
@@ -48,19 +47,19 @@ class SearchProvider extends ChangeNotifier {
     }
 
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
-      _results = await Isolate.run(() => _performSearchSync(
-            query: query,
-            tasks: tasks,
-            projects: projects,
-            notes: notes,
-            goals: goals,
-          ));
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      _results = _performSearchSync(
+        query: query,
+        tasks: tasks,
+        projects: projects,
+        notes: notes,
+        goals: goals,
+      );
       notifyListeners();
     });
   }
 
-  static List<SearchResult> _performSearchSync({
+  List<SearchResult> _performSearchSync({
     required String query,
     required List<Task> tasks,
     required List<Project> projects,

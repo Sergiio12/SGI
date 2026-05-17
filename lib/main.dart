@@ -8,6 +8,7 @@ import 'providers/notes_provider.dart';
 import 'providers/goals_provider.dart';
 import 'providers/search_provider.dart';
 import 'providers/dashboard_provider.dart';
+import 'providers/trash_provider.dart';
 import 'utils/notification_service_v2.dart';
 
 void main() async {
@@ -24,6 +25,8 @@ void main() async {
   final projectsProvider = ProjectsProvider();
   final notesProvider = NotesProvider();
   final goalsProvider = GoalsProvider();
+  final trashProvider = TrashProvider();
+  trashProvider.register();
 
   runApp(
     MultiProvider(
@@ -32,6 +35,7 @@ void main() async {
         ChangeNotifierProvider.value(value: projectsProvider),
         ChangeNotifierProvider.value(value: notesProvider),
         ChangeNotifierProvider.value(value: goalsProvider),
+        ChangeNotifierProvider.value(value: trashProvider),
         ChangeNotifierProvider(create: (_) {
           final controller = NotificationController();
           setGlobalNotificationController(controller);

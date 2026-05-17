@@ -1,17 +1,18 @@
-import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+
 import '../models/task.dart';
 import '../services/notification_service.dart';
 import '../services/storage_service.dart';
+import '../utils/debouncer.dart';
 import '../utils/notification_service_v2.dart';
 
 class TasksProvider extends ChangeNotifier {
   List<Task> _tasks = [];
   final _uuid = const Uuid();
   bool _isLoaded = false;
+  final _saveDebouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
-  // Listas pre-calculadas para mejorar la fluidez
   List<Task> _todoTasks = [];
   List<Task> _inProgressTasks = [];
   List<Task> _inReviewTasks = [];
@@ -35,55 +36,27 @@ class TasksProvider extends ChangeNotifier {
 
   Future<void> loadTasks() async {
     _tasks = await StorageService.loadTasks();
-    await _updateComputedLists();
+    _updateComputedLists();
     _isLoaded = true;
     notifyListeners();
   }
 
-  Future<void> _updateComputedLists() async {
-    // Si hay pocas tareas, calculamos en el hilo principal para evitar overhead de Isolate
-    if (_tasks.length < 50) {
-      _performUpdateSync();
-    } else {
-      // Para muchas tareas, usamos un Isolate
-      final results = await Isolate.run(() => _performUpdateSyncInternal(_tasks));
-      _applyResults(results);
-    }
-  }
-
-  void _performUpdateSync() {
-    final results = _performUpdateSyncInternal(_tasks);
-    _applyResults(results);
-  }
-
-  void _applyResults(_ComputedTasks results) {
-    _todoTasks = results.todoTasks;
-    _inProgressTasks = results.inProgressTasks;
-    _inReviewTasks = results.inReviewTasks;
-    _doneTasks = results.doneTasks;
-    _overdueTasks = results.overdueTasks;
-    _urgentTasks = results.urgentTasks;
-    _todayTasks = results.todayTasks;
-    _focusTasks = results.focusTasks;
-  }
-
-  static _ComputedTasks _performUpdateSyncInternal(List<Task> allTasks) {
+  void _updateComputedLists() {
     final now = DateTime.now();
     final nextWeek = now.add(const Duration(days: 7));
 
-    final todo = allTasks.where((t) => t.status == TaskStatus.pending).toList();
-    final inProgress =
-        allTasks.where((t) => t.status == TaskStatus.inProgress).toList();
-    final inReview =
-        allTasks.where((t) => t.status == TaskStatus.inReview).toList();
-    final done =
-        allTasks.where((t) => t.status == TaskStatus.completed).toList();
-    final overdue = allTasks.where((t) => t.isOverdue).toList();
-    final urgent = allTasks
+    _todoTasks = _tasks.where((t) => t.status == TaskStatus.pending).toList();
+    _inProgressTasks =
+        _tasks.where((t) => t.status == TaskStatus.inProgress).toList();
+    _inReviewTasks =
+        _tasks.where((t) => t.status == TaskStatus.inReview).toList();
+    _doneTasks =
+        _tasks.where((t) => t.status == TaskStatus.completed).toList();
+    _overdueTasks = _tasks.where((t) => t.isOverdue).toList();
+    _urgentTasks = _tasks
         .where((t) => t.priority == TaskPriority.urgent && t.isActive)
         .toList();
-
-    final today = allTasks.where((t) {
+    _todayTasks = _tasks.where((t) {
       final dueDate = t.dueDate;
       return dueDate != null &&
           dueDate.year == now.year &&
@@ -91,8 +64,7 @@ class TasksProvider extends ChangeNotifier {
           dueDate.day == now.day &&
           t.isActive;
     }).toList();
-
-    final focus = allTasks.where((task) {
+    _focusTasks = _tasks.where((task) {
       if (!task.isActive) return false;
       if (task.status == TaskStatus.inProgress) return true;
       if (task.priority == TaskPriority.urgent) return true;
@@ -103,30 +75,18 @@ class TasksProvider extends ChangeNotifier {
       }
       return false;
     }).toList();
-
-    focus.sort((a, b) {
+    _focusTasks.sort((a, b) {
       final priorityCompare = b.priority.index.compareTo(a.priority.index);
       if (priorityCompare != 0) return priorityCompare;
       return (a.dueDate ?? DateTime(9999))
           .compareTo(b.dueDate ?? DateTime(9999));
     });
-
-    return _ComputedTasks(
-      todoTasks: todo,
-      inProgressTasks: inProgress,
-      inReviewTasks: inReview,
-      doneTasks: done,
-      overdueTasks: overdue,
-      urgentTasks: urgent,
-      todayTasks: today,
-      focusTasks: focus,
-    );
   }
 
-  Future<void> _save() async {
-    await StorageService.saveTasks(_tasks);
-    await _updateComputedLists();
+  void _notifyAndScheduleSave() {
+    _updateComputedLists();
     notifyListeners();
+    _saveDebouncer.call(() => StorageService.saveTasks(_tasks));
   }
 
   List<Task> getTasksByProject(String projectId) =>
@@ -172,7 +132,7 @@ class TasksProvider extends ChangeNotifier {
         updatedAt: DateTime.now(),
       );
       _tasks.add(task);
-      await _save();
+      _notifyAndScheduleSave();
       await NotificationService.scheduleTaskReminders(task);
       showSuccessNotification('Tarea creada: ${task.title}');
       return task;
@@ -187,7 +147,7 @@ class TasksProvider extends ChangeNotifier {
       final index = _tasks.indexWhere((t) => t.id == task.id);
       if (index != -1) {
         _tasks[index] = task;
-        await _save();
+        _notifyAndScheduleSave();
         await NotificationService.scheduleTaskReminders(task);
         showSuccessNotification('Tarea actualizada');
       }
@@ -210,7 +170,7 @@ class TasksProvider extends ChangeNotifier {
           lastActivityAt: DateTime.now(),
         );
         _tasks[index] = updated;
-        await _save();
+        _notifyAndScheduleSave();
         if (newStatus == TaskStatus.completed) {
           await NotificationService.cancelTaskReminders(taskId);
           showSuccessNotification('Tarea completada');
@@ -237,7 +197,7 @@ class TasksProvider extends ChangeNotifier {
         subtasks: newSubtasks,
         lastActivityAt: DateTime.now(),
       );
-      await _save();
+      _notifyAndScheduleSave();
     }
   }
 
@@ -253,28 +213,67 @@ class TasksProvider extends ChangeNotifier {
         subtasks: newSubtasks,
         lastActivityAt: DateTime.now(),
       );
-      await _save();
+      _notifyAndScheduleSave();
     }
   }
 
   Future<void> replaceAll(List<Task> tasks) async {
     _tasks = tasks;
-    await _save();
+    _notifyAndScheduleSave();
   }
 
   Future<void> deleteTask(String taskId) async {
     try {
-      _tasks.removeWhere((t) => t.id == taskId);
-      await _save();
+      final index = _tasks.indexWhere((t) => t.id == taskId);
+      if (index == -1) return;
+      final task = _tasks.removeAt(index);
+      final trash = await StorageService.loadTrashTasks();
+      trash.add(task);
+      await StorageService.saveTrashTasks(trash);
+      _notifyAndScheduleSave();
       await NotificationService.cancelTaskReminders(taskId);
-      showSuccessNotification('Tarea eliminada');
+      showSuccessNotification('Tarea movida a la papelera');
     } catch (e) {
       showErrorNotification('Error al eliminar tarea');
       rethrow;
     }
   }
 
-  // Estadísticas
+  Future<void> restoreTask(String taskId) async {
+    try {
+      final trash = await StorageService.loadTrashTasks();
+      final index = trash.indexWhere((t) => t.id == taskId);
+      if (index != -1) {
+        final task = trash.removeAt(index);
+        _tasks.add(task);
+        await StorageService.saveTrashTasks(trash);
+        _notifyAndScheduleSave();
+        showSuccessNotification('Tarea restaurada');
+      }
+    } catch (e) {
+      showErrorNotification('Error al restaurar tarea');
+      rethrow;
+    }
+  }
+
+  Future<void> permanentDeleteTask(String taskId) async {
+    try {
+      final trash = await StorageService.loadTrashTasks();
+      trash.removeWhere((t) => t.id == taskId);
+      await StorageService.saveTrashTasks(trash);
+      showSuccessNotification('Tarea eliminada permanentemente');
+    } catch (e) {
+      showErrorNotification('Error al eliminar tarea');
+      rethrow;
+    }
+  }
+
+  @override
+  void dispose() {
+    _saveDebouncer.dispose();
+    super.dispose();
+  }
+
   int get totalTasks => _tasks.length;
   int get completedToday => _tasks
       .where((t) =>
@@ -288,26 +287,4 @@ class TasksProvider extends ChangeNotifier {
     if (_tasks.isEmpty) return 0;
     return _doneTasks.length / _tasks.length;
   }
-}
-
-class _ComputedTasks {
-  final List<Task> todoTasks;
-  final List<Task> inProgressTasks;
-  final List<Task> inReviewTasks;
-  final List<Task> doneTasks;
-  final List<Task> overdueTasks;
-  final List<Task> urgentTasks;
-  final List<Task> todayTasks;
-  final List<Task> focusTasks;
-
-  _ComputedTasks({
-    required this.todoTasks,
-    required this.inProgressTasks,
-    required this.inReviewTasks,
-    required this.doneTasks,
-    required this.overdueTasks,
-    required this.urgentTasks,
-    required this.todayTasks,
-    required this.focusTasks,
-  });
 }

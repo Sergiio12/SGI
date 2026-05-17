@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../config/theme.dart';
 import '../../providers/goals_provider.dart';
+import '../../providers/trash_provider.dart';
 import '../../utils/notification_service_v2.dart';
 import '../../providers/notes_provider.dart';
 import '../../providers/projects_provider.dart';
@@ -118,6 +119,10 @@ class _DataScreenState extends State<DataScreen> {
         projects: context.read<ProjectsProvider>().projects,
         notes: context.read<NotesProvider>().notes,
         goals: context.read<GoalsProvider>().goals,
+        trashTasks: await StorageService.loadTrashTasks(),
+        trashProjects: await StorageService.loadTrashProjects(),
+        trashNotes: await StorageService.loadTrashNotes(),
+        trashGoals: await StorageService.loadTrashGoals(),
       );
       if (!mounted) return;
       showSuccessNotification('Exportado en ${file.path}');
@@ -155,6 +160,7 @@ class _DataScreenState extends State<DataScreen> {
     final projectsProvider = context.read<ProjectsProvider>();
     final notesProvider = context.read<NotesProvider>();
     final goalsProvider = context.read<GoalsProvider>();
+    final trashProvider = context.read<TrashProvider>();
     setState(() => _isBusy = true);
     try {
       final backup = await BackupService.pickAndReadImport();
@@ -165,7 +171,13 @@ class _DataScreenState extends State<DataScreen> {
         projectsProvider.replaceAll(backup.projects),
         notesProvider.replaceAll(backup.notes),
         goalsProvider.replaceAll(backup.goals),
+        StorageService.saveTrashTasks(backup.trashTasks),
+        StorageService.saveTrashProjects(backup.trashProjects),
+        StorageService.saveTrashNotes(backup.trashNotes),
+        StorageService.saveTrashGoals(backup.trashGoals),
       ]);
+
+      await trashProvider.reload();
 
       if (!mounted) return;
       showSuccessNotification('Datos restaurados');
@@ -218,6 +230,7 @@ class _DataScreenState extends State<DataScreen> {
         context.read<ProjectsProvider>().replaceAll([]);
         context.read<NotesProvider>().replaceAll([]);
         context.read<GoalsProvider>().replaceAll([]);
+        context.read<TrashProvider>().emptyAll();
         context.read<SearchProvider>().clear();
       }
 

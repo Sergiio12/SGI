@@ -16,12 +16,20 @@ class BrainBackupImport {
   final List<Project> projects;
   final List<Note> notes;
   final List<Goal> goals;
+  final List<Task> trashTasks;
+  final List<Project> trashProjects;
+  final List<Note> trashNotes;
+  final List<Goal> trashGoals;
 
   const BrainBackupImport({
     required this.tasks,
     required this.projects,
     required this.notes,
     required this.goals,
+    this.trashTasks = const [],
+    this.trashProjects = const [],
+    this.trashNotes = const [],
+    this.trashGoals = const [],
   });
 }
 
@@ -31,6 +39,10 @@ class BackupService {
     required List<Project> projects,
     required List<Note> notes,
     required List<Goal> goals,
+    List<Task> trashTasks = const [],
+    List<Project> trashProjects = const [],
+    List<Note> trashNotes = const [],
+    List<Goal> trashGoals = const [],
   }) {
     return {
       'schemaVersion': 2,
@@ -40,6 +52,10 @@ class BackupService {
       'projects': projects.map((p) => p.toJson()).toList(),
       'notes': notes.map((n) => n.toJson()).toList(),
       'goals': goals.map((g) => g.toJson()).toList(),
+      'trashTasks': trashTasks.map((t) => t.toJson()).toList(),
+      'trashProjects': trashProjects.map((p) => p.toJson()).toList(),
+      'trashNotes': trashNotes.map((n) => n.toJson()).toList(),
+      'trashGoals': trashGoals.map((g) => g.toJson()).toList(),
     };
   }
 
@@ -48,6 +64,10 @@ class BackupService {
     required List<Project> projects,
     required List<Note> notes,
     required List<Goal> goals,
+    List<Task> trashTasks = const [],
+    List<Project> trashProjects = const [],
+    List<Note> trashNotes = const [],
+    List<Goal> trashGoals = const [],
   }) async {
     // Realizamos la construcción del payload y la codificación JSON en un Isolate
     final jsonString = await Isolate.run(() {
@@ -56,6 +76,10 @@ class BackupService {
         projects: projects,
         notes: notes,
         goals: goals,
+        trashTasks: trashTasks,
+        trashProjects: trashProjects,
+        trashNotes: trashNotes,
+        trashGoals: trashGoals,
       );
       const encoder = JsonEncoder.withIndent('  ');
       return encoder.convert(payload);
@@ -93,6 +117,10 @@ class BackupService {
         projects: _decodeList(json['projects'], Project.fromJson),
         notes: _decodeList(json['notes'], Note.fromJson),
         goals: _decodeList(json['goals'], Goal.fromJson),
+        trashTasks: _decodeList(json['trashTasks'], Task.fromJson),
+        trashProjects: _decodeList(json['trashProjects'], Project.fromJson),
+        trashNotes: _decodeList(json['trashNotes'], Note.fromJson),
+        trashGoals: _decodeList(json['trashGoals'], Goal.fromJson),
       );
     });
   }

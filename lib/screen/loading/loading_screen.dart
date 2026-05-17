@@ -14,6 +14,7 @@ import '../../providers/goals_provider.dart';
 import '../../providers/notes_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
+import '../../providers/trash_provider.dart';
 
 import '../../services/notification_service.dart';
 import '../../services/storage_service.dart';
@@ -223,6 +224,7 @@ class _LoadingScreenState extends State<LoadingScreen>
       await Future.wait([
         notesProvider.loadNotes(),
         goalsProvider.loadGoals(),
+        context.read<TrashProvider>().loadTrash(),
         NotificationService.init(),
       ]);
 

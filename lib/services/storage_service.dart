@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
@@ -10,33 +11,29 @@ import '../models/note.dart';
 import '../models/project.dart';
 import '../models/task.dart';
 
-List<Map<String, dynamic>> _decodeJsonList(String jsonData) {
-  final decoded = jsonDecode(jsonData);
-  if (decoded is! List) return [];
-  return decoded
-      .whereType<Map>()
-      .map((item) => Map<String, dynamic>.from(item))
-      .toList();
-}
-
-String _encodeJsonList(List<Map<String, dynamic>> items) {
-  return jsonEncode(items);
-}
-
 class StorageService {
   static const String _boxName = 'second_brain_store';
   static const String _tasksKey = 'brain_tasks';
   static const String _projectsKey = 'brain_projects';
   static const String _notesKey = 'brain_notes';
   static const String _goalsKey = 'brain_goals';
+  static const String _trashTasksKey = 'brain_trash_tasks';
+  static const String _trashProjectsKey = 'brain_trash_projects';
+  static const String _trashNotesKey = 'brain_trash_notes';
+  static const String _trashGoalsKey = 'brain_trash_goals';
 
   static Box<String>? _box;
 
-  // Sistema de caché en memoria para accesos instantáneos sin E/S de disco
   static List<Task>? _cachedTasks;
   static List<Project>? _cachedProjects;
   static List<Note>? _cachedNotes;
   static List<Goal>? _cachedGoals;
+  static List<Task>? _cachedTrashTasks;
+  static List<Project>? _cachedTrashProjects;
+  static List<Note>? _cachedTrashNotes;
+  static List<Goal>? _cachedTrashGoals;
+
+  static VoidCallback? onTrashChanged;
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -62,7 +59,6 @@ class StorageService {
     }
   }
 
-
   static Future<List<T>> _loadList<T>(
     String key,
     T Function(Map<String, dynamic> json) fromJson,
@@ -71,11 +67,15 @@ class StorageService {
     if (data == null || data.isEmpty) return [];
 
     try {
-      // Usamos Isolate.run para decodificar y mapear en un hilo separado
-      return await Isolate.run(() {
-        final decoded = _decodeJsonList(data);
-        return decoded.map((item) => fromJson(item)).toList();
+      final decodedList = await Isolate.run(() {
+        final decoded = jsonDecode(data);
+        if (decoded is! List) return <Map<String, dynamic>>[];
+        return decoded
+            .whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList();
       });
+      return decodedList.map((item) => fromJson(item)).toList();
     } catch (e) {
       debugPrint('Error loading list $key: $e');
       return [];
@@ -86,16 +86,13 @@ class StorageService {
     String key,
     List<Map<String, dynamic>> items,
   ) async {
-    // La codificación JSON puede ser costosa para listas grandes
-    final encoded = await Isolate.run(() => _encodeJsonList(items));
+    final encoded = await Isolate.run(() => jsonEncode(items));
     await _store.put(key, encoded);
   }
 
   static Future<List<Task>> loadTasks() async {
     final cached = _cachedTasks;
-    if (cached != null) {
-      return List<Task>.from(cached);
-    }
+    if (cached != null) return List<Task>.from(cached);
     final loaded = await _loadList(_tasksKey, Task.fromJson);
     _cachedTasks = loaded;
     return List<Task>.from(loaded);
@@ -108,9 +105,7 @@ class StorageService {
 
   static Future<List<Project>> loadProjects() async {
     final cached = _cachedProjects;
-    if (cached != null) {
-      return List<Project>.from(cached);
-    }
+    if (cached != null) return List<Project>.from(cached);
     final loaded = await _loadList(_projectsKey, Project.fromJson);
     _cachedProjects = loaded;
     return List<Project>.from(loaded);
@@ -123,9 +118,7 @@ class StorageService {
 
   static Future<List<Note>> loadNotes() async {
     final cached = _cachedNotes;
-    if (cached != null) {
-      return List<Note>.from(cached);
-    }
+    if (cached != null) return List<Note>.from(cached);
     final loaded = await _loadList(_notesKey, Note.fromJson);
     _cachedNotes = loaded;
     return List<Note>.from(loaded);
@@ -138,9 +131,7 @@ class StorageService {
 
   static Future<List<Goal>> loadGoals() async {
     final cached = _cachedGoals;
-    if (cached != null) {
-      return List<Goal>.from(cached);
-    }
+    if (cached != null) return List<Goal>.from(cached);
     final loaded = await _loadList(_goalsKey, Goal.fromJson);
     _cachedGoals = loaded;
     return List<Goal>.from(loaded);
@@ -151,11 +142,73 @@ class StorageService {
     await _saveList(_goalsKey, goals.map((g) => g.toJson()).toList());
   }
 
+  // ─── Trash ──────────────────────────────────────────────────────────────────
+
+  static Future<List<Task>> loadTrashTasks() async {
+    final cached = _cachedTrashTasks;
+    if (cached != null) return List<Task>.from(cached);
+    final loaded = await _loadList(_trashTasksKey, Task.fromJson);
+    _cachedTrashTasks = loaded;
+    return List<Task>.from(loaded);
+  }
+
+  static Future<void> saveTrashTasks(List<Task> tasks) async {
+    _cachedTrashTasks = List<Task>.from(tasks);
+    await _saveList(_trashTasksKey, tasks.map((t) => t.toJson()).toList());
+    onTrashChanged?.call();
+  }
+
+  static Future<List<Project>> loadTrashProjects() async {
+    final cached = _cachedTrashProjects;
+    if (cached != null) return List<Project>.from(cached);
+    final loaded = await _loadList(_trashProjectsKey, Project.fromJson);
+    _cachedTrashProjects = loaded;
+    return List<Project>.from(loaded);
+  }
+
+  static Future<void> saveTrashProjects(List<Project> projects) async {
+    _cachedTrashProjects = List<Project>.from(projects);
+    await _saveList(_trashProjectsKey, projects.map((p) => p.toJson()).toList());
+    onTrashChanged?.call();
+  }
+
+  static Future<List<Note>> loadTrashNotes() async {
+    final cached = _cachedTrashNotes;
+    if (cached != null) return List<Note>.from(cached);
+    final loaded = await _loadList(_trashNotesKey, Note.fromJson);
+    _cachedTrashNotes = loaded;
+    return List<Note>.from(loaded);
+  }
+
+  static Future<void> saveTrashNotes(List<Note> notes) async {
+    _cachedTrashNotes = List<Note>.from(notes);
+    await _saveList(_trashNotesKey, notes.map((n) => n.toJson()).toList());
+    onTrashChanged?.call();
+  }
+
+  static Future<List<Goal>> loadTrashGoals() async {
+    final cached = _cachedTrashGoals;
+    if (cached != null) return List<Goal>.from(cached);
+    final loaded = await _loadList(_trashGoalsKey, Goal.fromJson);
+    _cachedTrashGoals = loaded;
+    return List<Goal>.from(loaded);
+  }
+
+  static Future<void> saveTrashGoals(List<Goal> goals) async {
+    _cachedTrashGoals = List<Goal>.from(goals);
+    await _saveList(_trashGoalsKey, goals.map((g) => g.toJson()).toList());
+    onTrashChanged?.call();
+  }
+
   static Future<void> clearAll() async {
     _cachedTasks = null;
     _cachedProjects = null;
     _cachedNotes = null;
     _cachedGoals = null;
+    _cachedTrashTasks = null;
+    _cachedTrashProjects = null;
+    _cachedTrashNotes = null;
+    _cachedTrashGoals = null;
     await _store.clear();
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();

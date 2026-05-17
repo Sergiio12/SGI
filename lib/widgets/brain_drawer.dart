@@ -6,6 +6,7 @@ import '../providers/goals_provider.dart';
 import '../providers/notes_provider.dart';
 import '../providers/projects_provider.dart';
 import '../providers/tasks_provider.dart';
+import '../providers/trash_provider.dart';
 
 class BrainDrawer extends StatelessWidget {
   const BrainDrawer({super.key});
@@ -69,12 +70,12 @@ class BrainDrawer extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _StatBadge(
-                        count: tasks.todoTasks.length,
-                        label: 'Pendientes',
+                        count: tasks.totalTasks,
+                        label: 'Tareas',
                         color: BrainTheme.accentOrange,
                       ),
                       _StatBadge(
-                        count: projects.activeProjects.length,
+                        count: projects.projects.length,
                         label: 'Proyectos',
                         color: BrainTheme.accentBlue,
                       ),
@@ -158,6 +159,21 @@ class BrainDrawer extends StatelessWidget {
               icon: Icons.cloud_done_outlined,
               label: 'Datos y respaldo',
               onTap: () => _open(context, '/data'),
+            ),
+            _DrawerItem(
+              icon: Icons.delete_outline_rounded,
+              label: 'Papelera',
+              badge: Consumer<TrashProvider>(
+                builder: (_, trash, __) {
+                  return trash.totalItems > 0
+                      ? _CountBadge(
+                          count: trash.totalItems,
+                          color: BrainTheme.accentRed,
+                        )
+                      : const SizedBox.shrink();
+                },
+              ),
+              onTap: () => _open(context, '/trash'),
             ),
             _DrawerItem(
               icon: Icons.settings_outlined,

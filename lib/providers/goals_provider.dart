@@ -3,12 +3,14 @@ import 'package:uuid/uuid.dart';
 
 import '../models/goal.dart';
 import '../services/storage_service.dart';
+import '../utils/debouncer.dart';
 import '../utils/notification_service_v2.dart';
 
 class GoalsProvider extends ChangeNotifier {
   List<Goal> _goals = [];
   final _uuid = const Uuid();
   bool _isLoaded = false;
+  final _saveDebouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
   List<Goal> get goals => _goals;
   bool get isLoaded => _isLoaded;
@@ -34,9 +36,9 @@ class GoalsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _save() async {
-    await StorageService.saveGoals(_goals);
+  void _notifyAndScheduleSave() {
     notifyListeners();
+    _saveDebouncer.call(() => StorageService.saveGoals(_goals));
   }
 
   Future<Goal> addGoal({
@@ -67,7 +69,7 @@ class GoalsProvider extends ChangeNotifier {
         updatedAt: now,
       );
       _goals.add(goal);
-      await _save();
+      _notifyAndScheduleSave();
       showSuccessNotification('Objetivo creado: ${goal.title}');
       return goal;
     } catch (e) {
@@ -81,7 +83,7 @@ class GoalsProvider extends ChangeNotifier {
       final index = _goals.indexWhere((g) => g.id == goal.id);
       if (index != -1) {
         _goals[index] = goal;
-        await _save();
+        _notifyAndScheduleSave();
         showSuccessNotification('Objetivo actualizado');
       }
     } catch (e) {
@@ -92,9 +94,43 @@ class GoalsProvider extends ChangeNotifier {
 
   Future<void> deleteGoal(String goalId) async {
     try {
-      _goals.removeWhere((g) => g.id == goalId);
-      await _save();
-      showSuccessNotification('Objetivo eliminado');
+      final index = _goals.indexWhere((g) => g.id == goalId);
+      if (index == -1) return;
+      final goal = _goals.removeAt(index);
+      final trash = await StorageService.loadTrashGoals();
+      trash.add(goal);
+      await StorageService.saveTrashGoals(trash);
+      _notifyAndScheduleSave();
+      showSuccessNotification('Objetivo movido a la papelera');
+    } catch (e) {
+      showErrorNotification('Error al eliminar objetivo');
+      rethrow;
+    }
+  }
+
+  Future<void> restoreGoal(String goalId) async {
+    try {
+      final trash = await StorageService.loadTrashGoals();
+      final index = trash.indexWhere((g) => g.id == goalId);
+      if (index != -1) {
+        final goal = trash.removeAt(index);
+        _goals.add(goal);
+        await StorageService.saveTrashGoals(trash);
+        _notifyAndScheduleSave();
+        showSuccessNotification('Objetivo restaurado');
+      }
+    } catch (e) {
+      showErrorNotification('Error al restaurar objetivo');
+      rethrow;
+    }
+  }
+
+  Future<void> permanentDeleteGoal(String goalId) async {
+    try {
+      final trash = await StorageService.loadTrashGoals();
+      trash.removeWhere((g) => g.id == goalId);
+      await StorageService.saveTrashGoals(trash);
+      showSuccessNotification('Objetivo eliminado permanentemente');
     } catch (e) {
       showErrorNotification('Error al eliminar objetivo');
       rethrow;
@@ -103,6 +139,12 @@ class GoalsProvider extends ChangeNotifier {
 
   Future<void> replaceAll(List<Goal> goals) async {
     _goals = goals;
-    await _save();
+    _notifyAndScheduleSave();
+  }
+
+  @override
+  void dispose() {
+    _saveDebouncer.dispose();
+    super.dispose();
   }
 }

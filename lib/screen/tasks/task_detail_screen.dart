@@ -146,8 +146,26 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               icon:
                   const Icon(Icons.delete_outline, color: BrainTheme.accentRed),
               onPressed: () async {
-                await context.read<TasksProvider>().deleteTask(widget.taskId!);
-                if (mounted) Navigator.pop(context);
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: BrainTheme.cardDark,
+                    title: const Text('Eliminar tarea', style: TextStyle(color: BrainTheme.textPrimary)),
+                    content: const Text('Se moverá a la papelera. ¿Deseas continuar?', style: TextStyle(color: BrainTheme.textSecondary)),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                      FilledButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: FilledButton.styleFrom(backgroundColor: BrainTheme.accentRed, foregroundColor: Colors.white),
+                        child: const Text('Eliminar'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  await context.read<TasksProvider>().deleteTask(widget.taskId!);
+                  if (mounted) Navigator.pop(context);
+                }
               },
             ),
           TextButton(

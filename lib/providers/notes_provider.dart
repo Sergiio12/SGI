@@ -1,17 +1,17 @@
-import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/note.dart';
 import '../services/storage_service.dart';
+import '../utils/debouncer.dart';
 import '../utils/notification_service_v2.dart';
 
 class NotesProvider extends ChangeNotifier {
   List<Note> _notes = [];
   final _uuid = const Uuid();
   bool _isLoaded = false;
+  final _saveDebouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
-  // Listas pre-calculadas
   List<Note> _pinnedNotes = [];
   List<Note> _unpinnedNotes = [];
   List<Note> _recentNotes = [];
@@ -35,7 +35,7 @@ class NotesProvider extends ChangeNotifier {
   void _updateComputedLists() {
     _pinnedNotes = _notes.where((n) => n.isPinned).toList();
     _unpinnedNotes = _notes.where((n) => !n.isPinned).toList();
-    
+
     final sorted = [..._notes]
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     _recentNotes = sorted.take(10).toList();
@@ -44,10 +44,10 @@ class NotesProvider extends ChangeNotifier {
     _notebooks = values.isEmpty ? ['General'] : values;
   }
 
-  Future<void> _save() async {
-    await StorageService.saveNotes(_notes);
+  void _notifyAndScheduleSave() {
     _updateComputedLists();
     notifyListeners();
+    _saveDebouncer.call(() => StorageService.saveNotes(_notes));
   }
 
   List<Note> getNotesByProject(String projectId) =>
@@ -76,7 +76,7 @@ class NotesProvider extends ChangeNotifier {
     NoteType type = NoteType.freeform,
     String notebook = 'General',
     String? projectId,
-    String emoji = '📝',
+    String emoji = '\u{1F4DD}',
     List<String> tags = const [],
   }) async {
     try {
@@ -94,7 +94,7 @@ class NotesProvider extends ChangeNotifier {
         updatedAt: now,
       );
       _notes.add(note);
-      await _save();
+      _notifyAndScheduleSave();
       showSuccessNotification('Nota creada: ${note.title}');
       return note;
     } catch (e) {
@@ -108,7 +108,7 @@ class NotesProvider extends ChangeNotifier {
       final index = _notes.indexWhere((n) => n.id == note.id);
       if (index != -1) {
         _notes[index] = note;
-        await _save();
+        _notifyAndScheduleSave();
         showSuccessNotification('Nota actualizada');
       }
     } catch (e) {
@@ -123,7 +123,7 @@ class NotesProvider extends ChangeNotifier {
       if (index != -1) {
         final note = _notes[index];
         _notes[index] = note.copyWith(isPinned: !note.isPinned);
-        await _save();
+        _notifyAndScheduleSave();
         showSuccessNotification(
             note.isPinned ? 'Nota desanclada' : 'Nota anclada');
       }
@@ -135,9 +135,43 @@ class NotesProvider extends ChangeNotifier {
 
   Future<void> deleteNote(String noteId) async {
     try {
-      _notes.removeWhere((n) => n.id == noteId);
-      await _save();
-      showSuccessNotification('Nota eliminada');
+      final index = _notes.indexWhere((n) => n.id == noteId);
+      if (index == -1) return;
+      final note = _notes.removeAt(index);
+      final trash = await StorageService.loadTrashNotes();
+      trash.add(note);
+      await StorageService.saveTrashNotes(trash);
+      _notifyAndScheduleSave();
+      showSuccessNotification('Nota movida a la papelera');
+    } catch (e) {
+      showErrorNotification('Error al eliminar nota');
+      rethrow;
+    }
+  }
+
+  Future<void> restoreNote(String noteId) async {
+    try {
+      final trash = await StorageService.loadTrashNotes();
+      final index = trash.indexWhere((n) => n.id == noteId);
+      if (index != -1) {
+        final note = trash.removeAt(index);
+        _notes.add(note);
+        await StorageService.saveTrashNotes(trash);
+        _notifyAndScheduleSave();
+        showSuccessNotification('Nota restaurada');
+      }
+    } catch (e) {
+      showErrorNotification('Error al restaurar nota');
+      rethrow;
+    }
+  }
+
+  Future<void> permanentDeleteNote(String noteId) async {
+    try {
+      final trash = await StorageService.loadTrashNotes();
+      trash.removeWhere((n) => n.id == noteId);
+      await StorageService.saveTrashNotes(trash);
+      showSuccessNotification('Nota eliminada permanentemente');
     } catch (e) {
       showErrorNotification('Error al eliminar nota');
       rethrow;
@@ -146,23 +180,23 @@ class NotesProvider extends ChangeNotifier {
 
   Future<void> replaceAll(List<Note> notes) async {
     _notes = notes;
-    await _save();
+    _notifyAndScheduleSave();
   }
 
-  Future<List<Note>> search(String query) async {
+  List<Note> search(String query) {
     if (query.isEmpty) return [];
     final lower = query.toLowerCase();
-    
-    // Capturamos la lista actual para el Isolate
-    final currentNotes = _notes;
-    
-    return await Isolate.run(() {
-      return currentNotes.where((n) {
-        return n.title.toLowerCase().contains(lower) ||
-            n.content.toLowerCase().contains(lower) ||
-            n.notebook.toLowerCase().contains(lower) ||
-            n.tags.any((t) => t.toLowerCase().contains(lower));
-      }).toList();
-    });
+    return _notes.where((n) {
+      return n.title.toLowerCase().contains(lower) ||
+          n.content.toLowerCase().contains(lower) ||
+          n.notebook.toLowerCase().contains(lower) ||
+          n.tags.any((t) => t.toLowerCase().contains(lower));
+    }).toList();
+  }
+
+  @override
+  void dispose() {
+    _saveDebouncer.dispose();
+    super.dispose();
   }
 }

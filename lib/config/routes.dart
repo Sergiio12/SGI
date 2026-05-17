@@ -12,6 +12,7 @@ import '../screen/search/search_screen.dart';
 import '../screen/tasks/task_detail_screen.dart';
 import '../screen/settings/settings_screen.dart';
 import '../screen/loading/loading_screen.dart';
+import '../screen/trash/trash_screen.dart';
 
 class AppRoutes {
   static const String loading = '/';
@@ -26,6 +27,7 @@ class AppRoutes {
   static const String progress = '/progress';
   static const String data = '/data';
   static const String settings = '/settings';
+  static const String trash = '/trash';
 
   static Map<String, WidgetBuilder> get routes => {
         loading: (_) => const LoadingScreen(),
@@ -35,6 +37,7 @@ class AppRoutes {
         progress: (_) => const ProgressScreen(),
         data: (_) => const DataScreen(),
         settings: (_) => const SettingsScreen(),
+        trash: (_) => const TrashScreen(),
       };
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
