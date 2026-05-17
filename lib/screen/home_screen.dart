@@ -248,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
       key: _scaffoldKey,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: BrainTheme.primaryDark.withValues(alpha: 0.95),
+        backgroundColor: BrainTheme.primaryDark.withValues(alpha: 0.8),
         leading: IconButton(
           icon: Icon(Icons.menu_rounded, color: BrainTheme.textPrimary),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
@@ -258,13 +258,18 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: BrainTheme.accentPurple.withValues(alpha: 0.2),
+                gradient: LinearGradient(
+                  colors: [
+                    BrainTheme.accentPurple,
+                    BrainTheme.accentPurple.withValues(alpha: 0.7),
+                  ],
+                ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 currentTab.icon,
-                size: 20,
-                color: BrainTheme.accentPurple,
+                size: 18,
+                color: Colors.white,
               ),
             ),
             const SizedBox(width: 12),
@@ -280,10 +285,18 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search_rounded),
-            onPressed: () => Navigator.pushNamed(context, '/search'),
-            tooltip: 'Buscar',
+          Container(
+            margin: const EdgeInsets.only(right: 4),
+            decoration: BoxDecoration(
+              color: BrainTheme.surfaceDark,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: BrainTheme.borderDark),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.search_rounded, size: 20),
+              onPressed: () => Navigator.pushNamed(context, '/search'),
+              tooltip: 'Buscar',
+            ),
           ),
         ],
       ),
@@ -336,24 +349,32 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedItemColor: BrainTheme.accentPurple,
         unselectedItemColor: BrainTheme.textTertiary,
         selectedLabelStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.2,
         ),
         unselectedLabelStyle: const TextStyle(
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.w500,
         ),
         items: _tabs
             .map(
               (tab) => BottomNavigationBarItem(
-                icon: Icon(tab.icon),
+                icon: Icon(tab.icon, size: 22),
                 activeIcon: Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: BrainTheme.accentPurple.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                      colors: [
+                        BrainTheme.accentPurple.withValues(alpha: 0.2),
+                        BrainTheme.accentPurple.withValues(alpha: 0.05),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(tab.icon, size: 24),
+                  child: Icon(tab.icon, size: 22, color: BrainTheme.accentPurple),
                 ),
                 label: tab.title,
               ),

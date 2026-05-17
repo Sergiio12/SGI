@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../models/tag.dart';
 import '../models/task.dart';
+import '../providers/tags_provider.dart';
 
 class TaskCard extends StatelessWidget {
   final Task task;
@@ -230,9 +233,40 @@ class TaskCard extends StatelessWidget {
                           ],
                         ],
                       ),
-                    ],
-                  ),
-                ),
+                      if (task.tags.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Consumer<TagsProvider>(builder: (context, tp, _) {
+                            final tags = task.tags
+                                .map((id) => tp.getById(id))
+                                .whereType<Tag>()
+                                .take(3)
+                                .toList();
+                            if (tags.isEmpty) return const SizedBox.shrink();
+                            return Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: tags.map((tag) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: tag.color.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  tag.name,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: tag.color,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              )).toList(),
+                            );
+                          }),
+                        ],
+                      ],
+                      ),
+                    ),
 
                 // Progress indicator for subtasks
                 if (task.subtasks.isNotEmpty)

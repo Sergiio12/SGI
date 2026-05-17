@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 
 import '../config/theme.dart';
 import '../models/goal.dart';
+import '../models/tag.dart';
+import '../providers/tags_provider.dart';
 
 class GoalCard extends StatelessWidget {
   final Goal goal;
@@ -117,6 +120,37 @@ class GoalCard extends StatelessWidget {
                     color: BrainTheme.textSecondary,
                   ),
                 ),
+              ],
+              if (goal.tags.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Consumer<TagsProvider>(builder: (context, tp, _) {
+                  final tags = goal.tags
+                      .map((id) => tp.getById(id))
+                      .whereType<Tag>()
+                      .take(3)
+                      .toList();
+                  if (tags.isEmpty) return const SizedBox.shrink();
+                  return Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: tags.map((tag) => Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: tag.color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        tag.name,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: tag.color,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    )).toList(),
+                  );
+                }),
               ],
               const SizedBox(height: 16),
               ClipRRect(

@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 
 import '../config/theme.dart';
 import '../models/project.dart';
+import '../models/tag.dart';
 import '../models/task.dart';
+import '../providers/tags_provider.dart';
 import '../providers/tasks_provider.dart';
 
 class ProjectCard extends StatelessWidget {
@@ -136,6 +138,37 @@ class ProjectCard extends StatelessWidget {
                     ),
                   ],
                 ),
+              ],
+              if (project.tags.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Consumer<TagsProvider>(builder: (context, tp, _) {
+                  final tags = project.tags
+                      .map((id) => tp.getById(id))
+                      .whereType<Tag>()
+                      .take(3)
+                      .toList();
+                  if (tags.isEmpty) return const SizedBox.shrink();
+                  return Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: tags.map((tag) => Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: tag.color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        tag.name,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: tag.color,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    )).toList(),
+                  );
+                }),
               ],
               const SizedBox(height: 16),
               Row(

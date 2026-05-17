@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../models/note.dart';
+import '../models/tag.dart';
+import '../providers/tags_provider.dart';
 
 class NoteCard extends StatelessWidget {
   final Note note;
@@ -121,31 +124,37 @@ class NoteCard extends StatelessWidget {
                 ],
               ),
               if (note.tags.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: note.tags.take(3).map((tag) {
-                    return Container(
+                const SizedBox(height: 10),
+                Consumer<TagsProvider>(builder: (context, tp, _) {
+                  final tags = note.tags
+                      .map((id) => tp.getById(id))
+                      .whereType<Tag>()
+                      .take(3)
+                      .toList();
+                  if (tags.isEmpty) return const SizedBox.shrink();
+                  return Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: tags.map((tag) => Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: BrainTheme.accentPurple.withValues(alpha: 0.1),
+                        color: tag.color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        tag,
+                        tag.name,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
-                          color: BrainTheme.accentPurple,
+                          color: tag.color,
                         ),
                       ),
-                    );
-                  }).toList(),
-                ),
+                    )).toList(),
+                  );
+                }),
               ],
             ],
           ),

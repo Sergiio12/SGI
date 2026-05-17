@@ -5,7 +5,6 @@ import 'package:uuid/uuid.dart';
 
 import '../../config/theme.dart';
 import '../../config/routes.dart';
-import '../../models/tag.dart';
 import '../../utils/notification_service_v2.dart';
 import '../../models/task.dart';
 import '../../providers/tags_provider.dart';
@@ -13,6 +12,7 @@ import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../providers/notes_provider.dart';
 import '../../widgets/priority_indicator.dart';
+import '../../widgets/tag_color_picker.dart';
 
 class TaskDetailScreen extends StatefulWidget {
   final String? taskId;
@@ -81,104 +81,140 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         isScrollControlled: true,
         builder: (ctx) {
           final nameCtrl = TextEditingController();
-          int colorValue = BrainTheme.accentPurple.value;
-          return Padding(
-            padding:
-                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-            child: Container(
-              height: 420,
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Gestionar etiquetas',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 12),
-                  Expanded(child:
-                      Consumer<TagsProvider>(builder: (context, prov, _) {
-                    return ListView(
-                      children: prov.tags
-                          .map((t) => ListTile(
-                                leading: CircleAvatar(
-                                    backgroundColor: t.color, radius: 16),
-                                title: Text(t.name),
-                                trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                          icon: const Icon(Icons.edit),
-                                          onPressed: () {
-                                            nameCtrl.text = t.name;
-                                            showDialog(
-                                                context: context,
-                                                builder: (dctx) => AlertDialog(
-                                                      title: const Text(
-                                                          'Editar etiqueta'),
-                                                      content: TextField(
-                                                          controller: nameCtrl,
-                                                          decoration:
-                                                              const InputDecoration(
-                                                                  hintText:
-                                                                      'Nombre')),
-                                                      actions: [
-                                                        TextButton(
-                                                            onPressed: () =>
-                                                                Navigator.pop(
-                                                                    dctx),
-                                                            child: const Text(
-                                                                'Cancelar')),
-                                                        FilledButton(
-                                                            onPressed:
-                                                                () async {
-                                                              await prov.updateTag(
-                                                                  t.copyWith(
-                                                                      name: nameCtrl
-                                                                          .text));
-                                                              Navigator.pop(
-                                                                  dctx);
-                                                              Navigator.pop(
-                                                                  ctx);
-                                                            },
-                                                            child: const Text(
-                                                                'Guardar'))
-                                                      ],
-                                                    ));
-                                          }),
-                                      IconButton(
-                                          icon:
-                                              const Icon(Icons.delete_outline),
-                                          onPressed: () =>
-                                              prov.deleteTag(t.id)),
-                                    ]),
-                              ))
-                          .toList(),
-                    );
-                  })),
-                  const Divider(),
-                  TextField(
-                      controller: nameCtrl,
-                      decoration:
-                          const InputDecoration(labelText: 'Nueva etiqueta')),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                          child: FilledButton(
-                              onPressed: () async {
-                                if (nameCtrl.text.trim().isEmpty) return;
-                                await context.read<TagsProvider>().addTag(
-                                    name: nameCtrl.text.trim(),
-                                    colorValue: colorValue);
-                                nameCtrl.clear();
-                              },
-                              child: const Text('Crear')))
-                    ],
-                  ),
-                ],
+          int newTagColorValue = BrainTheme.accentPurple.toARGB32();
+          return StatefulBuilder(builder: (mctx, setModalState) {
+            return Padding(
+              padding:
+                  EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+              child: Container(
+                height: 520,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Gestionar etiquetas',
+                        style:
+                            TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 12),
+                    Expanded(child:
+                        Consumer<TagsProvider>(builder: (context, prov, _) {
+                      return ListView(
+                        children: prov.tags
+                            .map((t) => ListTile(
+                                  leading: CircleAvatar(
+                                      backgroundColor: t.color, radius: 16),
+                                  title: Text(t.name),
+                                  trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                            icon: const Icon(Icons.edit),
+                                            onPressed: () {
+                                              int editColorValue =
+                                                  t.color.toARGB32();
+                                              final editNameCtrl =
+                                                  TextEditingController(
+                                                      text: t.name);
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (dctx) =>
+                                                      StatefulBuilder(
+                                                          builder: (dState,
+                                                                  setDialogState) =>
+                                                              AlertDialog(
+                                                                title: const Text(
+                                                                    'Editar etiqueta'),
+                                                                content: SingleChildScrollView(
+                                                                    child: Column(
+                                                                        mainAxisSize:
+                                                                            MainAxisSize
+                                                                                .min,
+                                                                        children: [
+                                                                          TextField(
+                                                                              controller:
+                                                                                  editNameCtrl,
+                                                                              decoration:
+                                                                                  const InputDecoration(hintText: 'Nombre')),
+                                                                          const SizedBox(
+                                                                              height:
+                                                                                  16),
+                                                                          TagColorPicker(
+                                                                            selectedColorValue:
+                                                                                editColorValue,
+                                                                            onColorChanged:
+                                                                                (v) =>
+                                                                                    setDialogState(() => editColorValue = v),
+                                                                          ),
+                                                                        ])),
+                                                                actions: [
+                                                                  TextButton(
+                                                                      onPressed: () =>
+                                                                          Navigator.pop(
+                                                                              dctx),
+                                                                      child: const Text(
+                                                                          'Cancelar')),
+                                                                  FilledButton(
+                                                                      onPressed:
+                                                                          () async {
+                                                                        await prov.updateTag(t.copyWith(
+                                                                            name: editNameCtrl
+                                                                                .text,
+                                                                            color: Color(
+                                                                                editColorValue)));
+                                                                        Navigator.pop(
+                                                                            dctx);
+                                                                        Navigator.pop(
+                                                                            ctx);
+                                                                      },
+                                                                      child: const Text(
+                                                                          'Guardar'))
+                                                                ],
+                                                              )));
+                                            }),
+                                        IconButton(
+                                            icon:
+                                                const Icon(Icons.delete_outline),
+                                            onPressed: () =>
+                                                prov.deleteTag(t.id)),
+                                      ]),
+                                ))
+                            .toList(),
+                      );
+                    })),
+                    const Divider(),
+                    TextField(
+                        controller: nameCtrl,
+                        decoration:
+                            const InputDecoration(labelText: 'Nueva etiqueta')),
+                    const SizedBox(height: 12),
+                    TagColorPicker(
+                      selectedColorValue: newTagColorValue,
+                      onColorChanged: (v) =>
+                          setModalState(() => newTagColorValue = v),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: FilledButton(
+                                onPressed: () async {
+                                  if (nameCtrl.text.trim().isEmpty) return;
+                                  await context.read<TagsProvider>().addTag(
+                                      name: nameCtrl.text.trim(),
+                                      colorValue: newTagColorValue);
+                                  nameCtrl.clear();
+                                  setModalState(() =>
+                                      newTagColorValue =
+                                          BrainTheme.accentPurple.toARGB32());
+                                },
+                                child: const Text('Crear')))
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
+            );
+          });
         });
   }
 
@@ -206,6 +242,14 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                         children: tags.map((t) {
                           final isSelected = _selectedTags.contains(t.id);
                           return CheckboxListTile(
+                            secondary: Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: t.color,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
                             title: Text(t.name),
                             value: isSelected,
                             onChanged: (v) => setState(() {
@@ -694,52 +738,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   );
                 },
               ),
-            ),
-            const SizedBox(height: 16),
-            Divider(color: BrainTheme.borderDark),
-            const SizedBox(height: 12),
-            const _SectionTitle('Etiquetas'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: Tag.defaultTags.map((tag) {
-                final isSelected = _selectedTags.contains(tag.id);
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedTags.remove(tag.id);
-                      } else {
-                        _selectedTags.add(tag.id);
-                      }
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? tag.color.withValues(alpha: 0.2)
-                          : BrainTheme.surfaceDark,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected ? tag.color : BrainTheme.borderDark,
-                      ),
-                    ),
-                    child: Text(
-                      tag.name,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color:
-                            isSelected ? tag.color : BrainTheme.textSecondary,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
             ),
             const SizedBox(height: 16),
             Divider(color: BrainTheme.borderDark),

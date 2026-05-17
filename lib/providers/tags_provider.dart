@@ -13,17 +13,29 @@ class TagsProvider extends ChangeNotifier {
   List<Tag> get tags => _tags;
   bool get isLoaded => _isLoaded;
 
+  List<Tag> getTags(TagType type) =>
+      _tags.where((tag) => tag.type == type).toList();
+
   Future<void> loadTags() async {
     _tags = await StorageService.loadTags();
     if (_tags.isEmpty) {
-      _tags = Tag.defaultTags;
+      _tags = [
+        ...Tag.defaultTagsForType(TagType.note),
+        ...Tag.defaultTagsForType(TagType.task),
+        ...Tag.defaultTagsForType(TagType.project),
+        ...Tag.defaultTagsForType(TagType.goal),
+      ];
     }
     _isLoaded = true;
     notifyListeners();
   }
 
-  Future<Tag> addTag({required String name, required int colorValue}) async {
-    final tag = Tag(id: _uuid.v4(), name: name, color: Color(colorValue));
+  Future<Tag> addTag(
+      {required String name,
+      required int colorValue,
+      TagType type = TagType.note}) async {
+    final tag =
+        Tag(id: _uuid.v4(), name: name, color: Color(colorValue), type: type);
     _tags.add(tag);
     await StorageService.saveTags(_tags);
     notifyListeners();

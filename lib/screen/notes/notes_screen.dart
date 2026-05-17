@@ -17,11 +17,43 @@ class NotesScreen extends StatefulWidget {
 class _NotesScreenState extends State<NotesScreen> {
   NoteType? _filterType;
   bool _isGridView = true;
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (v) =>
+                setState(() => _searchQuery = v.toLowerCase()),
+            style: const TextStyle(fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'Buscar notas...',
+              prefixIcon: const Icon(Icons.search, size: 20),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, size: 18),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = '');
+                      },
+                    )
+                  : null,
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
         // Filter bar
         SizedBox(
           height: 44,
@@ -82,6 +114,15 @@ class _NotesScreenState extends State<NotesScreen> {
                   ? provider.getNotesByType(_filterType!)
                   : provider.notes;
 
+              if (_searchQuery.isNotEmpty) {
+                notes = notes
+                    .where((n) =>
+                        n.title.toLowerCase().contains(_searchQuery) ||
+                        n.content.toLowerCase().contains(_searchQuery) ||
+                        n.notebook.toLowerCase().contains(_searchQuery))
+                    .toList();
+              }
+
               // Sort: pinned first, then by date
               final pinned = notes.where((n) => n.isPinned).toList();
               final unpinned = notes.where((n) => !n.isPinned).toList()
@@ -90,17 +131,24 @@ class _NotesScreenState extends State<NotesScreen> {
 
               if (notes.isEmpty) {
                 return EmptyState(
-                  emoji: '📝',
-                  title: 'Sin notas',
-                  subtitle: 'Captura tus ideas, referencias y pensamientos',
-                  actionLabel: 'Nueva Nota',
-                  onAction: () => Navigator.pushNamed(context, '/note'),
+                  emoji: _searchQuery.isNotEmpty ? '🔍' : '📝',
+                  title: _searchQuery.isNotEmpty
+                      ? 'Sin resultados'
+                      : 'Sin notas',
+                  subtitle: _searchQuery.isNotEmpty
+                      ? 'No hay notas que coincidan con "$_searchQuery"'
+                      : 'Captura tus ideas, referencias y pensamientos',
+                  actionLabel:
+                      _searchQuery.isNotEmpty ? null : 'Nueva Nota',
+                  onAction: _searchQuery.isNotEmpty
+                      ? null
+                      : () => Navigator.pushNamed(context, '/note'),
                 );
               }
 
               if (_isGridView) {
                 return MasonryGridView.count(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                   crossAxisCount: 2,
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
@@ -120,7 +168,7 @@ class _NotesScreenState extends State<NotesScreen> {
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                 itemCount: notes.length,
                 itemBuilder: (context, index) {
                   return Padding(
