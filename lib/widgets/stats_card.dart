@@ -10,7 +10,7 @@ class StatsCard extends StatelessWidget {
   final String? subtitle;
   final VoidCallback? onTap;
 
-  const StatsCard({
+  StatsCard({
     super.key,
     required this.title,
     required this.value,
@@ -80,7 +80,7 @@ class StatsCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: BrainTheme.textSecondary,
@@ -90,7 +90,7 @@ class StatsCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   subtitle!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     color: BrainTheme.textTertiary,
                   ),

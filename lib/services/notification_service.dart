@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -14,6 +14,40 @@ const _kChannelDesc =
 
 int _notificationId(String key) => key.hashCode.abs() % 2147483647;
 
+class _Settings {
+  bool notificationsEnabled;
+  bool remind24h;
+  bool remind1h;
+  int defaultReminderMinutes;
+  bool quietHoursEnabled;
+  int quietStartHour;
+  int quietStartMinute;
+  int quietEndHour;
+  int quietEndMinute;
+
+  _Settings({
+    this.notificationsEnabled = true,
+    this.remind24h = true,
+    this.remind1h = true,
+    this.defaultReminderMinutes = 30,
+    this.quietHoursEnabled = false,
+    this.quietStartHour = 22,
+    this.quietStartMinute = 0,
+    this.quietEndHour = 8,
+    this.quietEndMinute = 0,
+  });
+
+  bool get isNowQuietHours {
+    if (!quietHoursEnabled) return false;
+    final now = TimeOfDay.now();
+    final start = quietStartHour * 60 + quietStartMinute;
+    final end = quietEndHour * 60 + quietEndMinute;
+    final nowM = now.hour * 60 + now.minute;
+    if (start <= end) return nowM >= start && nowM <= end;
+    return nowM >= start || nowM <= end;
+  }
+}
+
 class NotificationService {
   NotificationService._();
 
@@ -21,6 +55,31 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   static bool _initialized = false;
+  static _Settings _settings = _Settings();
+
+  static void configure({
+    bool? notificationsEnabled,
+    bool? remind24h,
+    bool? remind1h,
+    int? defaultReminderMinutes,
+    bool? quietHoursEnabled,
+    int? quietStartHour,
+    int? quietStartMinute,
+    int? quietEndHour,
+    int? quietEndMinute,
+  }) {
+    _settings = _Settings(
+      notificationsEnabled: notificationsEnabled ?? _settings.notificationsEnabled,
+      remind24h: remind24h ?? _settings.remind24h,
+      remind1h: remind1h ?? _settings.remind1h,
+      defaultReminderMinutes: defaultReminderMinutes ?? _settings.defaultReminderMinutes,
+      quietHoursEnabled: quietHoursEnabled ?? _settings.quietHoursEnabled,
+      quietStartHour: quietStartHour ?? _settings.quietStartHour,
+      quietStartMinute: quietStartMinute ?? _settings.quietStartMinute,
+      quietEndHour: quietEndHour ?? _settings.quietEndHour,
+      quietEndMinute: quietEndMinute ?? _settings.quietEndMinute,
+    );
+  }
 
   // ─── Inicialización ────────────────────────────────────────────────────────
 
@@ -96,6 +155,7 @@ class NotificationService {
 
   static Future<void> scheduleTaskReminders(Task task) async {
     if (!_initialized) return;
+    if (!_settings.notificationsEnabled) return;
     await cancelTaskReminders(task.id);
 
     final dueDate = task.dueDate;
@@ -106,10 +166,10 @@ class NotificationService {
     if (tzDue.isBefore(now)) return;
 
     // 1️⃣ Recordatorio personalizado
-    final remind = task.reminderMinutesBefore;
-    if (remind != null && remind > 0) {
+    final remind = task.reminderMinutesBefore ?? _settings.defaultReminderMinutes;
+    if (remind > 0) {
       final trigger = tzDue.subtract(Duration(minutes: remind));
-      if (trigger.isAfter(now)) {
+      if (trigger.isAfter(now) && !_isQuietTime(trigger)) {
         await _schedule(
           id: _notificationId('${task.id}_custom'),
           title: '⏰ Recordatorio: ${task.title}',
@@ -120,28 +180,32 @@ class NotificationService {
       }
     }
 
-    // 2️⃣ 24 horas antes
-    final minus24h = tzDue.subtract(const Duration(hours: 24));
-    if (minus24h.isAfter(now)) {
-      await _schedule(
-        id: _notificationId('${task.id}_24h'),
-        title: '📅 Vence mañana: ${task.title}',
-        body: 'La tarea vence el ${_formatDate(dueDate)}.',
-        scheduledDate: minus24h,
-        payload: task.id,
-      );
+    // 2️⃣ 24 horas antes (solo si está habilitado)
+    if (_settings.remind24h) {
+      final minus24h = tzDue.subtract(const Duration(hours: 24));
+      if (minus24h.isAfter(now) && !_isQuietTime(minus24h)) {
+        await _schedule(
+          id: _notificationId('${task.id}_24h'),
+          title: '📅 Vence mañana: ${task.title}',
+          body: 'La tarea vence el ${_formatDate(dueDate)}.',
+          scheduledDate: minus24h,
+          payload: task.id,
+        );
+      }
     }
 
-    // 3️⃣ 1 hora antes
-    final minus1h = tzDue.subtract(const Duration(hours: 1));
-    if (minus1h.isAfter(now)) {
-      await _schedule(
-        id: _notificationId('${task.id}_1h'),
-        title: '🔔 ¡Vence en 1 hora!: ${task.title}',
-        body: 'Tienes poco tiempo para completar esta tarea.',
-        scheduledDate: minus1h,
-        payload: task.id,
-      );
+    // 3️⃣ 1 hora antes (solo si está habilitado)
+    if (_settings.remind1h) {
+      final minus1h = tzDue.subtract(const Duration(hours: 1));
+      if (minus1h.isAfter(now) && !_isQuietTime(minus1h)) {
+        await _schedule(
+          id: _notificationId('${task.id}_1h'),
+          title: '🔔 ¡Vence en 1 hora!: ${task.title}',
+          body: 'Tienes poco tiempo para completar esta tarea.',
+          scheduledDate: minus1h,
+          payload: task.id,
+        );
+      }
     }
   }
 
@@ -224,6 +288,15 @@ class NotificationService {
     return '${date.day} de ${months[date.month - 1]}'
         ' a las ${date.hour.toString().padLeft(2, '0')}:'
         '${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  static bool _isQuietTime(tz.TZDateTime date) {
+    if (!_settings.quietHoursEnabled) return false;
+    final minutes = date.hour * 60 + date.minute;
+    final start = _settings.quietStartHour * 60 + _settings.quietStartMinute;
+    final end = _settings.quietEndHour * 60 + _settings.quietEndMinute;
+    if (start <= end) return minutes >= start && minutes <= end;
+    return minutes >= start || minutes <= end;
   }
 
   static String _timeUntil(DateTime dueDate) {

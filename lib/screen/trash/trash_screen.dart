@@ -69,11 +69,11 @@ class TrashScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
-        title: const Text(
+        title: Text(
           '¿Vaciar papelera?',
           style: TextStyle(color: BrainTheme.textPrimary),
         ),
-        content: const Text(
+        content: Text(
           'Todos los elementos de la papelera serán eliminados permanentemente.',
           style: TextStyle(color: BrainTheme.textSecondary),
         ),
@@ -125,13 +125,13 @@ class TrashScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
-        title: const Text(
+        title: Text(
           '¿Eliminar permanentemente?',
           style: TextStyle(color: BrainTheme.textPrimary),
         ),
         content: Text(
           'Se eliminará "${bundle.title}" de forma permanente.',
-          style: const TextStyle(color: BrainTheme.textSecondary),
+          style: TextStyle(color: BrainTheme.textSecondary),
         ),
         actions: [
           TextButton(
@@ -215,7 +215,7 @@ class _TrashItemCard extends StatelessWidget {
                 children: [
                   Text(
                     bundle.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: BrainTheme.textPrimary,
@@ -226,7 +226,7 @@ class _TrashItemCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     _typeLabel,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       color: BrainTheme.textTertiary,
                     ),

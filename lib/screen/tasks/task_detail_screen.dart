@@ -144,14 +144,14 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           if (_isEditing)
             IconButton(
               icon:
-                  const Icon(Icons.delete_outline, color: BrainTheme.accentRed),
+                  Icon(Icons.delete_outline, color: BrainTheme.accentRed),
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
                     backgroundColor: BrainTheme.cardDark,
-                    title: const Text('Eliminar tarea', style: TextStyle(color: BrainTheme.textPrimary)),
-                    content: const Text('Se moverá a la papelera. ¿Deseas continuar?', style: TextStyle(color: BrainTheme.textSecondary)),
+                    title: Text('Eliminar tarea', style: TextStyle(color: BrainTheme.textPrimary)),
+                    content: Text('Se moverá a la papelera. ¿Deseas continuar?', style: TextStyle(color: BrainTheme.textSecondary)),
                     actions: [
                       TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
                       FilledButton(
@@ -184,7 +184,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           children: [
             TextField(
               controller: _titleController,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
                 color: BrainTheme.textPrimary,
@@ -199,7 +199,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: _descController,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 color: BrainTheme.textSecondary,
               ),
@@ -211,7 +211,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               maxLines: null,
             ),
             const SizedBox(height: 16),
-            const Divider(color: BrainTheme.borderDark),
+            Divider(color: BrainTheme.borderDark),
             const SizedBox(height: 16),
             _PropertyRow(
               icon: Icons.flag_outlined,
@@ -364,7 +364,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Divider(color: BrainTheme.borderDark),
+            Divider(color: BrainTheme.borderDark),
             const SizedBox(height: 12),
             const _SectionTitle('Etiquetas'),
             const SizedBox(height: 8),
@@ -410,7 +410,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               }).toList(),
             ),
             const SizedBox(height: 16),
-            const Divider(color: BrainTheme.borderDark),
+            Divider(color: BrainTheme.borderDark),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -418,7 +418,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 const Spacer(),
                 Text(
                   '${_subtasks.where((s) => s.isDone).length}/${_subtasks.length}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: BrainTheme.textTertiary,
                   ),
@@ -476,7 +476,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.add_circle_outline,
                     color: BrainTheme.accentPurple,
                   ),
@@ -550,7 +550,7 @@ class _PropertyRow extends StatelessWidget {
           width: 80,
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               color: BrainTheme.textSecondary,
             ),
@@ -581,7 +581,7 @@ class _InlinePill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(text, style: const TextStyle(color: BrainTheme.textPrimary)),
+          Text(text, style: TextStyle(color: BrainTheme.textPrimary)),
           if (trailing != null) ...[
             const SizedBox(width: 8),
             trailing!,
@@ -601,7 +601,7 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: BrainTheme.textSecondary,

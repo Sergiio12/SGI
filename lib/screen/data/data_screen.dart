@@ -63,13 +63,13 @@ class _DataScreenState extends State<DataScreen> {
                       color: BrainTheme.accentBlue.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.cloud_sync_outlined,
                       color: BrainTheme.accentBlue,
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -293,7 +293,7 @@ class _ActionCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: BrainTheme.textPrimary,
@@ -305,7 +305,7 @@ class _ActionCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               subtitle,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 color: BrainTheme.textSecondary,
               ),

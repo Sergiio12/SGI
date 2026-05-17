@@ -39,7 +39,7 @@ class FocusScreen extends StatelessWidget {
                     color: BrainTheme.accentOrange.withValues(alpha: 0.35),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(
                       Icons.center_focus_strong,

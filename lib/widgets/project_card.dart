@@ -68,7 +68,7 @@ class ProjectCard extends StatelessWidget {
                       children: [
                         Text(
                           project.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w600,
                             letterSpacing: -0.3,
@@ -108,7 +108,7 @@ class ProjectCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   project.description,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: BrainTheme.textSecondary,
                   ),
@@ -121,12 +121,12 @@ class ProjectCard extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.track_changes, size: 14, color: BrainTheme.textTertiary),
+                    Icon(Icons.track_changes, size: 14, color: BrainTheme.textTertiary),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         project.objective,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: BrainTheme.textTertiary,
                         ),
@@ -233,7 +233,7 @@ class _MiniStat extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           '$value $label',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
             color: BrainTheme.textTertiary,

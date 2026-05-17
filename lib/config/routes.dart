@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:second_brain/screen/calendar/calendar_screen.dart';
-import 'package:second_brain/screen/data/data_screen.dart';
-import 'package:second_brain/screen/focus/focus_screen.dart';
-import 'package:second_brain/screen/goals/goal_detail_screen.dart';
-import 'package:second_brain/screen/home_screen.dart';
-import 'package:second_brain/screen/progress/progress_screen.dart';
-import 'package:second_brain/screen/projects/project_detail_screen.dart';
 
-import '../screen/notes/note_editor_screen.dart';
-import '../screen/search/search_screen.dart';
-import '../screen/tasks/task_detail_screen.dart';
-import '../screen/settings/settings_screen.dart';
+import '../screen/calendar/calendar_screen.dart';
+import '../screen/data/data_screen.dart';
+import '../screen/focus/focus_screen.dart';
+import '../screen/goals/goal_detail_screen.dart';
+import '../screen/home_screen.dart';
 import '../screen/loading/loading_screen.dart';
+import '../screen/notes/note_editor_screen.dart';
+import '../screen/progress/progress_screen.dart';
+import '../screen/projects/project_detail_screen.dart';
+import '../screen/search/search_screen.dart';
+import '../screen/settings/settings_screen.dart';
+import '../screen/tasks/task_detail_screen.dart';
+import '../screen/today/today_screen.dart';
 import '../screen/trash/trash_screen.dart';
 
 class AppRoutes {
@@ -23,6 +24,7 @@ class AppRoutes {
   static const String noteEditor = '/note';
   static const String search = '/search';
   static const String focus = '/focus';
+  static const String today = '/today';
   static const String calendar = '/calendar';
   static const String progress = '/progress';
   static const String data = '/data';
@@ -33,6 +35,7 @@ class AppRoutes {
         loading: (_) => const LoadingScreen(),
         search: (_) => const SearchScreen(),
         focus: (_) => const FocusScreen(),
+        today: (_) => const TodayScreen(),
         calendar: (_) => const CalendarScreen(),
         progress: (_) => const ProgressScreen(),
         data: (_) => const DataScreen(),

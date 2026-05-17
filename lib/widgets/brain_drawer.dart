@@ -26,7 +26,7 @@ class BrainDrawer extends StatelessWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [
                           BrainTheme.accentPurple,
                           BrainTheme.accentBlue
@@ -37,7 +37,7 @@ class BrainDrawer extends StatelessWidget {
                     child: const Icon(Icons.psychology, color: Colors.white),
                   ),
                   const SizedBox(width: 14),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -60,7 +60,7 @@ class BrainDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            const Divider(color: BrainTheme.borderDark),
+            Divider(color: BrainTheme.borderDark),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Consumer4<TasksProvider, ProjectsProvider, NotesProvider,
@@ -95,18 +95,37 @@ class BrainDrawer extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const Divider(color: BrainTheme.borderDark),
+            Divider(color: BrainTheme.borderDark),
             _DrawerItem(
               icon: Icons.search_rounded,
               label: 'Busqueda global',
               onTap: () => _open(context, '/search'),
             ),
-            const Divider(
+            Divider(
                 color: BrainTheme.borderDark, indent: 16, endIndent: 16),
             const _DrawerSectionLabel('VISTAS'),
             _DrawerItem(
+              icon: Icons.today_rounded,
+              label: 'Hoy',
+              badge: Consumer<TasksProvider>(
+                builder: (_, tasks, __) {
+                  final count =
+                      tasks.overdueTasks.length + tasks.todayTasks.length;
+                  return count > 0
+                      ? _CountBadge(
+                          count: count,
+                          color: tasks.overdueTasks.isNotEmpty
+                              ? BrainTheme.accentRed
+                              : BrainTheme.accentOrange,
+                        )
+                      : const SizedBox.shrink();
+                },
+              ),
+              onTap: () => _open(context, '/today'),
+            ),
+            _DrawerItem(
               icon: Icons.center_focus_strong,
-              label: 'Modo foco',
+              label: 'En foco',
               badge: Consumer<TasksProvider>(
                 builder: (_, tasks, __) {
                   return tasks.focusTasks.isNotEmpty
@@ -115,33 +134,6 @@ class BrainDrawer extends StatelessWidget {
                 },
               ),
               onTap: () => _open(context, '/focus'),
-            ),
-            _DrawerItem(
-              icon: Icons.today_rounded,
-              label: 'Hoy',
-              badge: Consumer<TasksProvider>(
-                builder: (_, tasks, __) {
-                  return tasks.todayTasks.isNotEmpty
-                      ? _CountBadge(count: tasks.todayTasks.length)
-                      : const SizedBox.shrink();
-                },
-              ),
-              onTap: () => _open(context, '/calendar'),
-            ),
-            _DrawerItem(
-              icon: Icons.warning_amber_rounded,
-              label: 'Vencidas',
-              badge: Consumer<TasksProvider>(
-                builder: (_, tasks, __) {
-                  return tasks.overdueTasks.isNotEmpty
-                      ? _CountBadge(
-                          count: tasks.overdueTasks.length,
-                          color: BrainTheme.accentRed,
-                        )
-                      : const SizedBox.shrink();
-                },
-              ),
-              onTap: () => _open(context, '/calendar'),
             ),
             _DrawerItem(
               icon: Icons.calendar_month_outlined,
@@ -154,12 +146,7 @@ class BrainDrawer extends StatelessWidget {
               onTap: () => _open(context, '/progress'),
             ),
             const Spacer(),
-            const Divider(color: BrainTheme.borderDark),
-            _DrawerItem(
-              icon: Icons.cloud_done_outlined,
-              label: 'Datos y respaldo',
-              onTap: () => _open(context, '/data'),
-            ),
+            Divider(color: BrainTheme.borderDark),
             _DrawerItem(
               icon: Icons.delete_outline_rounded,
               label: 'Papelera',
@@ -179,19 +166,6 @@ class BrainDrawer extends StatelessWidget {
               icon: Icons.settings_outlined,
               label: 'Ajustes',
               onTap: () => _open(context, '/settings'),
-            ),
-            _DrawerItem(
-              icon: Icons.info_outline_rounded,
-              label: 'Acerca de',
-              onTap: () {
-                Navigator.pop(context);
-                showAboutDialog(
-                  context: context,
-                  applicationName: 'SGI',
-                  applicationVersion: '1.0.0',
-                  applicationIcon: const Icon(Icons.psychology, size: 48),
-                );
-              },
             ),
             const SizedBox(height: 16),
           ],
@@ -219,7 +193,7 @@ class _DrawerSectionLabel extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             color: BrainTheme.textTertiary,
@@ -250,7 +224,7 @@ class _DrawerItem extends StatelessWidget {
       leading: Icon(icon, size: 22, color: BrainTheme.textSecondary),
       title: Text(
         label,
-        style: const TextStyle(fontSize: 14, color: BrainTheme.textPrimary),
+        style: TextStyle(fontSize: 14, color: BrainTheme.textPrimary),
       ),
       trailing: badge,
       onTap: onTap,
@@ -286,7 +260,7 @@ class _StatBadge extends StatelessWidget {
         ),
         Text(
           label,
-          style: const TextStyle(fontSize: 10, color: BrainTheme.textTertiary),
+          style: TextStyle(fontSize: 10, color: BrainTheme.textTertiary),
         ),
       ],
     );
@@ -297,7 +271,7 @@ class _CountBadge extends StatelessWidget {
   final int count;
   final Color color;
 
-  const _CountBadge({
+  _CountBadge({
     required this.count,
     this.color = BrainTheme.accentPurple,
   });

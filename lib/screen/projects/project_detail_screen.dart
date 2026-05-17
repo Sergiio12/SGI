@@ -128,14 +128,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
           if (_isEditing)
             IconButton(
               icon:
-                  const Icon(Icons.delete_outline, color: BrainTheme.accentRed),
+                  Icon(Icons.delete_outline, color: BrainTheme.accentRed),
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
                     backgroundColor: BrainTheme.cardDark,
-                    title: const Text('Eliminar proyecto', style: TextStyle(color: BrainTheme.textPrimary)),
-                    content: const Text('Se moverá a la papelera. ¿Deseas continuar?', style: TextStyle(color: BrainTheme.textSecondary)),
+                    title: Text('Eliminar proyecto', style: TextStyle(color: BrainTheme.textPrimary)),
+                    content: Text('Se moverá a la papelera. ¿Deseas continuar?', style: TextStyle(color: BrainTheme.textSecondary)),
                     actions: [
                       TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
                       FilledButton(
@@ -212,7 +212,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
                   const SizedBox(height: 12),
                   TextField(
                     controller: _descController,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       color: BrainTheme.textSecondary,
                     ),
@@ -226,7 +226,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
                   const SizedBox(height: 8),
                   TextField(
                     controller: _objectiveController,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       color: BrainTheme.textPrimary,
                     ),
@@ -238,7 +238,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
                     maxLines: null,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Color',
                     style: TextStyle(
                       fontSize: 13,
@@ -293,7 +293,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
               ),
             ),
             if (_isEditing) ...[
-              const Divider(color: BrainTheme.borderDark),
+              Divider(color: BrainTheme.borderDark),
               TabBar(
                 controller: _tabController,
                 labelColor: BrainTheme.accentPurple,
@@ -525,7 +525,7 @@ class _MetaField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 13, color: BrainTheme.textTertiary),
+          style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary),
         ),
         const SizedBox(height: 4),
         Container(
@@ -635,7 +635,7 @@ class _ProjectInfoTab extends StatelessWidget {
                           ),
                           Text(
                             '${(progress * 100).toInt()}%',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: BrainTheme.accentPurple,
                             ),
@@ -649,7 +649,7 @@ class _ProjectInfoTab extends StatelessWidget {
                           value: progress,
                           minHeight: 8,
                           backgroundColor: BrainTheme.borderDark,
-                          valueColor: const AlwaysStoppedAnimation(
+                          valueColor: AlwaysStoppedAnimation(
                             BrainTheme.accentPurple,
                           ),
                         ),
@@ -701,7 +701,7 @@ class _InfoStat extends StatelessWidget {
       children: [
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: BrainTheme.textPrimary,
@@ -709,7 +709,7 @@ class _InfoStat extends StatelessWidget {
         ),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: BrainTheme.textTertiary),
+          style: TextStyle(fontSize: 11, color: BrainTheme.textTertiary),
         ),
       ],
     );
@@ -727,7 +727,7 @@ class _ProjectTasksTab extends StatelessWidget {
       builder: (context, provider, _) {
         final tasks = provider.getTasksByProject(projectId);
         if (tasks.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
               'No hay tareas en este proyecto',
               style: TextStyle(color: BrainTheme.textTertiary),
@@ -760,7 +760,7 @@ class _ProjectNotesTab extends StatelessWidget {
       builder: (context, provider, _) {
         final notes = provider.getNotesByProject(projectId);
         if (notes.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
               'No hay notas en este proyecto',
               style: TextStyle(color: BrainTheme.textTertiary),

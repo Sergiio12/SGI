@@ -144,7 +144,7 @@ class _MiniFAB extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: BrainTheme.textPrimary,

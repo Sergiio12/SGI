@@ -63,7 +63,7 @@ class GoalCard extends StatelessWidget {
                           goal.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w600,
                             letterSpacing: -0.3,
@@ -79,7 +79,7 @@ class GoalCard extends StatelessWidget {
                           ),
                           child: Text(
                             _horizonLabel(goal.horizon),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                               color: BrainTheme.textTertiary,
@@ -112,7 +112,7 @@ class GoalCard extends StatelessWidget {
                   goal.description,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: BrainTheme.textSecondary,
                   ),
@@ -131,14 +131,14 @@ class GoalCard extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Icon(Icons.analytics_outlined,
+                  Icon(Icons.analytics_outlined,
                       size: 14, color: BrainTheme.textTertiary),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       '${goal.metricLabel}: ${_compact(goal.currentValue)} / ${_compact(goal.targetValue)}',
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: BrainTheme.textTertiary,
@@ -146,12 +146,12 @@ class GoalCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Icon(Icons.folder_outlined,
+                  Icon(Icons.folder_outlined,
                       size: 14, color: BrainTheme.textTertiary),
                   const SizedBox(width: 4),
                   Text(
                     '$projectCount',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: BrainTheme.textTertiary,

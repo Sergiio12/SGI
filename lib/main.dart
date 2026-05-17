@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
+import 'providers/settings_provider.dart';
 import 'providers/tasks_provider.dart';
 import 'providers/projects_provider.dart';
 import 'providers/notes_provider.dart';
@@ -9,10 +10,14 @@ import 'providers/goals_provider.dart';
 import 'providers/search_provider.dart';
 import 'providers/dashboard_provider.dart';
 import 'providers/trash_provider.dart';
+import 'services/notification_service.dart';
 import 'utils/notification_service_v2.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Init notification plugin before providers
+  await NotificationService.init();
 
   // Status bar style
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -21,7 +26,13 @@ void main() async {
   ));
 
   // Instantiate providers (data will be loaded inside LoadingScreen)
+  final settingsProvider = SettingsProvider();
+  await settingsProvider.load();
+
   final tasksProvider = TasksProvider();
+  settingsProvider.onNotificationSettingsChanged = () =>
+      NotificationService.rescheduleAll(tasksProvider.tasks);
+
   final projectsProvider = ProjectsProvider();
   final notesProvider = NotesProvider();
   final goalsProvider = GoalsProvider();
@@ -31,6 +42,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: settingsProvider),
         ChangeNotifierProvider.value(value: tasksProvider),
         ChangeNotifierProvider.value(value: projectsProvider),
         ChangeNotifierProvider.value(value: notesProvider),

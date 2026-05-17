@@ -68,7 +68,7 @@ class _SearchScreenState extends State<SearchScreen> {
       body: Consumer<SearchProvider>(
         builder: (context, search, _) {
           if (search.query.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -103,7 +103,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'Sin resultados para "${search.query}"',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: BrainTheme.textSecondary,
                       fontSize: 15,
                     ),
@@ -135,19 +135,19 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   title: Text(
                     result.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w500,
                       color: BrainTheme.textPrimary,
                     ),
                   ),
                   subtitle: Text(
                     result.subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: BrainTheme.textTertiary,
                     ),
                   ),
-                  trailing: const Icon(
+                  trailing: Icon(
                     Icons.arrow_forward_ios,
                     size: 14,
                     color: BrainTheme.textTertiary,

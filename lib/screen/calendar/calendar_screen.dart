@@ -61,7 +61,7 @@ class CalendarScreen extends StatelessWidget {
                           children: [
                             Text(
                               _dateTitle(date),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: BrainTheme.textPrimary,
@@ -69,7 +69,7 @@ class CalendarScreen extends StatelessWidget {
                             ),
                             Text(
                               DateFormat('EEEE, dd MMM').format(date),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 color: BrainTheme.textTertiary,
                               ),

@@ -121,14 +121,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: BrainTheme.accentPurple.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.flash_on,
                 size: 22,
                 color: BrainTheme.accentPurple,
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
+            Text(
               'Captura rápida',
               style: TextStyle(
                 color: BrainTheme.textPrimary,
@@ -140,21 +140,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: const TextStyle(color: BrainTheme.textPrimary),
+          style: TextStyle(color: BrainTheme.textPrimary),
           decoration: InputDecoration(
             hintText: '¿Qué tienes en mente?',
-            hintStyle: const TextStyle(color: BrainTheme.textTertiary),
+            hintStyle: TextStyle(color: BrainTheme.textTertiary),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: BrainTheme.borderDark),
+              borderSide: BorderSide(color: BrainTheme.borderDark),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: BrainTheme.borderDark),
+              borderSide: BorderSide(color: BrainTheme.borderDark),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
+              borderSide: BorderSide(
                 color: BrainTheme.accentPurple,
                 width: 2,
               ),
@@ -170,7 +170,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(
                 color: BrainTheme.textSecondary,
@@ -450,7 +450,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Text(
                   greeting,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.5,
@@ -460,14 +460,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 4),
                 Text(
                   _formatDateSpanish(DateTime.now()),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: BrainTheme.accentPurple,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Tu mapa mental operativo e inteligente.',
                   style: TextStyle(
                     fontSize: 13,
@@ -509,7 +509,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Text(
                       '${(todayProgress * 100).toInt()}%',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
                         color: BrainTheme.textPrimary,
@@ -517,7 +517,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     Text(
                       '$completedToday/$totalToday',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 9,
                         color: BrainTheme.textTertiary,
                         fontWeight: FontWeight.w500,
@@ -543,10 +543,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Row(
           children: [
-            const Icon(Icons.date_range_rounded,
+            Icon(Icons.date_range_rounded,
                 color: BrainTheme.accentPurple, size: 18),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'Calendario Semanal',
               style: TextStyle(
                 fontSize: 16,
@@ -574,7 +574,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     border: Border.all(
                         color: BrainTheme.accentPurple.withValues(alpha: 0.3)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(Icons.today,
                           size: 12, color: BrainTheme.accentPurple),
@@ -618,7 +618,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   margin: const EdgeInsets.only(right: 10),
                   decoration: BoxDecoration(
                     gradient: isSelected
-                        ? const LinearGradient(
+                        ? LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
@@ -741,7 +741,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           children: [
             Icon(Icons.bolt_outlined, color: BrainTheme.accentOrange, size: 18),
             SizedBox(width: 8),
@@ -798,7 +798,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(width: 8),
                           Text(
                             action.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: BrainTheme.textPrimary,
@@ -854,7 +854,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Expanded(
                         child: Text(
                           alert.title + ': ' + alert.message,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: BrainTheme.textPrimary,
@@ -898,11 +898,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: BrainTheme.accentPurple.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.psychology,
+                child: Icon(Icons.psychology,
                     size: 20, color: BrainTheme.accentPurple),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Inteligencia SGI',
                 style: TextStyle(
                   fontSize: 16,
@@ -916,7 +916,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 12),
           Text(
             advisorText,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               height: 1.5,
               color: BrainTheme.textSecondary,
@@ -924,7 +924,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           if (alertWidget != null) ...[
             const SizedBox(height: 12),
-            const Divider(color: BrainTheme.borderDark),
+            Divider(color: BrainTheme.borderDark),
             const SizedBox(height: 8),
             alertWidget,
           ],
@@ -955,7 +955,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           children: [
             Icon(Icons.query_stats_rounded,
                 color: BrainTheme.accentGreen, size: 18),
@@ -1098,12 +1098,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Row(
           children: [
-            const Icon(Icons.playlist_add_check_rounded,
+            Icon(Icons.playlist_add_check_rounded,
                 color: BrainTheme.accentBlue, size: 20),
             const SizedBox(width: 8),
             Text(
               'Agenda para $dateString',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: BrainTheme.textPrimary,
@@ -1113,7 +1113,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const Spacer(),
             Text(
               '${selectedDateTasks.where((t) => t.status == TaskStatus.completed).length}/${selectedDateTasks.length}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 color: BrainTheme.textSecondary,
                 fontWeight: FontWeight.w600,
@@ -1142,7 +1142,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: BrainTheme.textTertiary.withValues(alpha: 0.3),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Día despejado',
                   style: TextStyle(
                     fontSize: 14,
@@ -1151,7 +1151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'No tienes tareas programadas para esta fecha.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -1290,7 +1290,7 @@ class _PremiumStatsCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: BrainTheme.textPrimary,
@@ -1298,7 +1298,7 @@ class _PremiumStatsCard extends StatelessWidget {
               ),
               Text(
                 subtitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   color: BrainTheme.textSecondary,
                 ),

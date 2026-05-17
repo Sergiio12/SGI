@@ -77,7 +77,7 @@ class _DebugCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: BrainTheme.textPrimary,
@@ -88,7 +88,7 @@ class _DebugCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               description,
-              style: const TextStyle(
+              style: TextStyle(
                 color: BrainTheme.textSecondary,
                 fontSize: 14,
               ),

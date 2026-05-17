@@ -72,7 +72,7 @@ class ProgressScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 22),
-              const Text(
+              Text(
                 'Objetivos',
                 style: TextStyle(
                   fontSize: 18,
@@ -82,7 +82,7 @@ class ProgressScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               if (goals.goals.isEmpty)
-                const Text(
+                Text(
                   'No hay objetivos definidos.',
                   style: TextStyle(color: BrainTheme.textTertiary),
                 )

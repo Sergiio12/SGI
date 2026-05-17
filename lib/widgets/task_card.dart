@@ -189,7 +189,7 @@ class TaskCard extends StatelessWidget {
 
                           // Subtasks progress
                           if (task.subtasks.isNotEmpty) ...[
-                            const Icon(
+                            Icon(
                               Icons.checklist,
                               size: 14,
                               color: BrainTheme.textTertiary,
@@ -197,7 +197,7 @@ class TaskCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               '${task.subtasks.where((s) => s.isDone).length}/${task.subtasks.length}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 color: BrainTheme.textTertiary,
                               ),

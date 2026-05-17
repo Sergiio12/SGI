@@ -55,7 +55,7 @@ class NoteCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       note.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         letterSpacing: -0.3,
@@ -66,7 +66,7 @@ class NoteCard extends StatelessWidget {
                     ),
                   ),
                   if (note.isPinned)
-                    const Icon(
+                    Icon(
                       Icons.push_pin,
                       size: 18,
                       color: BrainTheme.accentOrange,
@@ -77,7 +77,7 @@ class NoteCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   note.content,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: BrainTheme.textSecondary,
                     height: 1.4,
@@ -90,13 +90,13 @@ class NoteCard extends StatelessWidget {
               if (note.notebook.isNotEmpty) ...[
                 Row(
                   children: [
-                    const Icon(Icons.folder_outlined, size: 12, color: BrainTheme.textTertiary),
+                    Icon(Icons.folder_outlined, size: 12, color: BrainTheme.textTertiary),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         note.notebook,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: BrainTheme.textTertiary,
                         ),
@@ -112,7 +112,7 @@ class NoteCard extends StatelessWidget {
                   _NoteTypeBadge(type: note.type),
                   Text(
                     DateFormat('dd MMM, HH:mm').format(note.updatedAt),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                       color: BrainTheme.textTertiary,
@@ -137,7 +137,7 @@ class NoteCard extends StatelessWidget {
                       ),
                       child: Text(
                         tag,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
                           color: BrainTheme.accentPurple,

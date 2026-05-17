@@ -131,14 +131,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           if (_isEditing)
             IconButton(
               icon:
-                  const Icon(Icons.delete_outline, color: BrainTheme.accentRed),
+                  Icon(Icons.delete_outline, color: BrainTheme.accentRed),
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
                     backgroundColor: BrainTheme.cardDark,
-                    title: const Text('Eliminar objetivo', style: TextStyle(color: BrainTheme.textPrimary)),
-                    content: const Text('Se moverá a la papelera. ¿Deseas continuar?', style: TextStyle(color: BrainTheme.textSecondary)),
+                    title: Text('Eliminar objetivo', style: TextStyle(color: BrainTheme.textPrimary)),
+                    content: Text('Se moverá a la papelera. ¿Deseas continuar?', style: TextStyle(color: BrainTheme.textSecondary)),
                     actions: [
                       TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
                       FilledButton(
@@ -204,7 +204,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: _descriptionController,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 color: BrainTheme.textSecondary,
               ),
@@ -216,7 +216,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
               maxLines: null,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Horizonte',
               style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary),
             ),
@@ -244,7 +244,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                   setState(() => _horizon = value.first),
             ),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               'Color',
               style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary),
             ),
@@ -279,7 +279,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Metrica de progreso',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
@@ -334,7 +334,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
               ),
             ),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               'Proyectos asociados',
               style: TextStyle(
                 fontSize: 14,
@@ -346,7 +346,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
             Consumer<ProjectsProvider>(
               builder: (context, projectsProvider, _) {
                 if (projectsProvider.projects.isEmpty) {
-                  return const Text(
+                  return Text(
                     'No hay proyectos todavia.',
                     style: TextStyle(color: BrainTheme.textTertiary),
                   );

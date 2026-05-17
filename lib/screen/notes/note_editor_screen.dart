@@ -117,14 +117,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           if (_isEditing)
             IconButton(
               icon:
-                  const Icon(Icons.delete_outline, color: BrainTheme.accentRed),
+                  Icon(Icons.delete_outline, color: BrainTheme.accentRed),
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
                     backgroundColor: BrainTheme.cardDark,
-                    title: const Text('Eliminar nota', style: TextStyle(color: BrainTheme.textPrimary)),
-                    content: const Text('Se moverá a la papelera. ¿Deseas continuar?', style: TextStyle(color: BrainTheme.textSecondary)),
+                    title: Text('Eliminar nota', style: TextStyle(color: BrainTheme.textPrimary)),
+                    content: Text('Se moverá a la papelera. ¿Deseas continuar?', style: TextStyle(color: BrainTheme.textSecondary)),
                     actions: [
                       TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
                       FilledButton(
@@ -242,7 +242,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 builder: (context, projects, _) {
                   return Row(
                     children: [
-                      const Icon(Icons.folder_outlined,
+                      Icon(Icons.folder_outlined,
                           size: 18, color: BrainTheme.textTertiary),
                       const SizedBox(width: 8),
                       Expanded(
@@ -275,7 +275,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
               child: Row(
                 children: [
-                  const Icon(Icons.menu_book_outlined,
+                  Icon(Icons.menu_book_outlined,
                       size: 18, color: BrainTheme.textTertiary),
                   const SizedBox(width: 8),
                   Expanded(
@@ -336,14 +336,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               ),
             ),
 
-            const Divider(color: BrainTheme.borderDark),
+            Divider(color: BrainTheme.borderDark),
 
             // Content editor
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
                 controller: _contentController,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   color: BrainTheme.textPrimary,
                   height: 1.6,

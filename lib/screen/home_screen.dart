@@ -36,7 +36,7 @@ class _LoadingScreen extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   colors: [BrainTheme.accentPurple, BrainTheme.accentBlue],
                 ),
                 borderRadius: BorderRadius.circular(18),
@@ -44,7 +44,7 @@ class _LoadingScreen extends StatelessWidget {
               child: const Icon(Icons.psychology, color: Colors.white, size: 32),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'SGI',
               style: TextStyle(
                 fontSize: 28,
@@ -54,7 +54,7 @@ class _LoadingScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            const SizedBox(
+            SizedBox(
               width: 24,
               height: 24,
               child: CircularProgressIndicator(
@@ -130,14 +130,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: BrainTheme.accentPurple.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.flash_on,
                 size: 22,
                 color: BrainTheme.accentPurple,
               ),
             ),
             const SizedBox(width: 12),
-            const Text(
+            Text(
               'Captura rápida',
               style: TextStyle(
                 color: BrainTheme.textPrimary,
@@ -149,21 +149,21 @@ class _HomeScreenState extends State<HomeScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: const TextStyle(color: BrainTheme.textPrimary),
+          style: TextStyle(color: BrainTheme.textPrimary),
           decoration: InputDecoration(
             hintText: '¿Qué tienes en mente?',
-            hintStyle: const TextStyle(color: BrainTheme.textTertiary),
+            hintStyle: TextStyle(color: BrainTheme.textTertiary),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: BrainTheme.borderDark),
+              borderSide: BorderSide(color: BrainTheme.borderDark),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: BrainTheme.borderDark),
+              borderSide: BorderSide(color: BrainTheme.borderDark),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
+              borderSide: BorderSide(
                 color: BrainTheme.accentPurple,
                 width: 2,
               ),
@@ -179,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
+            child: Text(
               'Cancelar',
               style: TextStyle(
                 color: BrainTheme.textSecondary,
@@ -250,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 0,
         backgroundColor: BrainTheme.primaryDark.withValues(alpha: 0.95),
         leading: IconButton(
-          icon: const Icon(Icons.menu_rounded, color: BrainTheme.textPrimary),
+          icon: Icon(Icons.menu_rounded, color: BrainTheme.textPrimary),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         title: Row(
@@ -270,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 12),
             Text(
               currentTab.title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: BrainTheme.textPrimary,

@@ -13,6 +13,7 @@ import '../../config/theme.dart';
 import '../../providers/goals_provider.dart';
 import '../../providers/notes_provider.dart';
 import '../../providers/projects_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../providers/trash_provider.dart';
 
@@ -221,11 +222,23 @@ class _LoadingScreenState extends State<LoadingScreen>
     TasksProvider tasksProvider,
   ) async {
     try {
+      final settings = context.read<SettingsProvider>();
+      NotificationService.configure(
+        notificationsEnabled: settings.notificationsEnabled,
+        remind24h: settings.remind24h,
+        remind1h: settings.remind1h,
+        defaultReminderMinutes: settings.defaultReminderMinutes,
+        quietHoursEnabled: settings.quietHoursEnabled,
+        quietStartHour: settings.quietStartHour,
+        quietStartMinute: settings.quietStartMinute,
+        quietEndHour: settings.quietEndHour,
+        quietEndMinute: settings.quietEndMinute,
+      );
+
       await Future.wait([
         notesProvider.loadNotes(),
         goalsProvider.loadGoals(),
         context.read<TrashProvider>().loadTrash(),
-        NotificationService.init(),
       ]);
 
       await NotificationService.rescheduleAll(

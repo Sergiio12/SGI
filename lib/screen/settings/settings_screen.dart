@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../config/theme.dart';
+import 'appearance_screen.dart';
 import 'debug_screen.dart';
+import 'notifications_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -19,7 +21,10 @@ class SettingsScreen extends StatelessWidget {
             title: 'Apariencia',
             subtitle: 'Personaliza el tema y colores',
             onTap: () {
-              // TODO: Implementar
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AppearanceScreen()),
+              );
             },
           ),
           _buildSettingItem(
@@ -27,11 +32,20 @@ class SettingsScreen extends StatelessWidget {
             title: 'Notificaciones',
             subtitle: 'Configura tus recordatorios',
             onTap: () {
-              // TODO: Implementar
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+              );
             },
           ),
-          const Divider(color: BrainTheme.borderDark, indent: 16, endIndent: 16),
+          Divider(color: BrainTheme.borderDark, indent: 16, endIndent: 16),
           _buildSectionHeader('SISTEMA'),
+          _buildSettingItem(
+            icon: Icons.cloud_done_outlined,
+            title: 'Datos y respaldo',
+            subtitle: 'Exportar, importar y gestionar tus datos',
+            onTap: () => Navigator.pushNamed(context, '/data'),
+          ),
           _buildSettingItem(
             icon: Icons.bug_report_outlined,
             title: 'Debug',
@@ -74,7 +88,7 @@ class SettingsScreen extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: BrainTheme.textTertiary,
@@ -102,7 +116,7 @@ class SettingsScreen extends StatelessWidget {
       ),
       title: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           color: BrainTheme.textPrimary,
           fontWeight: FontWeight.w600,
           fontSize: 15,
@@ -110,12 +124,12 @@ class SettingsScreen extends StatelessWidget {
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(
+        style: TextStyle(
           color: BrainTheme.textSecondary,
           fontSize: 13,
         ),
       ),
-      trailing: const Icon(
+      trailing: Icon(
         Icons.chevron_right_rounded,
         color: BrainTheme.textTertiary,
       ),
