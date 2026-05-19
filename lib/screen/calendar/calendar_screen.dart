@@ -15,7 +15,7 @@ class CalendarScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.calendar)),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).calendar)),
       body: Consumer<TasksProvider>(
         builder: (context, provider, _) {
           final grouped = _groupTasks(provider.tasks);
@@ -128,7 +128,7 @@ class CalendarScreen extends StatelessWidget {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
-    if (date == today) return AppLocalizations.of(context)!.today;
+    if (date == today) return AppLocalizations.of(context).today;
     if (date == tomorrow) return 'Mañana';
     return DateFormat('dd MMM').format(date);
   }

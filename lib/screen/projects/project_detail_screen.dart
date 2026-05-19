@@ -84,7 +84,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
 
   Future<void> _save() async {
     if (_titleController.text.trim().isEmpty) {
-      showWarningNotification(AppLocalizations.of(context)!.unexpectedError);
+      showWarningNotification(AppLocalizations.of(context).unexpectedError);
       return;
     }
 
@@ -185,8 +185,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
           delegate: _TabBarDelegate(
             tabController: _tabController,
             tasksCount: projectTasks.length,
-            notesCount:
-                context.watch<NotesProvider>().getNotesByProject(project.id).length,
+            notesCount: context
+                .watch<NotesProvider>()
+                .getNotesByProject(project.id)
+                .length,
           ),
         ),
         SliverFillRemaining(
@@ -207,7 +209,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _isEditing ? AppLocalizations.of(context)!.editProject : AppLocalizations.of(context)!.createProject,
+          _isEditing
+              ? AppLocalizations.of(context).editProject
+              : AppLocalizations.of(context).createProject,
         ),
         actions: [
           if (_isEditing)
@@ -218,7 +222,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
           TextButton(
             onPressed: _save,
             child: Text(
-              AppLocalizations.of(context)!.save,
+              AppLocalizations.of(context).save,
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
@@ -254,7 +258,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
                       fontWeight: FontWeight.w600,
                     ),
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.project,
+                      hintText: AppLocalizations.of(context).project,
                       border: InputBorder.none,
                       filled: false,
                     ),
@@ -271,7 +275,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
                 color: BrainTheme.textSecondary,
               ),
               decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.description,
+                hintText: AppLocalizations.of(context).description,
                 border: InputBorder.none,
                 filled: false,
               ),
@@ -285,7 +289,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
                 color: BrainTheme.textPrimary,
               ),
               decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.objective,
+                hintText: AppLocalizations.of(context).objective,
                 border: InputBorder.none,
                 filled: false,
               ),
@@ -293,7 +297,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              AppLocalizations.of(context)!.color,
+              AppLocalizations.of(context).color,
               style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary),
             ),
             const SizedBox(height: 8),
@@ -345,22 +349,23 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
-        title: Text('${AppLocalizations.of(context)!.delete} ${AppLocalizations.of(context)!.project}',
+        title: Text(
+            '${AppLocalizations.of(context).delete} ${AppLocalizations.of(context).project}',
             style: TextStyle(color: BrainTheme.textPrimary)),
         content: Text(
-          AppLocalizations.of(context)!.itemDeleted,
+          AppLocalizations.of(context).itemDeleted,
           style: TextStyle(color: BrainTheme.textSecondary),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text(AppLocalizations.of(context)!.cancel)),
+              child: Text(AppLocalizations.of(context).cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
                 backgroundColor: BrainTheme.accentRed,
                 foregroundColor: Colors.white),
-            child: Text(AppLocalizations.of(context)!.delete),
+            child: Text(AppLocalizations.of(context).delete),
           ),
         ],
       ),
@@ -381,7 +386,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.of(context)!.emoji,
+              AppLocalizations.of(context).emoji,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
@@ -466,7 +471,8 @@ class _HeaderSliver extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.edit_outlined, color: Colors.white, size: 18),
+            child:
+                const Icon(Icons.edit_outlined, color: Colors.white, size: 18),
           ),
           onPressed: onEdit,
         ),
@@ -477,7 +483,8 @@ class _HeaderSliver extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.delete_outline, color: Colors.white, size: 18),
+            child:
+                const Icon(Icons.delete_outline, color: Colors.white, size: 18),
           ),
           onPressed: onDelete,
         ),
@@ -553,11 +560,11 @@ class _HeaderSliver extends StatelessWidget {
                               ),
                             ),
                           ).animate().scaleXY(
-                            begin: 0,
-                            end: 1,
-                            duration: 500.ms,
-                            curve: Curves.easeOutBack,
-                          ),
+                                begin: 0,
+                                end: 1,
+                                duration: 500.ms,
+                                curve: Curves.easeOutBack,
+                              ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
@@ -573,21 +580,33 @@ class _HeaderSliver extends StatelessWidget {
                                   ),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1, end: 0),
+                                )
+                                    .animate()
+                                    .fadeIn(delay: 200.ms)
+                                    .slideX(begin: 0.1, end: 0),
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
                                     _HeaderBadge(
-                                      label: _statusLabel(project.status, context),
+                                      label:
+                                          _statusLabel(project.status, context),
                                       color: _statusColor(project.status),
                                       icon: _statusIcon(project.status),
-                                    ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),
+                                    )
+                                        .animate()
+                                        .fadeIn(delay: 300.ms)
+                                        .slideX(begin: 0.1, end: 0),
                                     const SizedBox(width: 8),
                                     _HeaderBadge(
-                                      label: _priorityLabel(project.priority, context),
-                                      color: BrainTheme.priorityColor(project.priority.index),
+                                      label: _priorityLabel(
+                                          project.priority, context),
+                                      color: BrainTheme.priorityColor(
+                                          project.priority.index),
                                       icon: Icons.flag_outlined,
-                                    ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.1, end: 0),
+                                    )
+                                        .animate()
+                                        .fadeIn(delay: 400.ms)
+                                        .slideX(begin: 0.1, end: 0),
                                   ],
                                 ),
                               ],
@@ -599,7 +618,9 @@ class _HeaderSliver extends StatelessWidget {
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            Icon(Icons.track_changes, size: 14, color: Colors.white.withValues(alpha: 0.7)),
+                            Icon(Icons.track_changes,
+                                size: 14,
+                                color: Colors.white.withValues(alpha: 0.7)),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
@@ -629,37 +650,53 @@ class _HeaderSliver extends StatelessWidget {
 
   String _statusLabel(ProjectStatus status, BuildContext context) {
     switch (status) {
-      case ProjectStatus.active: return AppLocalizations.of(context)!.active;
-      case ProjectStatus.paused: return 'Pausado';
-      case ProjectStatus.completed: return AppLocalizations.of(context)!.statusCompleted;
-      case ProjectStatus.abandoned: return 'Abandonado';
+      case ProjectStatus.active:
+        return AppLocalizations.of(context).active;
+      case ProjectStatus.paused:
+        return 'Pausado';
+      case ProjectStatus.completed:
+        return AppLocalizations.of(context).statusCompleted;
+      case ProjectStatus.abandoned:
+        return 'Abandonado';
     }
   }
 
   Color _statusColor(ProjectStatus status) {
     switch (status) {
-      case ProjectStatus.active: return BrainTheme.accentGreen;
-      case ProjectStatus.paused: return BrainTheme.accentOrange;
-      case ProjectStatus.completed: return BrainTheme.accentBlue;
-      case ProjectStatus.abandoned: return Colors.grey;
+      case ProjectStatus.active:
+        return BrainTheme.accentGreen;
+      case ProjectStatus.paused:
+        return BrainTheme.accentOrange;
+      case ProjectStatus.completed:
+        return BrainTheme.accentBlue;
+      case ProjectStatus.abandoned:
+        return Colors.grey;
     }
   }
 
   IconData _statusIcon(ProjectStatus status) {
     switch (status) {
-      case ProjectStatus.active: return Icons.play_arrow_rounded;
-      case ProjectStatus.paused: return Icons.pause_rounded;
-      case ProjectStatus.completed: return Icons.check_rounded;
-      case ProjectStatus.abandoned: return Icons.stop_rounded;
+      case ProjectStatus.active:
+        return Icons.play_arrow_rounded;
+      case ProjectStatus.paused:
+        return Icons.pause_rounded;
+      case ProjectStatus.completed:
+        return Icons.check_rounded;
+      case ProjectStatus.abandoned:
+        return Icons.stop_rounded;
     }
   }
 
   String _priorityLabel(TaskPriority priority, BuildContext context) {
     switch (priority) {
-      case TaskPriority.low: return AppLocalizations.of(context)!.priorityLow;
-      case TaskPriority.medium: return AppLocalizations.of(context)!.priorityMedium;
-      case TaskPriority.high: return AppLocalizations.of(context)!.priorityHigh;
-      case TaskPriority.urgent: return AppLocalizations.of(context)!.priorityUrgent;
+      case TaskPriority.low:
+        return AppLocalizations.of(context).priorityLow;
+      case TaskPriority.medium:
+        return AppLocalizations.of(context).priorityMedium;
+      case TaskPriority.high:
+        return AppLocalizations.of(context).priorityHigh;
+      case TaskPriority.urgent:
+        return AppLocalizations.of(context).priorityUrgent;
     }
   }
 }
@@ -669,7 +706,8 @@ class _HeaderBadge extends StatelessWidget {
   final Color color;
   final IconData icon;
 
-  const _HeaderBadge({required this.label, required this.color, required this.icon});
+  const _HeaderBadge(
+      {required this.label, required this.color, required this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -714,7 +752,7 @@ class _QuickActions extends StatelessWidget {
         children: [
           _QuickActionButton(
             icon: Icons.check_circle_outline,
-            label: AppLocalizations.of(context)!.statusCompleted,
+            label: AppLocalizations.of(context).statusCompleted,
             color: project.status == ProjectStatus.completed
                 ? BrainTheme.accentGreen
                 : BrainTheme.textSecondary,
@@ -731,7 +769,8 @@ class _QuickActions extends StatelessWidget {
             icon: project.status == ProjectStatus.paused
                 ? Icons.play_circle_outline
                 : Icons.pause_circle_outline,
-            label: project.status == ProjectStatus.paused ? 'Reanudar' : 'Pausar',
+            label:
+                project.status == ProjectStatus.paused ? 'Reanudar' : 'Pausar',
             color: project.status == ProjectStatus.paused
                 ? BrainTheme.accentGreen
                 : BrainTheme.accentOrange,
@@ -746,14 +785,16 @@ class _QuickActions extends StatelessWidget {
           const SizedBox(width: 10),
           _QuickActionButton(
             icon: Icons.timer_outlined,
-            label: AppLocalizations.of(context)!.projectsProgress,
+            label: AppLocalizations.of(context).projectsProgress,
             color: BrainTheme.accentPurple,
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('${AppLocalizations.of(context)!.projectsProgress}: ${(progress * 100).toInt()}%'),
+                  content: Text(
+                      '${AppLocalizations.of(context).projectsProgress}: ${(progress * 100).toInt()}%'),
                   behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
               );
             },
@@ -838,21 +879,21 @@ class _ProjectMeta extends StatelessWidget {
               _MetaCard(
                 icon: Icons.task_alt,
                 value: '$totalTasks',
-                label: AppLocalizations.of(context)!.totalTasks,
+                label: AppLocalizations.of(context).totalTasks,
                 color: BrainTheme.accentPurple,
               ),
               const SizedBox(width: 10),
               _MetaCard(
                 icon: Icons.check_circle,
                 value: '$completedTasks',
-                label: AppLocalizations.of(context)!.completedTasks,
+                label: AppLocalizations.of(context).completedTasks,
                 color: BrainTheme.accentGreen,
               ),
               const SizedBox(width: 10),
               _MetaCard(
                 icon: Icons.note_outlined,
                 value: '${project.noteIds.length}',
-                label: AppLocalizations.of(context)!.notes,
+                label: AppLocalizations.of(context).notes,
                 color: BrainTheme.accentBlue,
               ),
             ],
@@ -872,7 +913,7 @@ class _ProjectMeta extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        AppLocalizations.of(context)!.projectsProgress,
+                        AppLocalizations.of(context).projectsProgress,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -881,7 +922,7 @@ class _ProjectMeta extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${(progress * 100).toInt()}% ${AppLocalizations.of(context)!.statusCompleted}',
+                        '${(progress * 100).toInt()}% ${AppLocalizations.of(context).statusCompleted}',
                         style: TextStyle(
                           fontSize: 12,
                           color: BrainTheme.textSecondary,
@@ -940,13 +981,15 @@ class _ProjectMeta extends StatelessWidget {
             children: [
               _DetailMeta(
                 icon: Icons.calendar_today_outlined,
-                label: AppLocalizations.of(context)!.created_on,
+                label: AppLocalizations.of(context).created_on,
                 value: DateFormat('dd MMM yyyy').format(project.startDate),
               ),
               const SizedBox(width: 10),
               _DetailMeta(
                 icon: Icons.event_outlined,
-                label: project.deadline != null ? AppLocalizations.of(context)!.dueDate : AppLocalizations.of(context)!.noDueDate,
+                label: project.deadline != null
+                    ? AppLocalizations.of(context).dueDate
+                    : AppLocalizations.of(context).noDueDate,
                 value: project.deadline != null
                     ? DateFormat('dd MMM yyyy').format(project.deadline!)
                     : '—',
@@ -1108,7 +1151,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
               children: [
                 const Icon(Icons.info_outline, size: 16),
                 const SizedBox(width: 6),
-                Text(AppLocalizations.of(context)!.details),
+                Text(AppLocalizations.of(context).details),
               ],
             ),
           ),
@@ -1118,11 +1161,12 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
               children: [
                 const Icon(Icons.task_alt, size: 16),
                 const SizedBox(width: 6),
-                Text(AppLocalizations.of(context)!.tasks),
+                Text(AppLocalizations.of(context).tasks),
                 if (tasksCount > 0) ...[
                   const SizedBox(width: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: BrainTheme.accentPurple.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
@@ -1146,11 +1190,12 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
               children: [
                 const Icon(Icons.note_outlined, size: 16),
                 const SizedBox(width: 6),
-                Text(AppLocalizations.of(context)!.notes),
+                Text(AppLocalizations.of(context).notes),
                 if (notesCount > 0) ...[
                   const SizedBox(width: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: BrainTheme.accentPurple.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
@@ -1203,8 +1248,7 @@ class _ProjectInfoTab extends StatelessWidget {
         final progress =
             projectTasks.isEmpty ? 0.0 : completed / projectTasks.length;
 
-        final overdueTasks =
-            projectTasks.where((t) => t.isOverdue).length;
+        final overdueTasks = projectTasks.where((t) => t.isOverdue).length;
         final inProgressTasks =
             projectTasks.where((t) => t.status == TaskStatus.inProgress).length;
 
@@ -1223,7 +1267,7 @@ class _ProjectInfoTab extends StatelessWidget {
                             size: 18, color: BrainTheme.accentPurple),
                         const SizedBox(width: 8),
                         Text(
-                          AppLocalizations.of(context)!.statistics,
+                          AppLocalizations.of(context).statistics,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -1238,21 +1282,21 @@ class _ProjectInfoTab extends StatelessWidget {
                         _StatTile(
                           icon: Icons.pending_outlined,
                           value: '${projectTasks.length - completed}',
-                          label: AppLocalizations.of(context)!.pendingTasks,
+                          label: AppLocalizations.of(context).pendingTasks,
                           color: BrainTheme.accentOrange,
                         ),
                         const SizedBox(width: 8),
                         _StatTile(
                           icon: Icons.play_circle_outline,
                           value: '$inProgressTasks',
-                          label: AppLocalizations.of(context)!.statusInProgress,
+                          label: AppLocalizations.of(context).statusInProgress,
                           color: BrainTheme.accentBlue,
                         ),
                         const SizedBox(width: 8),
                         _StatTile(
                           icon: Icons.warning_amber_outlined,
                           value: '$overdueTasks',
-                          label: AppLocalizations.of(context)!.overdueTasks,
+                          label: AppLocalizations.of(context).overdueTasks,
                           color: overdueTasks > 0
                               ? BrainTheme.accentRed
                               : BrainTheme.textTertiary,
@@ -1265,26 +1309,27 @@ class _ProjectInfoTab extends StatelessWidget {
                         _StatTile(
                           icon: Icons.check_circle_outline,
                           value: '$completed',
-                          label: AppLocalizations.of(context)!.completedTasks,
+                          label: AppLocalizations.of(context).completedTasks,
                           color: BrainTheme.accentGreen,
                         ),
                         const SizedBox(width: 8),
                         _StatTile(
                           icon: Icons.notes_outlined,
                           value: '${projectNotes.length}',
-                          label: AppLocalizations.of(context)!.notes,
+                          label: AppLocalizations.of(context).notes,
                           color: BrainTheme.accentPurple,
                         ),
                         const SizedBox(width: 8),
                         _StatTile(
                           icon: Icons.percent_outlined,
                           value: '${(progress * 100).toInt()}%',
-                          label: AppLocalizations.of(context)!.projectsProgress,
+                          label: AppLocalizations.of(context).projectsProgress,
                           color: Color(
                             context
-                                .read<ProjectsProvider>()
-                                .getProjectById(projectId)
-                                ?.colorValue ?? 0xFF9D4EDD,
+                                    .read<ProjectsProvider>()
+                                    .getProjectById(projectId)
+                                    ?.colorValue ??
+                                0xFF9D4EDD,
                           ),
                         ),
                       ],
@@ -1300,9 +1345,10 @@ class _ProjectInfoTab extends StatelessWidget {
                           valueColor: AlwaysStoppedAnimation(
                             Color(
                               context
-                                  .read<ProjectsProvider>()
-                                  .getProjectById(projectId)
-                                  ?.colorValue ?? 0xFF9D4EDD,
+                                      .read<ProjectsProvider>()
+                                      .getProjectById(projectId)
+                                      ?.colorValue ??
+                                  0xFF9D4EDD,
                             ),
                           ),
                         ),
@@ -1326,7 +1372,7 @@ class _ProjectInfoTab extends StatelessWidget {
                               size: 18, color: BrainTheme.accentBlue),
                           const SizedBox(width: 8),
                           Text(
-                            AppLocalizations.of(context)!.tasksByStatus,
+                            AppLocalizations.of(context).tasksByStatus,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -1336,24 +1382,43 @@ class _ProjectInfoTab extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      _taskStatusRow(AppLocalizations.of(context)!.pendingTasks, projectTasks
-                          .where((t) => t.status == TaskStatus.pending).length,
-                          projectTasks.length, BrainTheme.textTertiary),
+                      _taskStatusRow(
+                          AppLocalizations.of(context).pendingTasks,
+                          projectTasks
+                              .where((t) => t.status == TaskStatus.pending)
+                              .length,
+                          projectTasks.length,
+                          BrainTheme.textTertiary),
                       const SizedBox(height: 10),
-                      _taskStatusRow(AppLocalizations.of(context)!.statusInProgress, projectTasks
-                          .where((t) => t.status == TaskStatus.inProgress).length,
-                          projectTasks.length, BrainTheme.accentBlue),
+                      _taskStatusRow(
+                          AppLocalizations.of(context).statusInProgress,
+                          projectTasks
+                              .where((t) => t.status == TaskStatus.inProgress)
+                              .length,
+                          projectTasks.length,
+                          BrainTheme.accentBlue),
                       const SizedBox(height: 10),
-                      _taskStatusRow(AppLocalizations.of(context)!.statusInReview, projectTasks
-                          .where((t) => t.status == TaskStatus.inReview).length,
-                          projectTasks.length, BrainTheme.accentOrange),
+                      _taskStatusRow(
+                          AppLocalizations.of(context).statusInReview,
+                          projectTasks
+                              .where((t) => t.status == TaskStatus.inReview)
+                              .length,
+                          projectTasks.length,
+                          BrainTheme.accentOrange),
                       const SizedBox(height: 10),
-                      _taskStatusRow(AppLocalizations.of(context)!.completedTasks, completed,
-                          projectTasks.length, BrainTheme.accentGreen),
+                      _taskStatusRow(
+                          AppLocalizations.of(context).completedTasks,
+                          completed,
+                          projectTasks.length,
+                          BrainTheme.accentGreen),
                       const SizedBox(height: 10),
-                      _taskStatusRow(AppLocalizations.of(context)!.statusCancelled, projectTasks
-                          .where((t) => t.status == TaskStatus.cancelled).length,
-                          projectTasks.length, BrainTheme.accentRed),
+                      _taskStatusRow(
+                          AppLocalizations.of(context).statusCancelled,
+                          projectTasks
+                              .where((t) => t.status == TaskStatus.cancelled)
+                              .length,
+                          projectTasks.length,
+                          BrainTheme.accentRed),
                     ],
                   ),
                 ),
@@ -1373,7 +1438,7 @@ class _ProjectInfoTab extends StatelessWidget {
                               size: 18, color: BrainTheme.accentPurple),
                           const SizedBox(width: 8),
                           Text(
-                            AppLocalizations.of(context)!.recentNotes,
+                            AppLocalizations.of(context).recentNotes,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -1384,48 +1449,51 @@ class _ProjectInfoTab extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       ...projectNotes.take(3).map((note) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: BrainTheme.surfaceDark,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: Text(note.emoji, style: const TextStyle(fontSize: 16)),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    note.title,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: BrainTheme.textPrimary,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: BrainTheme.surfaceDark,
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  Text(
-                                    DateFormat('dd MMM yyyy').format(note.updatedAt),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: BrainTheme.textTertiary,
-                                    ),
+                                  child: Center(
+                                    child: Text(note.emoji,
+                                        style: const TextStyle(fontSize: 16)),
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        note.title,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: BrainTheme.textPrimary,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        DateFormat('dd MMM yyyy')
+                                            .format(note.updatedAt),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: BrainTheme.textTertiary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      )),
+                          )),
                     ],
                   ),
                 ),
@@ -1543,7 +1611,7 @@ class _ProjectTasksTab extends StatelessWidget {
                 Text('📋', style: TextStyle(fontSize: 48)),
                 const SizedBox(height: 16),
                 Text(
-                  AppLocalizations.of(context)!.noTasks,
+                  AppLocalizations.of(context).noTasks,
                   style: TextStyle(
                     fontSize: 16,
                     color: BrainTheme.textSecondary,
@@ -1551,7 +1619,7 @@ class _ProjectTasksTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  AppLocalizations.of(context)!.emptyStateDescription,
+                  AppLocalizations.of(context).emptyStateDescription,
                   style: TextStyle(
                     fontSize: 13,
                     color: BrainTheme.textTertiary,
@@ -1569,10 +1637,13 @@ class _ProjectTasksTab extends StatelessWidget {
             onTap: () => Navigator.pushNamed(context, '/task',
                 arguments: tasks[index].id),
             onToggle: () => provider.toggleTaskStatus(tasks[index].id),
-          ).animate().fadeIn(
-            duration: 300.ms,
-            delay: (index * 50).ms,
-          ).slideX(begin: 0.05, end: 0),
+          )
+              .animate()
+              .fadeIn(
+                duration: 300.ms,
+                delay: (index * 50).ms,
+              )
+              .slideX(begin: 0.05, end: 0),
         );
       },
     );
@@ -1599,7 +1670,7 @@ class _ProjectNotesTab extends StatelessWidget {
                 Text('📝', style: TextStyle(fontSize: 48)),
                 const SizedBox(height: 16),
                 Text(
-                  AppLocalizations.of(context)!.notes,
+                  AppLocalizations.of(context).notes,
                   style: TextStyle(
                     fontSize: 16,
                     color: BrainTheme.textSecondary,
@@ -1607,7 +1678,7 @@ class _ProjectNotesTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  AppLocalizations.of(context)!.emptyStateDescription,
+                  AppLocalizations.of(context).emptyStateDescription,
                   style: TextStyle(
                     fontSize: 13,
                     color: BrainTheme.textTertiary,
@@ -1624,10 +1695,13 @@ class _ProjectNotesTab extends StatelessWidget {
             note: notes[index],
             onTap: () => Navigator.pushNamed(context, '/note',
                 arguments: notes[index].id),
-          ).animate().fadeIn(
-            duration: 300.ms,
-            delay: (index * 50).ms,
-          ).slideX(begin: 0.05, end: 0),
+          )
+              .animate()
+              .fadeIn(
+                duration: 300.ms,
+                delay: (index * 50).ms,
+              )
+              .slideX(begin: 0.05, end: 0),
         );
       },
     );
@@ -1669,7 +1743,7 @@ class _ProjectMetaGrid extends StatelessWidget {
           children: [
             Expanded(
               child: _MetaField(
-                label: AppLocalizations.of(context)!.filterStatus,
+                label: AppLocalizations.of(context).filterStatus,
                 child: DropdownButton<ProjectStatus>(
                   value: status,
                   isExpanded: true,
@@ -1680,7 +1754,8 @@ class _ProjectMetaGrid extends StatelessWidget {
                             value: s,
                             child: Row(
                               children: [
-                                Icon(_statusIcon(s), size: 16, color: _statusColor(s)),
+                                Icon(_statusIcon(s),
+                                    size: 16, color: _statusColor(s)),
                                 const SizedBox(width: 8),
                                 Text(_statusLabel(s, context)),
                               ],
@@ -1694,7 +1769,7 @@ class _ProjectMetaGrid extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _MetaField(
-                label: AppLocalizations.of(context)!.sortPriority,
+                label: AppLocalizations.of(context).sortPriority,
                 child: DropdownButton<TaskPriority>(
                   value: priority,
                   isExpanded: true,
@@ -1730,7 +1805,7 @@ class _ProjectMetaGrid extends StatelessWidget {
           children: [
             Expanded(
               child: _DateField(
-                label: AppLocalizations.of(context)!.created_on,
+                label: AppLocalizations.of(context).created_on,
                 date: startDate,
                 onChanged: (value) {
                   if (value != null) onStartDateChanged(value);
@@ -1740,7 +1815,7 @@ class _ProjectMetaGrid extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _DateField(
-                label: AppLocalizations.of(context)!.dueDate,
+                label: AppLocalizations.of(context).dueDate,
                 date: deadline,
                 nullable: true,
                 onChanged: onDeadlineChanged,
@@ -1750,7 +1825,7 @@ class _ProjectMetaGrid extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         _MetaField(
-          label: AppLocalizations.of(context)!.objective,
+          label: AppLocalizations.of(context).objective,
           child: Consumer<GoalsProvider>(
             builder: (context, goals, _) {
               return DropdownButton<String?>(
@@ -1758,11 +1833,11 @@ class _ProjectMetaGrid extends StatelessWidget {
                 isExpanded: true,
                 dropdownColor: BrainTheme.cardDark,
                 underline: const SizedBox.shrink(),
-                hint: Text(AppLocalizations.of(context)!.noDueDate),
+                hint: Text(AppLocalizations.of(context).noDueDate),
                 items: [
                   DropdownMenuItem(
                     value: null,
-                    child: Text(AppLocalizations.of(context)!.noDueDate),
+                    child: Text(AppLocalizations.of(context).noDueDate),
                   ),
                   ...goals.goals.map(
                     (goal) => DropdownMenuItem(
@@ -1782,37 +1857,53 @@ class _ProjectMetaGrid extends StatelessWidget {
 
   String _statusLabel(ProjectStatus s, BuildContext context) {
     switch (s) {
-      case ProjectStatus.active: return AppLocalizations.of(context)!.active;
-      case ProjectStatus.paused: return 'Pausado';
-      case ProjectStatus.completed: return AppLocalizations.of(context)!.statusCompleted;
-      case ProjectStatus.abandoned: return 'Abandonado';
+      case ProjectStatus.active:
+        return AppLocalizations.of(context).active;
+      case ProjectStatus.paused:
+        return 'Pausado';
+      case ProjectStatus.completed:
+        return AppLocalizations.of(context).statusCompleted;
+      case ProjectStatus.abandoned:
+        return 'Abandonado';
     }
   }
 
   Color _statusColor(ProjectStatus s) {
     switch (s) {
-      case ProjectStatus.active: return BrainTheme.accentGreen;
-      case ProjectStatus.paused: return BrainTheme.accentOrange;
-      case ProjectStatus.completed: return BrainTheme.accentBlue;
-      case ProjectStatus.abandoned: return BrainTheme.textTertiary;
+      case ProjectStatus.active:
+        return BrainTheme.accentGreen;
+      case ProjectStatus.paused:
+        return BrainTheme.accentOrange;
+      case ProjectStatus.completed:
+        return BrainTheme.accentBlue;
+      case ProjectStatus.abandoned:
+        return BrainTheme.textTertiary;
     }
   }
 
   IconData _statusIcon(ProjectStatus s) {
     switch (s) {
-      case ProjectStatus.active: return Icons.play_arrow_rounded;
-      case ProjectStatus.paused: return Icons.pause_rounded;
-      case ProjectStatus.completed: return Icons.check_rounded;
-      case ProjectStatus.abandoned: return Icons.stop_rounded;
+      case ProjectStatus.active:
+        return Icons.play_arrow_rounded;
+      case ProjectStatus.paused:
+        return Icons.pause_rounded;
+      case ProjectStatus.completed:
+        return Icons.check_rounded;
+      case ProjectStatus.abandoned:
+        return Icons.stop_rounded;
     }
   }
 
   String _priorityLabel(TaskPriority p, BuildContext context) {
     switch (p) {
-      case TaskPriority.low: return AppLocalizations.of(context)!.priorityLow;
-      case TaskPriority.medium: return AppLocalizations.of(context)!.priorityMedium;
-      case TaskPriority.high: return AppLocalizations.of(context)!.priorityHigh;
-      case TaskPriority.urgent: return AppLocalizations.of(context)!.priorityUrgent;
+      case TaskPriority.low:
+        return AppLocalizations.of(context).priorityLow;
+      case TaskPriority.medium:
+        return AppLocalizations.of(context).priorityMedium;
+      case TaskPriority.high:
+        return AppLocalizations.of(context).priorityHigh;
+      case TaskPriority.urgent:
+        return AppLocalizations.of(context).priorityUrgent;
     }
   }
 }
@@ -1879,10 +1970,10 @@ class _DateField extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                  child: Text(
-                    date != null
-                        ? DateFormat('dd MMM yyyy').format(date!)
-                        : AppLocalizations.of(context)!.noDueDate,
+                child: Text(
+                  date != null
+                      ? DateFormat('dd MMM yyyy').format(date!)
+                      : AppLocalizations.of(context).noDueDate,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

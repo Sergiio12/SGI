@@ -198,8 +198,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       if (Platform.isWindows) {
         await Process.run('explorer', ['/select,', attachment.path]);
       } else if (Platform.isAndroid || Platform.isIOS) {
-        showWarningNotification(
-            'Abre el archivo desde: ${attachment.path}');
+        showWarningNotification('Abre el archivo desde: ${attachment.path}');
       } else if (Platform.isMacOS) {
         await Process.run('open', [attachment.path]);
       } else if (Platform.isLinux) {
@@ -287,8 +286,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           expand: false,
           builder: (context, scrollController) {
             return Padding(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(ctx).viewInsets.bottom),
+              padding:
+                  EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
               child: Container(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -297,7 +296,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(AppLocalizations.of(context)!.tags,
+                        Text(AppLocalizations.of(context).tags,
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.w700)),
                         IconButton(
@@ -314,8 +313,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     Expanded(
                       child: Consumer<TagsProvider>(
                           builder: (context, tagsProv, _) {
-                        final noteTags =
-                            tagsProv.getTags(TagType.note);
+                        final noteTags = tagsProv.getTags(TagType.note);
                         if (noteTags.isEmpty) {
                           return Center(
                             child: Column(
@@ -339,11 +337,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                         return ListView(
                           controller: scrollController,
                           children: noteTags.map((t) {
-                            final isSelected =
-                                _selectedTagIds.contains(t.id);
+                            final isSelected = _selectedTagIds.contains(t.id);
                             return Card(
-                              margin:
-                                  const EdgeInsets.only(bottom: 6),
+                              margin: const EdgeInsets.only(bottom: 6),
                               color: isSelected
                                   ? t.color.withValues(alpha: 0.1)
                                   : BrainTheme.surfaceDark,
@@ -365,8 +361,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                                     ? Icon(Icons.check_circle,
                                         color: t.color, size: 22)
                                     : Icon(Icons.circle_outlined,
-                                        color: BrainTheme
-                                            .textTertiary,
+                                        color: BrainTheme.textTertiary,
                                         size: 22),
                                 onTap: () {
                                   setState(() {
@@ -427,7 +422,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(AppLocalizations.of(context)!.notebook,
+                    Text(AppLocalizations.of(context).notebook,
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w700)),
                     IconButton(
@@ -443,8 +438,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     hintText: 'Nuevo cuaderno...',
                     prefixIcon: const Icon(Icons.add, size: 20),
                     isDense: true,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                   ),
                   onSubmitted: (value) {
                     if (value.trim().isNotEmpty) {
@@ -524,15 +519,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Expanded(
-                        child: Consumer<TagsProvider>(
-                            builder: (context, prov, _) {
+                    Expanded(child:
+                        Consumer<TagsProvider>(builder: (context, prov, _) {
                       final noteTags = prov.getTags(TagType.note);
                       if (noteTags.isEmpty) {
                         return Center(
                           child: Text('Crea tu primera etiqueta',
-                              style:
-                                  TextStyle(color: BrainTheme.textTertiary)),
+                              style: TextStyle(color: BrainTheme.textTertiary)),
                         );
                       }
                       return ListView(
@@ -573,12 +566,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                                                                 AlertDialog(
                                                                   title: const Text(
                                                                       'Editar etiqueta'),
-                                                                  content: SingleChildScrollView(
-                                                                      child: Column(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize
-                                                                                  .min,
-                                                                          children: [
+                                                                  content:
+                                                                      SingleChildScrollView(
+                                                                          child: Column(
+                                                                              mainAxisSize: MainAxisSize.min,
+                                                                              children: [
                                                                         TextField(
                                                                             controller:
                                                                                 editNameCtrl,
@@ -590,29 +582,28 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                                                                         TagColorPicker(
                                                                           selectedColorValue:
                                                                               editColorValue,
-                                                                          onColorChanged:
-                                                                              (v) => setDialogState(() => editColorValue = v),
+                                                                          onColorChanged: (v) =>
+                                                                              setDialogState(() => editColorValue = v),
                                                                         ),
                                                                       ])),
                                                                   actions: [
                                                                     TextButton(
                                                                         onPressed: () =>
-                                                                            Navigator.pop(dctx),
+                                                                            Navigator.pop(
+                                                                                dctx),
                                                                         child: Text(
-                                                                            AppLocalizations.of(dState)!.cancel)),
+                                                                            AppLocalizations.of(dState).cancel)),
                                                                     FilledButton(
                                                                         onPressed:
                                                                             () async {
                                                                           await prov.updateTag(t.copyWith(
-                                                                              name: editNameCtrl
-                                                                                  .text,
-                                                                              color: Color(
-                                                                                  editColorValue)));
+                                                                              name: editNameCtrl.text,
+                                                                              color: Color(editColorValue)));
                                                                           Navigator.pop(
                                                                               dctx);
                                                                         },
                                                                         child: Text(
-                                                                            AppLocalizations.of(dState)!.save))
+                                                                            AppLocalizations.of(dState).save))
                                                                   ],
                                                                 )));
                                               }),
@@ -662,9 +653,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                                 name: nameCtrl.text.trim(),
                                 colorValue: newTagColorValue);
                             nameCtrl.clear();
-                            setModalState(() =>
-                                newTagColorValue =
-                                    BrainTheme.accentPurple.toARGB32());
+                            setModalState(() => newTagColorValue =
+                                BrainTheme.accentPurple.toARGB32());
                           },
                           child: const Text('Crear etiqueta')),
                     ),
@@ -680,28 +670,31 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? AppLocalizations.of(context)!.editNote : AppLocalizations.of(context)!.createNote),
+        title: Text(_isEditing
+            ? AppLocalizations.of(context).editNote
+            : AppLocalizations.of(context).createNote),
         actions: [
           if (_isEditing)
             IconButton(
               icon: Icon(Icons.delete_outline, color: BrainTheme.accentRed),
-              tooltip: AppLocalizations.of(context)!.delete,
+              tooltip: AppLocalizations.of(context).delete,
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: Text('${AppLocalizations.of(ctx)!.delete} ${AppLocalizations.of(ctx)!.note}'),
+                    title: Text(
+                        '${AppLocalizations.of(ctx).delete} ${AppLocalizations.of(ctx).note}'),
                     content: const Text('Se moverá a la papelera.'),
                     actions: [
                       TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
-                          child: Text(AppLocalizations.of(ctx)!.cancel)),
+                          child: Text(AppLocalizations.of(ctx).cancel)),
                       FilledButton(
                           onPressed: () => Navigator.pop(ctx, true),
                           style: FilledButton.styleFrom(
                               backgroundColor: BrainTheme.accentRed,
                               foregroundColor: Colors.white),
-                          child: Text(AppLocalizations.of(ctx)!.delete)),
+                          child: Text(AppLocalizations.of(ctx).delete)),
                     ],
                   ),
                 );
@@ -719,7 +712,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
-              child: Text(AppLocalizations.of(context)!.save,
+              child: Text(AppLocalizations.of(context).save,
                   style: TextStyle(fontWeight: FontWeight.w600))),
           const SizedBox(width: 8),
         ],
@@ -871,7 +864,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           children: [
             Row(
               children: [
-                Text(AppLocalizations.of(context)!.tags,
+                Text(AppLocalizations.of(context).tags,
                     style: TextStyle(
                         color: BrainTheme.textSecondary,
                         fontWeight: FontWeight.w600,
@@ -893,8 +886,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 runSpacing: 8,
                 children: selectedTags
                     .map((tag) => GestureDetector(
-                          onTap: () => setState(
-                              () => _selectedTagIds.remove(tag.id)),
+                          onTap: () =>
+                              setState(() => _selectedTagIds.remove(tag.id)),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 5),
@@ -903,15 +896,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: tag.color),
                             ),
-                            child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(tag.name,
-                                      style: TextStyle(
-                                          color: tag.color, fontSize: 12)),
-                                  const SizedBox(width: 6),
-                                  Icon(Icons.close, size: 14, color: tag.color),
-                                ]),
+                            child:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
+                              Text(tag.name,
+                                  style: TextStyle(
+                                      color: tag.color, fontSize: 12)),
+                              const SizedBox(width: 6),
+                              Icon(Icons.close, size: 14, color: tag.color),
+                            ]),
                           ),
                         ))
                     .toList(),
@@ -953,7 +945,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         children: [
           Row(
             children: [
-              Text(AppLocalizations.of(context)!.attachments,
+              Text(AppLocalizations.of(context).attachments,
                   style: TextStyle(
                       color: BrainTheme.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -974,8 +966,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   iconColor: _fileColor(a.fileName),
                   formattedSize: _formatFileSize(a.size),
                   onOpen: () => _openAttachment(a),
-                  onRemove: () =>
-                      setState(() => _attachments.removeWhere((x) => x.id == a.id)),
+                  onRemove: () => setState(
+                      () => _attachments.removeWhere((x) => x.id == a.id)),
                 )),
           const SizedBox(height: 12),
           if (_uploadError != null)
@@ -1035,9 +1027,30 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   void _showEmojiPicker() {
     final noteEmojis = [
-      '📝', '💡', '🎯', '📗', '🗂️', '📌', '💻', '🗒️',
-      '✍️', '📎', '🧠', '📓', '✏️', '📖', '🪄', '📚',
-      '⭐', '🔥', '✅', '🚀', '💪', '🎨', '📊', '🔬',
+      '📝',
+      '💡',
+      '🎯',
+      '📗',
+      '🗂️',
+      '📌',
+      '💻',
+      '🗒️',
+      '✍️',
+      '📎',
+      '🧠',
+      '📓',
+      '✏️',
+      '📖',
+      '🪄',
+      '📚',
+      '⭐',
+      '🔥',
+      '✅',
+      '🚀',
+      '💪',
+      '🎨',
+      '📊',
+      '🔬',
     ];
 
     showModalBottomSheet(
@@ -1190,14 +1203,12 @@ class _AttachmentTile extends StatelessWidget {
         ),
         title: Text(
           attachment.fileName,
-          style:
-              const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(formattedSize,
-            style: TextStyle(
-                fontSize: 11, color: BrainTheme.textTertiary)),
+            style: TextStyle(fontSize: 11, color: BrainTheme.textTertiary)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

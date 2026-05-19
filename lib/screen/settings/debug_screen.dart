@@ -11,14 +11,15 @@ class DebugScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.debug),
+        title: Text(AppLocalizations.of(context).debug),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _DebugCard(
             title: 'Notificaciones locales',
-            description: 'Prueba el sistema de notificaciones del sistema (Push notifications locales).',
+            description:
+                'Prueba el sistema de notificaciones del sistema (Push notifications locales).',
             icon: Icons.notifications_active_outlined,
             buttonLabel: 'Probar notificaciones',
             onPressed: () async {
@@ -36,7 +37,8 @@ class DebugScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _DebugCard(
             title: 'Notificaciones In-App',
-            description: 'Prueba el sistema de notificaciones visuales internas de la aplicación.',
+            description:
+                'Prueba el sistema de notificaciones visuales internas de la aplicación.',
             icon: Icons.message_outlined,
             buttonLabel: 'Probar In-App',
             onPressed: () {

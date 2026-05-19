@@ -32,217 +32,231 @@ class ProjectCard extends StatelessWidget {
       (p) => p.getTasksByProject(project.id).length,
     );
     final completedTasks = context.select<TasksProvider, int>(
-      (p) => p.getTasksByProject(project.id)
+      (p) => p
+          .getTasksByProject(project.id)
           .where((t) => t.status == TaskStatus.completed)
           .length,
     );
     final progress = taskCount == 0 ? 0.0 : completedTasks / taskCount;
 
     final card = Semantics(
-      label: '${project.title}, ${AppLocalizations.of(context)!.project}',
+      label: '${project.title}, ${AppLocalizations.of(context).project}',
       child: Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: Color(project.colorValue).withValues(alpha: 0.3),
-          width: 1,
+        margin: const EdgeInsets.only(bottom: 12),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: Color(project.colorValue).withValues(alpha: 0.3),
+            width: 1,
+          ),
         ),
-      ),
-      color: BrainTheme.cardDark,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        onLongPress: () => _showQuickActions(context),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _ProjectAvatar(project: project, progress: progress),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          project.title,
+        color: BrainTheme.cardDark,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          onLongPress: () => _showQuickActions(context),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _ProjectAvatar(project: project, progress: progress),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            project.title,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.3,
+                              color: BrainTheme.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              _StatusBadge(project: project),
+                              const SizedBox(width: 8),
+                              _PriorityDot(priority: project.priority),
+                              if (project.deadline != null) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  DateFormat('dd MMM')
+                                      .format(project.deadline!),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: project.deadline!
+                                            .isBefore(DateTime.now())
+                                        ? BrainTheme.accentRed
+                                        : BrainTheme.textTertiary,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuButton<_QuickAction>(
+                      icon: Icon(Icons.more_horiz,
+                          color: BrainTheme.textTertiary, size: 20),
+                      onSelected: (action) =>
+                          _handleQuickAction(context, action),
+                      itemBuilder: (_) => [
+                        _popupItem(_QuickAction.edit, Icons.edit_outlined,
+                            AppLocalizations.of(context).editProject),
+                        _popupItem(_QuickAction.duplicate, Icons.copy_outlined,
+                            'Duplicar'),
+                        _popupItem(_QuickAction.changeStatus, Icons.swap_horiz,
+                            'Cambiar estado'),
+                        _popupItem(
+                          _QuickAction.delete,
+                          Icons.delete_outline,
+                          AppLocalizations.of(context).delete,
+                          color: BrainTheme.accentRed,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                if (project.description.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    project.description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: BrainTheme.textSecondary,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                if (project.objective.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.track_changes,
+                          size: 14, color: BrainTheme.textTertiary),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          project.objective,
                           style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.3,
-                            color: BrainTheme.textPrimary,
+                            fontSize: 12,
+                            color: BrainTheme.textTertiary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            _StatusBadge(project: project),
-                            const SizedBox(width: 8),
-                            _PriorityDot(priority: project.priority),
-                            if (project.deadline != null) ...[
-                              const SizedBox(width: 8),
-                              Text(
-                                DateFormat('dd MMM').format(project.deadline!),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: project.deadline!.isBefore(DateTime.now())
-                                      ? BrainTheme.accentRed
-                                      : BrainTheme.textTertiary,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuButton<_QuickAction>(
-                    icon: Icon(Icons.more_horiz, color: BrainTheme.textTertiary, size: 20),
-                    onSelected: (action) => _handleQuickAction(context, action),
-                    itemBuilder: (_) => [
-                      _popupItem(_QuickAction.edit, Icons.edit_outlined, AppLocalizations.of(context)!.editProject),
-                      _popupItem(_QuickAction.duplicate, Icons.copy_outlined, 'Duplicar'),
-                      _popupItem(_QuickAction.changeStatus, Icons.swap_horiz, 'Cambiar estado'),
-                      _popupItem(
-                        _QuickAction.delete,
-                        Icons.delete_outline,
-                        AppLocalizations.of(context)!.delete,
-                        color: BrainTheme.accentRed,
                       ),
                     ],
                   ),
                 ],
-              ),
-              if (project.description.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Text(
-                  project.description,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: BrainTheme.textSecondary,
-                    height: 1.3,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-              if (project.objective.isNotEmpty) ...[
-                const SizedBox(height: 8),
+                if (project.tags.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Consumer<TagsProvider>(builder: (context, tp, _) {
+                    final tags = project.tags
+                        .map((id) => tp.getById(id))
+                        .whereType<Tag>()
+                        .take(3)
+                        .toList();
+                    if (tags.isEmpty) return const SizedBox.shrink();
+                    return Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: tags
+                          .map((tag) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: tag.color.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  tag.name,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: tag.color,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                    );
+                  }),
+                ],
+                const SizedBox(height: 14),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.track_changes, size: 14, color: BrainTheme.textTertiary),
-                    const SizedBox(width: 6),
                     Expanded(
-                      child: Text(
-                        project.objective,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: BrainTheme.textTertiary,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 8,
+                          backgroundColor: BrainTheme.borderDark,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(project.colorValue),
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '${(progress * 100).toInt()}%',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(project.colorValue),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _MiniStat(
+                      icon: Icons.task_alt,
+                      value: '$completedTasks/$taskCount',
+                      label: 'tareas',
+                    ),
+                    const SizedBox(width: 16),
+                    _MiniStat(
+                      icon: Icons.note_outlined,
+                      value: '${project.noteIds.length}',
+                      label: 'notas',
+                    ),
+                    const Spacer(),
+                    Text(
+                      DateFormat('dd MMM yyyy').format(project.updatedAt),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: BrainTheme.textTertiary,
                       ),
                     ),
                   ],
                 ),
               ],
-              if (project.tags.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Consumer<TagsProvider>(builder: (context, tp, _) {
-                  final tags = project.tags
-                      .map((id) => tp.getById(id))
-                      .whereType<Tag>()
-                      .take(3)
-                      .toList();
-                  if (tags.isEmpty) return const SizedBox.shrink();
-                  return Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
-                    children: tags.map((tag) => Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: tag.color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        tag.name,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: tag.color,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    )).toList(),
-                  );
-                }),
-              ],
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 8,
-                        backgroundColor: BrainTheme.borderDark,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Color(project.colorValue),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    '${(progress * 100).toInt()}%',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Color(project.colorValue),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _MiniStat(
-                    icon: Icons.task_alt,
-                    value: '$completedTasks/$taskCount',
-                    label: 'tareas',
-                  ),
-                  const SizedBox(width: 16),
-                  _MiniStat(
-                    icon: Icons.note_outlined,
-                    value: '${project.noteIds.length}',
-                    label: 'notas',
-                  ),
-                  const Spacer(),
-                  Text(
-                    DateFormat('dd MMM yyyy').format(project.updatedAt),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: BrainTheme.textTertiary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
-      ),
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOut);
+    )
+        .animate()
+        .fadeIn(duration: 400.ms)
+        .slideY(begin: 0.1, end: 0, curve: Curves.easeOut);
 
     return Slidable(
       key: Key(project.id),
@@ -251,11 +265,12 @@ class ProjectCard extends StatelessWidget {
         extentRatio: 0.3,
         children: [
           SlidableAction(
-            onPressed: (_) => _handleQuickAction(context, _QuickAction.changeStatus),
+            onPressed: (_) =>
+                _handleQuickAction(context, _QuickAction.changeStatus),
             backgroundColor: BrainTheme.accentBlue.withValues(alpha: 0.2),
             foregroundColor: BrainTheme.accentBlue,
             icon: Icons.swap_horiz,
-            label: AppLocalizations.of(context)!.filterStatus,
+            label: AppLocalizations.of(context).filterStatus,
             borderRadius: BorderRadius.circular(20),
           ),
           SlidableAction(
@@ -263,7 +278,7 @@ class ProjectCard extends StatelessWidget {
             backgroundColor: BrainTheme.accentRed.withValues(alpha: 0.2),
             foregroundColor: BrainTheme.accentRed,
             icon: Icons.delete_outline,
-            label: AppLocalizations.of(context)!.delete,
+            label: AppLocalizations.of(context).delete,
             borderRadius: BorderRadius.circular(20),
           ),
         ],
@@ -295,7 +310,8 @@ class ProjectCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _actionTile(ctx, Icons.edit_outlined, AppLocalizations.of(context)!.editProject, () {
+              _actionTile(ctx, Icons.edit_outlined,
+                  AppLocalizations.of(context).editProject, () {
                 Navigator.pop(ctx);
                 onTap?.call();
               }),
@@ -307,7 +323,8 @@ class ProjectCard extends StatelessWidget {
                 Navigator.pop(ctx);
                 _duplicateProject(context);
               }),
-              _actionTile(ctx, Icons.delete_outline, AppLocalizations.of(context)!.itemDeleted, () {
+              _actionTile(ctx, Icons.delete_outline,
+                  AppLocalizations.of(context).itemDeleted, () {
                 Navigator.pop(ctx);
                 onDelete?.call();
               }, isDestructive: true),
@@ -318,10 +335,17 @@ class ProjectCard extends StatelessWidget {
     );
   }
 
-  Widget _actionTile(BuildContext context, IconData icon, String label, VoidCallback onTap, {bool isDestructive = false}) {
+  Widget _actionTile(
+      BuildContext context, IconData icon, String label, VoidCallback onTap,
+      {bool isDestructive = false}) {
     return ListTile(
-      leading: Icon(icon, color: isDestructive ? BrainTheme.accentRed : BrainTheme.textPrimary),
-      title: Text(label, style: TextStyle(color: isDestructive ? BrainTheme.accentRed : BrainTheme.textPrimary)),
+      leading: Icon(icon,
+          color: isDestructive ? BrainTheme.accentRed : BrainTheme.textPrimary),
+      title: Text(label,
+          style: TextStyle(
+              color: isDestructive
+                  ? BrainTheme.accentRed
+                  : BrainTheme.textPrimary)),
       onTap: onTap,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
@@ -370,7 +394,7 @@ class ProjectCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                AppLocalizations.of(context)!.filterStatus,
+                AppLocalizations.of(context).filterStatus,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -388,8 +412,11 @@ class ProjectCard extends StatelessWidget {
                   title: Text(
                     _statusLabel(status, context),
                     style: TextStyle(
-                      color: isActive ? _statusColor(status) : BrainTheme.textPrimary,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                      color: isActive
+                          ? _statusColor(status)
+                          : BrainTheme.textPrimary,
+                      fontWeight:
+                          isActive ? FontWeight.w600 : FontWeight.normal,
                     ),
                   ),
                   trailing: isActive
@@ -400,7 +427,8 @@ class ProjectCard extends StatelessWidget {
                     provider.updateProject(project.copyWith(status: status));
                     Navigator.pop(ctx);
                   },
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 );
               }),
             ],
@@ -457,11 +485,11 @@ class ProjectCard extends StatelessWidget {
   String _statusLabel(ProjectStatus status, BuildContext context) {
     switch (status) {
       case ProjectStatus.active:
-        return AppLocalizations.of(context)!.active;
+        return AppLocalizations.of(context).active;
       case ProjectStatus.paused:
         return 'Pausado';
       case ProjectStatus.completed:
-        return AppLocalizations.of(context)!.statusCompleted;
+        return AppLocalizations.of(context).statusCompleted;
       case ProjectStatus.abandoned:
         return 'Abandonado';
     }
@@ -521,7 +549,7 @@ class _StatusBadge extends StatelessWidget {
     switch (project.status) {
       case ProjectStatus.active:
         color = BrainTheme.accentGreen;
-        label = AppLocalizations.of(context)!.active;
+        label = AppLocalizations.of(context).active;
         icon = Icons.play_arrow_rounded;
       case ProjectStatus.paused:
         color = BrainTheme.accentOrange;
@@ -529,7 +557,7 @@ class _StatusBadge extends StatelessWidget {
         icon = Icons.pause_rounded;
       case ProjectStatus.completed:
         color = BrainTheme.accentBlue;
-        label = AppLocalizations.of(context)!.statusCompleted;
+        label = AppLocalizations.of(context).statusCompleted;
         icon = Icons.check_rounded;
       case ProjectStatus.abandoned:
         color = BrainTheme.textTertiary;
@@ -607,7 +635,8 @@ class _PriorityDot extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: BrainTheme.priorityColor(priority.index).withValues(alpha: 0.4),
+            color:
+                BrainTheme.priorityColor(priority.index).withValues(alpha: 0.4),
             blurRadius: 4,
             spreadRadius: 1,
           )

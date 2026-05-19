@@ -71,7 +71,7 @@ class _NotesScreenState extends State<NotesScreen> {
         onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
         style: const TextStyle(fontSize: 14),
         decoration: InputDecoration(
-          hintText: AppLocalizations.of(context)!.searchInNotes,
+          hintText: AppLocalizations.of(context).searchInNotes,
           prefixIcon: const Icon(Icons.search, size: 20),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
@@ -100,7 +100,7 @@ class _NotesScreenState extends State<NotesScreen> {
           children: [
             _StatChip(
               icon: Icons.sticky_note_2_outlined,
-              label: '$total ${AppLocalizations.of(context)!.notes}',
+              label: '$total ${AppLocalizations.of(context).notes}',
             ),
             const SizedBox(width: 12),
             _StatChip(
@@ -130,7 +130,7 @@ class _NotesScreenState extends State<NotesScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
             _NotebookChip(
-          label: AppLocalizations.of(context)!.all,
+              label: AppLocalizations.of(context).all,
               isSelected: _filterNotebook == null,
               count: provider.notes.length,
               onTap: () => setState(() => _filterNotebook = null),
@@ -141,8 +141,8 @@ class _NotesScreenState extends State<NotesScreen> {
                 label: nb,
                 isSelected: _filterNotebook == nb,
                 count: count,
-                onTap: () =>
-                    setState(() => _filterNotebook = _filterNotebook == nb ? null : nb),
+                onTap: () => setState(
+                    () => _filterNotebook = _filterNotebook == nb ? null : nb),
               );
             }),
           ],
@@ -154,9 +154,9 @@ class _NotesScreenState extends State<NotesScreen> {
   Widget _buildTagFilter() {
     return Consumer<TagsProvider>(builder: (context, tagsProv, _) {
       final noteTags = tagsProv.getTags(TagType.note);
-      final usedTagIds =
-          context.read<NotesProvider>().tagCounts.keys.toSet();
-      final activeTags = noteTags.where((t) => usedTagIds.contains(t.id)).toList();
+      final usedTagIds = context.read<NotesProvider>().tagCounts.keys.toSet();
+      final activeTags =
+          noteTags.where((t) => usedTagIds.contains(t.id)).toList();
 
       if (activeTags.isEmpty) return const SizedBox.shrink();
 
@@ -173,17 +173,15 @@ class _NotesScreenState extends State<NotesScreen> {
                 child: GestureDetector(
                   onTap: () => _toggleTagFilter(tag.id),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? tag.color.withValues(alpha: 0.2)
                           : BrainTheme.surfaceDark,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected
-                            ? tag.color
-                            : BrainTheme.borderDark,
+                        color: isSelected ? tag.color : BrainTheme.borderDark,
                         width: isSelected ? 1.5 : 1,
                       ),
                     ),
@@ -206,8 +204,9 @@ class _NotesScreenState extends State<NotesScreen> {
                             color: isSelected
                                 ? tag.color
                                 : BrainTheme.textSecondary,
-                            fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.normal,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
                           ),
                         ),
                       ],
@@ -230,7 +229,7 @@ class _NotesScreenState extends State<NotesScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
           _FilterChip(
-            label: AppLocalizations.of(context)!.all,
+            label: AppLocalizations.of(context).all,
             isSelected: _filterType == null,
             onTap: () => setState(() => _filterType = null),
           ),
@@ -292,12 +291,14 @@ class _NotesScreenState extends State<NotesScreen> {
           return EmptyState(
             emoji: _searchQuery.isNotEmpty ? '🔍' : '📝',
             title: _searchQuery.isNotEmpty
-              ? AppLocalizations.of(context)!.noResults
-              : 'Sin notas',
+                ? AppLocalizations.of(context).noResults
+                : 'Sin notas',
             subtitle: _searchQuery.isNotEmpty
                 ? 'No hay notas que coincidan con "$_searchQuery"'
                 : 'Captura tus ideas, referencias y pensamientos',
-            actionLabel: _searchQuery.isNotEmpty ? null : AppLocalizations.of(context)!.createNote,
+            actionLabel: _searchQuery.isNotEmpty
+                ? null
+                : AppLocalizations.of(context).createNote,
             onAction: _searchQuery.isNotEmpty
                 ? null
                 : () => Navigator.pushNamed(context, '/note'),
@@ -306,6 +307,7 @@ class _NotesScreenState extends State<NotesScreen> {
 
         if (_isGridView) {
           return MasonryGridView.count(
+            key: ValueKey('notes_grid_${notes.length}_${pinned.length}'),
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
             crossAxisCount: 2,
             mainAxisSpacing: 8,
@@ -326,6 +328,7 @@ class _NotesScreenState extends State<NotesScreen> {
         }
 
         return ListView.builder(
+          key: ValueKey('notes_list_${notes.length}_${pinned.length}'),
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
           itemCount: notes.length,
           itemBuilder: (context, index) {
@@ -373,9 +376,8 @@ class _FilterChip extends StatelessWidget {
                 : BrainTheme.surfaceDark,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected
-                  ? BrainTheme.accentPurple
-                  : BrainTheme.borderDark,
+              color:
+                  isSelected ? BrainTheme.accentPurple : BrainTheme.borderDark,
             ),
           ),
           child: Text(
@@ -460,9 +462,7 @@ class _NotebookChip extends StatelessWidget {
                 : BrainTheme.surfaceDark,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected
-                  ? BrainTheme.accentBlue
-                  : BrainTheme.borderDark,
+              color: isSelected ? BrainTheme.accentBlue : BrainTheme.borderDark,
             ),
           ),
           child: Row(

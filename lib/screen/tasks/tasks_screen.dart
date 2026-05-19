@@ -137,7 +137,7 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   String _sortLabel(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (_sortOption) {
       case _TaskSortOption.priority:
         return l10n.sortPriority;
@@ -150,10 +150,12 @@ class _TasksScreenState extends State<TasksScreen> {
     }
   }
 
-  String _dueDateFilterLabel(BuildContext context) => _dueDateFilterLabelFor(_dueDateFilter, context);
+  String _dueDateFilterLabel(BuildContext context) =>
+      _dueDateFilterLabelFor(_dueDateFilter, context);
 
-  String _dueDateFilterLabelFor(_TaskDueDateFilter filter, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+  String _dueDateFilterLabelFor(
+      _TaskDueDateFilter filter, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     switch (filter) {
       case _TaskDueDateFilter.all:
         return l10n.all;
@@ -169,7 +171,7 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   String _priorityLabel(TaskPriority priority, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (priority) {
       case TaskPriority.low:
         return l10n.priorityLow;
@@ -183,7 +185,7 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   String _statusLabel(TaskStatus status, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (status) {
       case TaskStatus.pending:
         return l10n.statusPending;
@@ -214,7 +216,8 @@ class _TasksScreenState extends State<TasksScreen> {
               searchQuery: _searchQuery,
               showSearch: _showSearch,
               searchController: _searchController,
-              onSearchChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
+              onSearchChanged: (v) =>
+                  setState(() => _searchQuery = v.toLowerCase()),
               onToggleSearch: () => setState(() {
                 _showSearch = !_showSearch;
                 if (!_showSearch) {
@@ -280,7 +283,7 @@ class _TasksScreenState extends State<TasksScreen> {
               child: Row(
                 children: [
                   Text(
-                    AppLocalizations.of(context)!.tasks,
+                    AppLocalizations.of(context).tasks,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -289,7 +292,8 @@ class _TasksScreenState extends State<TasksScreen> {
                   ),
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: BrainTheme.accentPurple.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),
@@ -325,7 +329,7 @@ class _TasksScreenState extends State<TasksScreen> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: Text(
-                              AppLocalizations.of(context)!.filterAll,
+                              AppLocalizations.of(context).filterAll,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 14,
@@ -344,7 +348,8 @@ class _TasksScreenState extends State<TasksScreen> {
                               tasks: colTasks,
                               onTaskMoved: (task) =>
                                   provider.moveTaskToStatus(task.id, status),
-                              taskBuilder: (task) => _buildTaskCard(task, provider),
+                              taskBuilder: (task) =>
+                                  _buildTaskCard(task, provider),
                             );
                           }).toList(),
                         ),
@@ -390,7 +395,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            AppLocalizations.of(context)!.filter,
+                            AppLocalizations.of(context).filter,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -399,13 +404,14 @@ class _TasksScreenState extends State<TasksScreen> {
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.close, color: BrainTheme.textSecondary),
+                          icon: Icon(Icons.close,
+                              color: BrainTheme.textSecondary),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text(AppLocalizations.of(context)!.sortPriority,
+                    Text(AppLocalizations.of(context).sortPriority,
                         style: TextStyle(color: BrainTheme.textPrimary)),
                     const SizedBox(height: 8),
                     Wrap(
@@ -437,7 +443,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       }).toList(),
                     ),
                     const SizedBox(height: 16),
-                    Text(AppLocalizations.of(context)!.sortDueDate,
+                    Text(AppLocalizations.of(context).sortDueDate,
                         style: TextStyle(color: BrainTheme.textPrimary)),
                     const SizedBox(height: 8),
                     Wrap(
@@ -466,11 +472,13 @@ class _TasksScreenState extends State<TasksScreen> {
                     SwitchListTile(
                       value: onlyWithDescription,
                       activeThumbColor: BrainTheme.accentPurple,
-                      title: Text(AppLocalizations.of(context)!.onlyWithDescription,
+                      title: Text(
+                          AppLocalizations.of(context).onlyWithDescription,
                           style: TextStyle(color: BrainTheme.textPrimary)),
                       subtitle: Text(
-                        AppLocalizations.of(context)!.description,
-                        style: TextStyle(color: BrainTheme.textSecondary, fontSize: 12),
+                        AppLocalizations.of(context).description,
+                        style: TextStyle(
+                            color: BrainTheme.textSecondary, fontSize: 12),
                       ),
                       onChanged: (value) {
                         setModalState(() => onlyWithDescription = value);
@@ -479,18 +487,19 @@ class _TasksScreenState extends State<TasksScreen> {
                     SwitchListTile(
                       value: onlyWithProject,
                       activeThumbColor: BrainTheme.accentPurple,
-                      title: Text(AppLocalizations.of(context)!.onlyWithProject,
+                      title: Text(AppLocalizations.of(context).onlyWithProject,
                           style: TextStyle(color: BrainTheme.textPrimary)),
                       subtitle: Text(
-                        AppLocalizations.of(context)!.project,
-                        style: TextStyle(color: BrainTheme.textSecondary, fontSize: 12),
+                        AppLocalizations.of(context).project,
+                        style: TextStyle(
+                            color: BrainTheme.textSecondary, fontSize: 12),
                       ),
                       onChanged: (value) {
                         setModalState(() => onlyWithProject = value);
                       },
                     ),
                     const SizedBox(height: 16),
-                    Text(AppLocalizations.of(context)!.filterStatus,
+                    Text(AppLocalizations.of(context).filterStatus,
                         style: TextStyle(color: BrainTheme.textPrimary)),
                     const SizedBox(height: 8),
                     Wrap(
@@ -522,7 +531,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       }).toList(),
                     ),
                     const SizedBox(height: 16),
-                    Text(AppLocalizations.of(context)!.sortBy,
+                    Text(AppLocalizations.of(context).sortBy,
                         style: TextStyle(color: BrainTheme.textPrimary)),
                     const SizedBox(height: 8),
                     Container(
@@ -571,7 +580,8 @@ class _TasksScreenState extends State<TasksScreen> {
                                 sortOption = _TaskSortOption.priority;
                               });
                             },
-                            child: Text(AppLocalizations.of(context)!.clearFilters),
+                            child:
+                                Text(AppLocalizations.of(context).clearFilters),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -595,7 +605,7 @@ class _TasksScreenState extends State<TasksScreen> {
                                 borderRadius: BorderRadius.circular(14),
                               ),
                             ),
-                            child: Text(AppLocalizations.of(context)!.save),
+                            child: Text(AppLocalizations.of(context).save),
                           ),
                         ),
                       ],
@@ -612,7 +622,7 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   String _sortOptionLabel(_TaskSortOption option, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (option) {
       case _TaskSortOption.priority:
         return l10n.sortPriority;
@@ -626,7 +636,7 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   List<Widget> _buildFilterChips(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final chips = <Widget>[];
     if (_searchQuery.isNotEmpty) {
       chips.add(_buildFilterChip('${l10n.search}: "$_searchQuery"', () {
@@ -641,7 +651,8 @@ class _TasksScreenState extends State<TasksScreen> {
       ));
     }
     if (_dueDateFilter != _TaskDueDateFilter.all) {
-      chips.add(_buildFilterChip('${l10n.dueDate}: ${_dueDateFilterLabel(context)}', () {
+      chips.add(_buildFilterChip(
+          '${l10n.dueDate}: ${_dueDateFilterLabel(context)}', () {
         setState(() => _dueDateFilter = _TaskDueDateFilter.all);
       }));
     }
@@ -660,8 +671,8 @@ class _TasksScreenState extends State<TasksScreen> {
         setState(() => _selectedProjectId = null);
       }));
     }
-    chips.add(
-        _buildFilterChip('${l10n.sortBy}: ${_sortLabel(context)}', _showAdvancedFilters));
+    chips.add(_buildFilterChip(
+        '${l10n.sortBy}: ${_sortLabel(context)}', _showAdvancedFilters));
     return chips;
   }
 
@@ -688,7 +699,8 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   Widget _buildTaskAction(Task task, TasksProvider provider) {
-    final availableStatuses = TaskStatus.values.where((s) => s != task.status).toList();
+    final availableStatuses =
+        TaskStatus.values.where((s) => s != task.status).toList();
 
     return PopupMenuButton<TaskStatus>(
       icon: Icon(Icons.more_horiz, color: BrainTheme.textTertiary, size: 20),
@@ -700,7 +712,7 @@ class _TasksScreenState extends State<TasksScreen> {
           enabled: false,
           height: 32,
           child: Text(
-            AppLocalizations.of(context)!.filterStatus,
+            AppLocalizations.of(context).filterStatus,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -722,7 +734,8 @@ class _TasksScreenState extends State<TasksScreen> {
                     color: _statusColor(status).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Icon(_statusIcon(status), size: 14, color: _statusColor(status)),
+                  child: Icon(_statusIcon(status),
+                      size: 14, color: _statusColor(status)),
                 ),
                 const SizedBox(width: 10),
                 Text(
@@ -746,21 +759,31 @@ class _TasksScreenState extends State<TasksScreen> {
 
   IconData _statusIcon(TaskStatus status) {
     switch (status) {
-      case TaskStatus.pending: return Icons.circle_outlined;
-      case TaskStatus.inProgress: return Icons.play_circle_outline;
-      case TaskStatus.inReview: return Icons.rate_review_outlined;
-      case TaskStatus.completed: return Icons.check_circle;
-      case TaskStatus.cancelled: return Icons.cancel_outlined;
+      case TaskStatus.pending:
+        return Icons.circle_outlined;
+      case TaskStatus.inProgress:
+        return Icons.play_circle_outline;
+      case TaskStatus.inReview:
+        return Icons.rate_review_outlined;
+      case TaskStatus.completed:
+        return Icons.check_circle;
+      case TaskStatus.cancelled:
+        return Icons.cancel_outlined;
     }
   }
 
   Color _statusColor(TaskStatus status) {
     switch (status) {
-      case TaskStatus.pending: return BrainTheme.textTertiary;
-      case TaskStatus.inProgress: return BrainTheme.accentBlue;
-      case TaskStatus.inReview: return BrainTheme.accentOrange;
-      case TaskStatus.completed: return BrainTheme.accentGreen;
-      case TaskStatus.cancelled: return BrainTheme.accentRed;
+      case TaskStatus.pending:
+        return BrainTheme.textTertiary;
+      case TaskStatus.inProgress:
+        return BrainTheme.accentBlue;
+      case TaskStatus.inReview:
+        return BrainTheme.accentOrange;
+      case TaskStatus.completed:
+        return BrainTheme.accentGreen;
+      case TaskStatus.cancelled:
+        return BrainTheme.accentRed;
     }
   }
 
@@ -813,30 +836,34 @@ class _StatsBar extends StatelessWidget {
           _StatItem(
             icon: Icons.task_alt,
             value: '$total',
-            label: AppLocalizations.of(context)!.totalTasks,
+            label: AppLocalizations.of(context).totalTasks,
             color: BrainTheme.accentPurple,
           ),
           _StatItem(
             icon: Icons.warning_amber_rounded,
             value: '$overdue',
-            label: AppLocalizations.of(context)!.overdueTasks,
+            label: AppLocalizations.of(context).overdueTasks,
             color: overdue > 0 ? BrainTheme.accentRed : BrainTheme.textTertiary,
           ),
           _StatItem(
             icon: Icons.calendar_today,
             value: '$today',
-            label: AppLocalizations.of(context)!.today,
-            color: today > 0 ? BrainTheme.accentOrange : BrainTheme.textTertiary,
+            label: AppLocalizations.of(context).today,
+            color:
+                today > 0 ? BrainTheme.accentOrange : BrainTheme.textTertiary,
           ),
           _StatItem(
             icon: Icons.check_circle,
             value: '$doneToday',
-            label: AppLocalizations.of(context)!.completedTasks,
+            label: AppLocalizations.of(context).completedTasks,
             color: BrainTheme.accentGreen,
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, end: 0, curve: Curves.easeOut);
+    )
+        .animate()
+        .fadeIn(duration: 400.ms)
+        .slideY(begin: -0.2, end: 0, curve: Curves.easeOut);
   }
 }
 
@@ -921,7 +948,7 @@ class _SearchFilterBar extends StatelessWidget {
                   onChanged: onSearchChanged,
                   style: const TextStyle(fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.searchTasks,
+                    hintText: AppLocalizations.of(context).searchTasks,
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: searchQuery.isNotEmpty
                         ? IconButton(
@@ -961,21 +988,22 @@ class _SearchFilterBar extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   children: [
                     _QuickChip(
-                      label: AppLocalizations.of(context)!.all,
-                      selected: selectedProjectId == null && activeFilterCount == 0,
+                      label: AppLocalizations.of(context).all,
+                      selected:
+                          selectedProjectId == null && activeFilterCount == 0,
                       color: BrainTheme.accentPurple,
                       onTap: () => onProjectChanged(null),
                     ),
                     const SizedBox(width: 6),
                     _QuickChip(
-                      label: AppLocalizations.of(context)!.today,
+                      label: AppLocalizations.of(context).today,
                       selected: false,
                       color: BrainTheme.accentOrange,
                       onTap: () {},
                     ),
                     const SizedBox(width: 6),
                     _QuickChip(
-                      label: AppLocalizations.of(context)!.overdueTasks,
+                      label: AppLocalizations.of(context).overdueTasks,
                       selected: false,
                       color: BrainTheme.accentRed,
                       onTap: () {},
@@ -1029,7 +1057,8 @@ class _QuickChip extends StatelessWidget {
           color: selected ? color.withValues(alpha: 0.15) : BrainTheme.cardDark,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selected ? color.withValues(alpha: 0.4) : BrainTheme.borderDark,
+            color:
+                selected ? color.withValues(alpha: 0.4) : BrainTheme.borderDark,
             width: 1,
           ),
         ),
@@ -1066,10 +1095,14 @@ class _ActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isActive ? activeColor.withValues(alpha: 0.12) : BrainTheme.cardDark,
+          color: isActive
+              ? activeColor.withValues(alpha: 0.12)
+              : BrainTheme.cardDark,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isActive ? activeColor.withValues(alpha: 0.3) : BrainTheme.borderDark,
+            color: isActive
+                ? activeColor.withValues(alpha: 0.3)
+                : BrainTheme.borderDark,
             width: 1,
           ),
         ),
@@ -1209,7 +1242,8 @@ class _TaskBoardColumn extends StatelessWidget {
                   ),
                   if (isOverLimit) ...[
                     const SizedBox(width: 4),
-                    Icon(Icons.warning_amber, size: 14, color: BrainTheme.accentOrange),
+                    Icon(Icons.warning_amber,
+                        size: 14, color: BrainTheme.accentOrange),
                   ],
                 ],
               ),
@@ -1220,10 +1254,13 @@ class _TaskBoardColumn extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(_columnIcon, size: 28, color: BrainTheme.textTertiary.withValues(alpha: 0.3)),
+                            Icon(_columnIcon,
+                                size: 28,
+                                color: BrainTheme.textTertiary
+                                    .withValues(alpha: 0.3)),
                             const SizedBox(height: 6),
                             Text(
-                              AppLocalizations.of(context)!.emptyState,
+                              AppLocalizations.of(context).emptyState,
                               style: TextStyle(
                                 color: BrainTheme.textTertiary,
                                 fontSize: 11,
@@ -1251,7 +1288,8 @@ class _TaskBoardColumn extends StatelessWidget {
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(18),
                                       side: BorderSide(
-                                        color: _columnColor.withValues(alpha: 0.4),
+                                        color:
+                                            _columnColor.withValues(alpha: 0.4),
                                         width: 2,
                                       ),
                                     ),

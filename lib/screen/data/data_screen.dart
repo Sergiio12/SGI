@@ -27,26 +27,26 @@ class _DataScreenState extends State<DataScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.dataManagement)),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).dataManagement)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _ActionCard(
             icon: Icons.file_download_outlined,
-            title: AppLocalizations.of(context)!.exportData,
+            title: AppLocalizations.of(context).exportData,
             subtitle:
                 'Guarda tareas, proyectos, objetivos, notas y relaciones en un archivo local.',
-            buttonLabel: AppLocalizations.of(context)!.exportData,
+            buttonLabel: AppLocalizations.of(context).exportData,
             isBusy: _isBusy,
             onPressed: _export,
           ),
           const SizedBox(height: 12),
           _ActionCard(
             icon: Icons.restore_outlined,
-            title: AppLocalizations.of(context)!.importData,
+            title: AppLocalizations.of(context).importData,
             subtitle:
                 'Importa una copia JSON exportada previamente. Sustituye los datos actuales.',
-            buttonLabel: AppLocalizations.of(context)!.restore,
+            buttonLabel: AppLocalizations.of(context).restore,
             isBusy: _isBusy,
             onPressed: _restore,
           ),
@@ -99,10 +99,10 @@ class _DataScreenState extends State<DataScreen> {
           const SizedBox(height: 12),
           _ActionCard(
             icon: Icons.delete_forever_outlined,
-            title: AppLocalizations.of(context)!.clearAllData,
+            title: AppLocalizations.of(context).clearAllData,
             subtitle:
                 'BORRA TODAS las tareas, proyectos, notas y configuraciones. Esta accion NO se puede deshacer.',
-            buttonLabel: AppLocalizations.of(context)!.clearAllData,
+            buttonLabel: AppLocalizations.of(context).clearAllData,
             isBusy: _isBusy,
             isDestructive: true,
             onPressed: _deleteAll,
@@ -140,14 +140,14 @@ class _DataScreenState extends State<DataScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(AppLocalizations.of(dialogContext)!.restore),
+        title: Text(AppLocalizations.of(dialogContext).restore),
         content: const Text(
           'Esta accion sustituira los datos actuales por los del archivo seleccionado.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(AppLocalizations.of(dialogContext)!.cancel),
+            child: Text(AppLocalizations.of(dialogContext).cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
@@ -196,14 +196,14 @@ class _DataScreenState extends State<DataScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(AppLocalizations.of(dialogContext)!.clearAllData),
+        title: Text(AppLocalizations.of(dialogContext).clearAllData),
         content: const Text(
           'Esta accion borrara permanentemente todas tus tareas, proyectos, objetivos y notas. No podras recuperarlos a menos que tengas un respaldo JSON.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(AppLocalizations.of(dialogContext)!.cancel),
+            child: Text(AppLocalizations.of(dialogContext).cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
@@ -211,7 +211,7 @@ class _DataScreenState extends State<DataScreen> {
               backgroundColor: BrainTheme.accentRed,
               foregroundColor: Colors.white,
             ),
-            child: Text(AppLocalizations.of(dialogContext)!.permanentlyDelete),
+            child: Text(AppLocalizations.of(dialogContext).permanentlyDelete),
           ),
         ],
       ),

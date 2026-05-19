@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'dart:ui';
-
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+
+// ─── Enums & Data Model ──────────────────────────────────────────────────────
 
 enum NotificationType { success, error, info, warning }
 
@@ -11,14 +12,20 @@ class InAppNotification {
   final String message;
   final NotificationType type;
   final Duration duration;
+  final String? title;
+  final VoidCallback? onAction;
+  final String? actionLabel;
 
-  InAppNotification({
+  const InAppNotification({
     required this.message,
     required this.type,
-    this.duration = const Duration(seconds: 3),
+    this.duration = const Duration(seconds: 4),
+    this.title,
+    this.onAction,
+    this.actionLabel,
   });
 
-  Color get backgroundColor {
+  Color get accentColor {
     switch (type) {
       case NotificationType.success:
         return BrainTheme.accentGreen;
@@ -36,87 +43,129 @@ class InAppNotification {
       case NotificationType.success:
         return Icons.check_circle_rounded;
       case NotificationType.error:
-        return Icons.error_rounded;
+        return Icons.cancel_rounded;
       case NotificationType.info:
         return Icons.info_rounded;
       case NotificationType.warning:
-        return Icons.warning_rounded;
+        return Icons.warning_amber_rounded;
+    }
+  }
+
+  String get defaultTitle {
+    switch (type) {
+      case NotificationType.success:
+        return 'Éxito';
+      case NotificationType.error:
+        return 'Error';
+      case NotificationType.info:
+        return 'Información';
+      case NotificationType.warning:
+        return 'Advertencia';
     }
   }
 }
 
-class NotificationController extends ChangeNotifier {
-  InAppNotification? _currentNotification;
-  Timer? _timer;
+// ─── Internal model ──────────────────────────────────────────────────────────
 
-  InAppNotification? get currentNotification => _currentNotification;
+class _ActiveNotification {
+  final InAppNotification notification;
+  final String id;
+  Timer? timer;
+
+  _ActiveNotification({required this.notification})
+    : id = '${DateTime.now().microsecondsSinceEpoch}_${notification.hashCode}';
+}
+
+// ─── Controller ──────────────────────────────────────────────────────────────
+
+class NotificationController extends ChangeNotifier {
+  final List<_ActiveNotification> _stack = [];
+  static const int _maxStack = 2;
+
+  List<_ActiveNotification> get activeNotifications =>
+      List.unmodifiable(_stack);
 
   void show(InAppNotification notification) {
-    _timer?.cancel();
+    if (_stack.length >= _maxStack) {
+      _stack.last.timer?.cancel();
+      _stack.removeLast();
+    }
 
-    _currentNotification = notification;
+    final entry = _ActiveNotification(notification: notification);
+    entry.timer = Timer(notification.duration, () => _autoDismiss(entry.id));
+    _stack.insert(0, entry);
     notifyListeners();
+    HapticFeedback.lightImpact();
+  }
 
-    _timer = Timer(notification.duration, () {
-      _currentNotification = null;
-      notifyListeners();
+  void showSuccess(String message, {String? title}) {
+    show(InAppNotification(
+      message: message,
+      title: title,
+      type: NotificationType.success,
+    ));
+  }
+
+  void showError(String message, {String? title}) {
+    show(InAppNotification(
+      message: message,
+      title: title,
+      type: NotificationType.error,
+      duration: const Duration(seconds: 5),
+    ));
+  }
+
+  void showInfo(String message, {String? title}) {
+    show(InAppNotification(
+      message: message,
+      title: title,
+      type: NotificationType.info,
+    ));
+  }
+
+  void showWarning(String message, {String? title}) {
+    show(InAppNotification(
+      message: message,
+      title: title,
+      type: NotificationType.warning,
+      duration: const Duration(seconds: 5),
+    ));
+  }
+
+  void dismiss(String id) {
+    _stack.removeWhere((e) {
+      if (e.id == id) {
+        e.timer?.cancel();
+        return true;
+      }
+      return false;
     });
+    notifyListeners();
   }
 
-  void showSuccess(String message) {
-    show(
-      InAppNotification(
-        message: message,
-        type: NotificationType.success,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+  void _autoDismiss(String id) {
+    if (_stack.any((e) => e.id == id)) {
+      dismiss(id);
+    }
   }
 
-  void showError(String message) {
-    show(
-      InAppNotification(
-        message: message,
-        type: NotificationType.error,
-        duration: const Duration(seconds: 5),
-      ),
-    );
-  }
-
-  void showInfo(String message) {
-    show(
-      InAppNotification(
-        message: message,
-        type: NotificationType.info,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
-  void showWarning(String message) {
-    show(
-      InAppNotification(
-        message: message,
-        type: NotificationType.warning,
-        duration: const Duration(seconds: 4),
-      ),
-    );
-  }
-
-  void dismiss() {
-    _timer?.cancel();
-    _currentNotification = null;
+  void dismissAll() {
+    for (final e in _stack) {
+      e.timer?.cancel();
+    }
+    _stack.clear();
     notifyListeners();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    dismissAll();
     super.dispose();
   }
 }
 
-// Global reference para acceso desde providers
+// ─── Global Helpers ──────────────────────────────────────────────────────────
+
 NotificationController? _globalNotificationController;
 
 void setGlobalNotificationController(NotificationController controller) {
@@ -127,7 +176,6 @@ NotificationController? getGlobalNotificationController() {
   return _globalNotificationController;
 }
 
-// Helper methods que pueden ser llamadas desde cualquier lugar
 void showSuccessNotification(String message) {
   _globalNotificationController?.showSuccess(message);
 }
@@ -144,13 +192,12 @@ void showWarningNotification(String message) {
   _globalNotificationController?.showWarning(message);
 }
 
+// ─── Wrapper Widget ──────────────────────────────────────────────────────────
+
 class NotificationWrapper extends StatelessWidget {
   final Widget child;
 
-  const NotificationWrapper({
-    required this.child,
-    super.key,
-  });
+  const NotificationWrapper({required this.child, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -164,14 +211,23 @@ class NotificationWrapper extends StatelessWidget {
           child: SafeArea(
             child: Consumer<NotificationController>(
               builder: (context, controller, _) {
-                final notification = controller.currentNotification;
-                if (notification == null) {
+                final notifications = controller.activeNotifications;
+                if (notifications.isEmpty) {
                   return const SizedBox.shrink();
                 }
-                return NotificationWidget(
-                  key: ValueKey(notification.hashCode),
-                  notification: notification,
-                  onDismiss: () => controller.dismiss(),
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (int i = 0; i < notifications.length; i++)
+                      _NotificationCard(
+                        key: ValueKey(notifications[i].id),
+                        active: notifications[i],
+                        stackIndex: i,
+                        onDismiss: () => controller.dismiss(
+                          notifications[i].id,
+                        ),
+                      ),
+                  ],
                 );
               },
             ),
@@ -182,282 +238,273 @@ class NotificationWrapper extends StatelessWidget {
   }
 }
 
-class NotificationWidget extends StatefulWidget {
-  final InAppNotification notification;
+// ─── Notification Card ───────────────────────────────────────────────────────
+
+class _NotificationCard extends StatefulWidget {
+  final _ActiveNotification active;
+  final int stackIndex;
   final VoidCallback onDismiss;
 
-  const NotificationWidget({
-    required this.notification,
+  const _NotificationCard({
+    required this.active,
+    required this.stackIndex,
     required this.onDismiss,
     super.key,
   });
 
   @override
-  State<NotificationWidget> createState() => _NotificationWidgetState();
+  State<_NotificationCard> createState() => _NotificationCardState();
 }
 
-class _NotificationWidgetState extends State<NotificationWidget>
+class _NotificationCardState extends State<_NotificationCard>
     with TickerProviderStateMixin {
-  late AnimationController _animationController;
+  late AnimationController _enterController;
   late AnimationController _progressController;
-  late Animation<Offset> _slideAnimation;
+  late Animation<double> _slideAnimation;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+
+  bool _dismissing = false;
 
   @override
   void initState() {
     super.initState();
-
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+    _enterController = AnimationController(
+      duration: const Duration(milliseconds: 450),
       vsync: this,
     );
 
     _progressController = AnimationController(
-      duration: widget.notification.duration,
+      duration: widget.active.notification.duration,
       vsync: this,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.0, -1.0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.elasticOut,
-      ),
+    _slideAnimation = CurvedAnimation(
+      parent: _enterController,
+      curve: Curves.easeOutCubic,
     );
 
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
-      ),
+    _fadeAnimation = CurvedAnimation(
+      parent: _enterController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutBack,
-      ),
+    _scaleAnimation = CurvedAnimation(
+      parent: _enterController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
     );
 
-    _animationController.forward();
+    _enterController.forward();
     _progressController.forward();
   }
 
   @override
-  void didUpdateWidget(NotificationWidget oldWidget) {
+  void didUpdateWidget(_NotificationCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.notification != oldWidget.notification) {
-      _animationController.reset();
+    if (widget.active.id != oldWidget.active.id) {
+      _enterController.reset();
       _progressController.reset();
-      _progressController.duration = widget.notification.duration;
-      _animationController.forward();
+      _progressController.duration = widget.active.notification.duration;
+      _enterController.forward();
       _progressController.forward();
     }
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _enterController.dispose();
     _progressController.dispose();
     super.dispose();
   }
 
+  void _handleDismiss() {
+    if (_dismissing) return;
+    _dismissing = true;
+    _progressController.stop();
+
+    _enterController.reverse().then((_) {
+      if (mounted) {
+        widget.onDismiss();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.maybeOf(context);
-    final screenWidth = mediaQuery?.size.width ?? 400;
-    final isSmallScreen = screenWidth < 400;
-    final notificationColor = widget.notification.backgroundColor;
+    final notif = widget.active.notification;
+    final accent = notif.accentColor;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
-    final surfaceColor = Theme.of(context).colorScheme.surface;
+    final cardColor = Theme.of(context).colorScheme.surface;
     final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+    final onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: isSmallScreen ? 12 : 20,
-        vertical: 12,
-      ),
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: GestureDetector(
-              onTap: widget.onDismiss,
-              child: Container(
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                    BoxShadow(
-                      color: notificationColor.withValues(alpha: 0.15),
-                      blurRadius: 30,
-                      spreadRadius: -5,
-                    ),
-                  ],
-                ),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
+    final isTop = widget.stackIndex == 0;
+    final topPadding = isTop ? 12.0 : 6.0;
+
+    return AnimatedBuilder(
+      animation: _enterController,
+      builder: (context, child) {
+        final slideOffset = (1.0 - _slideAnimation.value) * -80.0;
+        return Opacity(
+          opacity: _fadeAnimation.value.clamp(0.0, 1.0),
+          child: Transform.translate(
+            offset: Offset(0, slideOffset),
+            child: Transform.scale(
+              scale: _scaleAnimation.value.clamp(0.85, 1.0),
+              child: child,
+            ),
+          ),
+        );
+      },
+      child: GestureDetector(
+        onTap: _handleDismiss,
+        child: Container(
+          margin: EdgeInsets.fromLTRB(16, topPadding, 16, 0),
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isLight
+                  ? const Color(0xFFE4E4E7)
+                  : const Color(0xFF27272A),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isLight
+                    ? const Color(0x1A000000)
+                    : const Color(0x4D000000),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+              BoxShadow(
+                color: accent.withValues(alpha: isLight ? 0.12 : 0.2),
+                blurRadius: 24,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: 4,
                       decoration: BoxDecoration(
-                        color: surfaceColor.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: notificationColor.withValues(alpha: 0.3),
-                          width: 1.5,
+                        color: accent,
+                        borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(14),
                         ),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            notificationColor.withValues(alpha: 0.15),
-                            Colors.transparent,
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 14, 4, 10),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: accent.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(notif.icon, color: accent, size: 20),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    notif.title ?? notif.defaultTitle,
+                                    style: TextStyle(
+                                      color: onSurfaceColor,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      height: 1.2,
+                                      decoration: TextDecoration.none,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (notif.message.isNotEmpty) ...[
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      notif.message,
+                                      style: TextStyle(
+                                        color: onSurfaceVariant,
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 13,
+                                        height: 1.3,
+                                        decoration: TextDecoration.none,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            GestureDetector(
+                              onTap: _handleDismiss,
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: isLight
+                                      ? const Color(0x0A000000)
+                                      : const Color(0x0AFFFFFF),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 16,
+                                  color: onSurfaceVariant,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isSmallScreen ? 14 : 18,
-                              vertical: isSmallScreen ? 12 : 16,
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: notificationColor.withValues(
-                                        alpha: 0.2),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: notificationColor.withValues(
-                                          alpha: 0.4),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    widget.notification.icon,
-                                    color: notificationColor,
-                                    size: isSmallScreen ? 18 : 22,
-                                  ),
-                                ),
-                                SizedBox(width: isSmallScreen ? 12 : 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _getTypeLabel(widget.notification.type),
-                                        style: TextStyle(
-                                          color: notificationColor,
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: isSmallScreen ? 11 : 12,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        widget.notification.message,
-                                        style: TextStyle(
-                                          color: onSurfaceColor,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: isSmallScreen ? 14 : 15,
-                                          letterSpacing: -0.2,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(width: isSmallScreen ? 8 : 12),
-                                GestureDetector(
-                                  onTap: widget.onDismiss,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.05),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.close_rounded,
-                                      color: BrainTheme.textTertiary,
-                                      size: isSmallScreen ? 16 : 18,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Barra de progreso
-                          AnimatedBuilder(
-                            animation: _progressController,
-                            builder: (context, child) {
-                              return Container(
-                                height: 3,
-                                width: double.infinity,
-                                alignment: Alignment.centerLeft,
-                                child: FractionallySizedBox(
-                                  widthFactor: 1.0 - _progressController.value,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: notificationColor,
-                                      borderRadius:
-                                          const BorderRadius.horizontal(
-                                        right: Radius.circular(2),
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: notificationColor.withValues(
-                                              alpha: 0.5),
-                                          blurRadius: 4,
-                                          spreadRadius: 1,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-            ),
+              _buildProgressBar(accent),
+            ],
           ),
         ),
       ),
     );
   }
 
-  String _getTypeLabel(NotificationType type) {
-    switch (type) {
-      case NotificationType.success:
-        return 'EXITO';
-      case NotificationType.error:
-        return 'ERROR';
-      case NotificationType.info:
-        return 'INFORMACIÓN';
-      case NotificationType.warning:
-        return 'ADVERTENCIA';
-    }
+  Widget _buildProgressBar(Color accent) {
+    return AnimatedBuilder(
+      animation: _progressController,
+      builder: (context, child) {
+        return Container(
+          height: 2.5,
+          alignment: Alignment.centerLeft,
+          child: FractionallySizedBox(
+            widthFactor: 1.0 - _progressController.value,
+            alignment: Alignment.centerLeft,
+            child: Container(
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.7),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

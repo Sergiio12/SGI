@@ -12,14 +12,14 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.settings),
+        title: Text(AppLocalizations.of(context).settings),
       ),
       body: ListView(
         children: [
           _buildSectionHeader('GENERAL'),
           _buildSettingItem(
             icon: Icons.palette_outlined,
-            title: AppLocalizations.of(context)!.appearance,
+            title: AppLocalizations.of(context).appearance,
             subtitle: 'Personaliza el tema y colores',
             onTap: () {
               Navigator.push(
@@ -30,7 +30,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           _buildSettingItem(
             icon: Icons.notifications_none_rounded,
-            title: AppLocalizations.of(context)!.notifications,
+            title: AppLocalizations.of(context).notifications,
             subtitle: 'Configura tus recordatorios',
             onTap: () {
               Navigator.push(
@@ -43,13 +43,13 @@ class SettingsScreen extends StatelessWidget {
           _buildSectionHeader('SISTEMA'),
           _buildSettingItem(
             icon: Icons.cloud_done_outlined,
-            title: AppLocalizations.of(context)!.dataManagement,
+            title: AppLocalizations.of(context).dataManagement,
             subtitle: 'Exportar, importar y gestionar tus datos',
             onTap: () => Navigator.pushNamed(context, '/data'),
           ),
           _buildSettingItem(
             icon: Icons.bug_report_outlined,
-            title: AppLocalizations.of(context)!.debug,
+            title: AppLocalizations.of(context).debug,
             subtitle: 'Opciones de depuración y pruebas',
             onTap: () {
               Navigator.push(
@@ -60,12 +60,12 @@ class SettingsScreen extends StatelessWidget {
           ),
           _buildSettingItem(
             icon: Icons.info_outline_rounded,
-            title: AppLocalizations.of(context)!.about,
+            title: AppLocalizations.of(context).about,
             subtitle: 'Información de la aplicación',
             onTap: () {
               showAboutDialog(
                 context: context,
-                applicationName: AppLocalizations.of(context)!.appTitle,
+                applicationName: AppLocalizations.of(context).appTitle,
                 applicationVersion: '1.0.1-beta',
                 applicationIcon: ClipRRect(
                   borderRadius: BorderRadius.circular(12),

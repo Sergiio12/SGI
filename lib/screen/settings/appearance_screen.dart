@@ -11,7 +11,7 @@ class AppearanceScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.appearance)),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).appearance)),
       body: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
           return ListView(
@@ -21,7 +21,7 @@ class AppearanceScreen extends StatelessWidget {
               const SizedBox(height: 8),
               _ThemeOption(
                 icon: Icons.brightness_5_outlined,
-                title: AppLocalizations.of(context)!.themeLight,
+                title: AppLocalizations.of(context).themeLight,
                 subtitle: 'Fondo claro, texto oscuro',
                 selected: settings.themeMode == ThemeMode.light,
                 onTap: () => settings.setThemeMode(ThemeMode.light),
@@ -29,7 +29,7 @@ class AppearanceScreen extends StatelessWidget {
               const SizedBox(height: 4),
               _ThemeOption(
                 icon: Icons.nightlight_round,
-                title: AppLocalizations.of(context)!.themeDark,
+                title: AppLocalizations.of(context).themeDark,
                 subtitle: 'Fondo oscuro, texto claro',
                 selected: settings.themeMode == ThemeMode.dark,
                 onTap: () => settings.setThemeMode(ThemeMode.dark),
@@ -37,7 +37,7 @@ class AppearanceScreen extends StatelessWidget {
               const SizedBox(height: 4),
               _ThemeOption(
                 icon: Icons.settings_brightness_outlined,
-                title: AppLocalizations.of(context)!.themeSystem,
+                title: AppLocalizations.of(context).themeSystem,
                 subtitle: 'Sigue la configuración del dispositivo',
                 selected: settings.themeMode == ThemeMode.system,
                 onTap: () => settings.setThemeMode(ThemeMode.system),
@@ -69,7 +69,10 @@ class AppearanceScreen extends StatelessWidget {
                           bottomLeft: Radius.circular(16),
                         ),
                         gradient: LinearGradient(
-                          colors: [BrainTheme.accentPurple, BrainTheme.accentBlue],
+                          colors: [
+                            BrainTheme.accentPurple,
+                            BrainTheme.accentBlue
+                          ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
@@ -81,7 +84,7 @@ class AppearanceScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          AppLocalizations.of(context)!.appTitle,
+                          AppLocalizations.of(context).appTitle,
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,

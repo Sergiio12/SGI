@@ -37,272 +37,260 @@ class GoalCard extends StatelessWidget {
                   backgroundColor: BrainTheme.accentRed,
                   foregroundColor: Colors.white,
                   icon: Icons.delete_outline_rounded,
-                  label: AppLocalizations.of(context)!.delete,
+                  label: AppLocalizations.of(context).delete,
                   borderRadius: BorderRadius.circular(20),
                 ),
               ],
             )
           : null,
       child: Semantics(
-        label: '${goal.title}, ${(goal.progress * 100).toInt()}% ${AppLocalizations.of(context)!.goal}',
+        label:
+            '${goal.title}, ${(goal.progress * 100).toInt()}% ${AppLocalizations.of(context).goal}',
         child: Card(
-        margin: const EdgeInsets.only(bottom: 12),
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: color.withValues(alpha: 0.3),
-            width: 1,
+          margin: const EdgeInsets.only(bottom: 12),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: color.withValues(alpha: 0.3),
+              width: 1,
+            ),
           ),
-        ),
-        color: BrainTheme.cardDark,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: onTap,
-          onLongPress: () => _showQuickActions(context),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: color.withValues(alpha: 0.3),
-                          width: 1,
+          color: BrainTheme.cardDark,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: onTap,
+            onLongPress: () => _showQuickActions(context),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: color.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.track_changes_rounded,
+                          color: color,
+                          size: 24,
                         ),
                       ),
-                      child: Icon(
-                        Icons.track_changes_rounded,
-                        color: color,
-                        size: 24,
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              goal.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.3,
+                                color: BrainTheme.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                _buildBadge(
+                                  _horizonLabel(context, goal.horizon),
+                                  BrainTheme.surfaceDark,
+                                  BrainTheme.textTertiary,
+                                ),
+                                if (goal.progress >= 1) ...[
+                                  const SizedBox(width: 6),
+                                  _buildBadge(
+                                    AppLocalizations.of(context)
+                                        .statusCompleted,
+                                    BrainTheme.accentGreen
+                                        .withValues(alpha: 0.15),
+                                    BrainTheme.accentGreen,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            goal.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.3,
-                              color: BrainTheme.textPrimary,
+                      PopupMenuButton<String>(
+                        color: BrainTheme.cardDark,
+                        surfaceTintColor: Colors.transparent,
+                        icon: Icon(Icons.more_horiz,
+                            color: BrainTheme.textTertiary),
+                        onSelected: (value) {
+                          switch (value) {
+                            case 'edit':
+                              Navigator.pushNamed(context, '/goal',
+                                  arguments: goal.id);
+                            case 'delete':
+                              onDelete?.call();
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit_outlined,
+                                    size: 18, color: BrainTheme.textSecondary),
+                                const SizedBox(width: 10),
+                                Text(AppLocalizations.of(context).editGoal,
+                                    style: TextStyle(
+                                        color: BrainTheme.textPrimary)),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              _buildBadge(
-                                _horizonLabel(context, goal.horizon),
-                                BrainTheme.surfaceDark,
-                                BrainTheme.textTertiary,
-                              ),
-                              if (goal.progress >= 1) ...[
-                                const SizedBox(width: 6),
-                                _buildBadge(
-                                  AppLocalizations.of(context)!.statusCompleted,
-                                  BrainTheme.accentGreen
-                                      .withValues(alpha: 0.15),
-                                  BrainTheme.accentGreen,
-                                ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outline,
+                                    size: 18, color: BrainTheme.accentRed),
+                                const SizedBox(width: 10),
+                                Text(AppLocalizations.of(context).delete,
+                                    style:
+                                        TextStyle(color: BrainTheme.accentRed)),
                               ],
-                            ],
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    PopupMenuButton<String>(
-                      color: BrainTheme.cardDark,
-                      surfaceTintColor: Colors.transparent,
-                      icon: Icon(Icons.more_horiz,
-                          color: BrainTheme.textTertiary),
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'edit':
-                            Navigator.pushNamed(
-                                context, '/goal',
-                                arguments: goal.id);
-                          case 'delete':
-                            onDelete?.call();
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(Icons.edit_outlined,
-                                  size: 18,
-                                  color: BrainTheme.textSecondary),
-                              const SizedBox(width: 10),
-                              Text(AppLocalizations.of(context)!.editGoal,
-                                  style: TextStyle(
-                                      color:
-                                          BrainTheme.textPrimary)),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(Icons.delete_outline,
-                                  size: 18,
-                                  color: BrainTheme.accentRed),
-                              const SizedBox(width: 10),
-                              Text(AppLocalizations.of(context)!.delete,
-                                  style: TextStyle(
-                                      color:
-                                          BrainTheme.accentRed)),
-                            ],
-                          ),
-                        ),
-                      ],
+                    ],
+                  ),
+                  if (goal.description.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      goal.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: BrainTheme.textSecondary,
+                        height: 1.4,
+                      ),
                     ),
                   ],
-                ),
-                if (goal.description.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    goal.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: BrainTheme.textSecondary,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-                if (goal.tags.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Consumer<TagsProvider>(
-                      builder: (context, tp, _) {
-                    final tags = goal.tags
-                        .map((id) => tp.getById(id))
-                        .whereType<Tag>()
-                        .take(3)
-                        .toList();
-                    if (tags.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-                    return Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: tags
-                          .map((tag) => Container(
-                                padding:
-                                    const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: tag.color
-                                      .withValues(alpha: 0.15),
-                                  borderRadius:
-                                      BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  tag.name,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: tag.color,
-                                    fontWeight: FontWeight.w500,
+                  if (goal.tags.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Consumer<TagsProvider>(builder: (context, tp, _) {
+                      final tags = goal.tags
+                          .map((id) => tp.getById(id))
+                          .whereType<Tag>()
+                          .take(3)
+                          .toList();
+                      if (tags.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: tags
+                            .map((tag) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: tag.color.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
                                   ),
-                                ),
-                              ))
-                          .toList(),
-                    );
-                  }),
-                ],
-                const SizedBox(height: 16),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: goal.progress,
-                    minHeight: 8,
-                    backgroundColor: BrainTheme.borderDark,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(color),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(Icons.analytics_outlined,
-                        size: 14,
-                        color: BrainTheme.textTertiary),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        '${goal.metricLabel}: ${_compact(goal.currentValue)} / ${_compact(goal.targetValue)}',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: BrainTheme.textTertiary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(Icons.folder_outlined,
-                        size: 14,
-                        color: BrainTheme.textTertiary),
-                    const SizedBox(width: 3),
-                    Flexible(
-                      child: Text(
-                        '$projectCount',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: BrainTheme.textTertiary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(Icons.access_time,
-                        size: 14,
-                        color: BrainTheme.textTertiary),
-                    const SizedBox(width: 3),
-                    Flexible(
-                      child: Text(
-                        _timeAgo(context, goal.updatedAt),
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: BrainTheme.textTertiary,
-                        ),
-                      ),
-                    ),
+                                  child: Text(
+                                    tag.name,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: tag.color,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                      );
+                    }),
                   ],
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: LinearProgressIndicator(
+                      value: goal.progress,
+                      minHeight: 8,
+                      backgroundColor: BrainTheme.borderDark,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.analytics_outlined,
+                          size: 14, color: BrainTheme.textTertiary),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '${goal.metricLabel}: ${_compact(goal.currentValue)} / ${_compact(goal.targetValue)}',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: BrainTheme.textTertiary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(Icons.folder_outlined,
+                          size: 14, color: BrainTheme.textTertiary),
+                      const SizedBox(width: 3),
+                      Flexible(
+                        child: Text(
+                          '$projectCount',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: BrainTheme.textTertiary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(Icons.access_time,
+                          size: 14, color: BrainTheme.textTertiary),
+                      const SizedBox(width: 3),
+                      Flexible(
+                        child: Text(
+                          _timeAgo(context, goal.updatedAt),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: BrainTheme.textTertiary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
-      ),
-    ).animate().fadeIn(duration: 400.ms).slideY(
-        begin: 0.1, end: 0, curve: Curves.easeOut);
+    )
+        .animate()
+        .fadeIn(duration: 400.ms)
+        .slideY(begin: 0.1, end: 0, curve: Curves.easeOut);
   }
 
-  Widget _buildBadge(
-      String text, Color bgColor, Color textColor) {
+  Widget _buildBadge(String text, Color bgColor, Color textColor) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(6),
@@ -323,13 +311,11 @@ class GoalCard extends StatelessWidget {
       context: context,
       backgroundColor: BrainTheme.cardDark,
       shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (ctx) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: 8, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -337,8 +323,7 @@ class GoalCard extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: BrainTheme.textTertiary
-                      .withValues(alpha: 0.3),
+                  color: BrainTheme.textTertiary.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -353,7 +338,7 @@ class GoalCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '${(goal.progress * 100).round()}% ${AppLocalizations.of(context)!.goalProgressCompleted}',
+                '${(goal.progress * 100).round()}% ${AppLocalizations.of(context).goalProgressCompleted}',
                 style: TextStyle(
                   fontSize: 14,
                   color: Color(goal.colorValue),
@@ -364,28 +349,25 @@ class GoalCard extends StatelessWidget {
                 value: goal.progress,
                 minHeight: 6,
                 backgroundColor: BrainTheme.borderDark,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                    Color(goal.colorValue)),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(Color(goal.colorValue)),
               ),
               const SizedBox(height: 20),
               ListTile(
-                leading: Icon(Icons.edit_outlined,
-                    color: BrainTheme.textSecondary),
-                title: Text(AppLocalizations.of(context)!.editGoal,
-                    style: TextStyle(
-                        color: BrainTheme.textPrimary)),
+                leading:
+                    Icon(Icons.edit_outlined, color: BrainTheme.textSecondary),
+                title: Text(AppLocalizations.of(context).editGoal,
+                    style: TextStyle(color: BrainTheme.textPrimary)),
                 onTap: () {
                   Navigator.pop(ctx);
-                  Navigator.pushNamed(context, '/goal',
-                      arguments: goal.id);
+                  Navigator.pushNamed(context, '/goal', arguments: goal.id);
                 },
               ),
               ListTile(
-                leading: Icon(Icons.delete_outline,
-                    color: BrainTheme.accentRed),
-                title: Text(AppLocalizations.of(context)!.delete,
-                    style:
-                        TextStyle(color: BrainTheme.accentRed)),
+                leading:
+                    Icon(Icons.delete_outline, color: BrainTheme.accentRed),
+                title: Text(AppLocalizations.of(context).delete,
+                    style: TextStyle(color: BrainTheme.accentRed)),
                 onTap: () {
                   Navigator.pop(ctx);
                   onDelete?.call();

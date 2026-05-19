@@ -94,7 +94,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
 
   Future<void> _save() async {
     if (_titleController.text.trim().isEmpty) {
-      showWarningNotification(AppLocalizations.of(context)!.goalNeedsName);
+      showWarningNotification(AppLocalizations.of(context).goalNeedsName);
       return;
     }
 
@@ -192,9 +192,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
 
     return Scaffold(
       body: _isEditing ? _buildFormView(color) : _buildDetailView(color),
-      bottomNavigationBar: _isEditing
-          ? null
-          : _buildViewBottomBar(),
+      bottomNavigationBar: _isEditing ? null : _buildViewBottomBar(),
     );
   }
 
@@ -203,11 +201,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
       builder: (context, goalsProvider, projectsProvider, _) {
         final goal = goalsProvider.getGoalById(widget.goalId!);
         if (goal == null) {
-          return Center(child: Text(AppLocalizations.of(context)!.noData));
+          return Center(child: Text(AppLocalizations.of(context).noData));
         }
 
-        final linkedProjects =
-            projectsProvider.getProjectsByGoal(goal.id);
+        final linkedProjects = projectsProvider.getProjectsByGoal(goal.id);
 
         return CustomScrollView(
           slivers: [
@@ -219,8 +216,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -231,12 +227,11 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                     TabBar(
                       controller: _tabController,
                       labelColor: color,
-                      unselectedLabelColor:
-                          BrainTheme.textTertiary,
+                      unselectedLabelColor: BrainTheme.textTertiary,
                       indicatorColor: color,
                       tabs: [
-                        Tab(text: AppLocalizations.of(context)!.details),
-                        Tab(text: AppLocalizations.of(context)!.projects),
+                        Tab(text: AppLocalizations.of(context).details),
+                        Tab(text: AppLocalizations.of(context).projects),
                       ],
                     ),
                   ],
@@ -248,9 +243,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                 controller: _tabController,
                 children: [
                   _InfoTab(goal: goal, color: color),
-                  _ProjectsTab(
-                      projects: linkedProjects,
-                      color: color),
+                  _ProjectsTab(projects: linkedProjects, color: color),
                 ],
               ),
             ),
@@ -312,11 +305,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                       child: CircularProgressIndicator(
                         value: goal.progress,
                         strokeWidth: 6,
-                        backgroundColor:
-                            BrainTheme.borderDark,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(
-                                color),
+                        backgroundColor: BrainTheme.borderDark,
+                        valueColor: AlwaysStoppedAnimation<Color>(color),
                       ),
                     ),
                     Text(
@@ -344,34 +334,30 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 400.ms).slideY(
-        begin: 0.05, end: 0);
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);
   }
 
-  Widget _buildQuickActions(
-      Goal goal, Color color, GoalsProvider provider) {
+  Widget _buildQuickActions(Goal goal, Color color, GoalsProvider provider) {
     return Row(
       children: [
         _ActionChip(
           icon: Icons.add,
-          label: AppLocalizations.of(context)!.goalAddProgress,
+          label: AppLocalizations.of(context).goalAddProgress,
           color: color,
           onTap: () => _showAddProgressDialog(goal, provider),
         ),
         const SizedBox(width: 8),
         _ActionChip(
           icon: Icons.edit_outlined,
-          label: AppLocalizations.of(context)!.editGoal,
+          label: AppLocalizations.of(context).editGoal,
           color: BrainTheme.accentBlue,
-          onTap: () =>
-              setState(() => _isEditing = true),
+          onTap: () => setState(() => _isEditing = true),
         ),
       ],
     );
   }
 
-  void _showAddProgressDialog(
-      Goal goal, GoalsProvider provider) {
+  void _showAddProgressDialog(Goal goal, GoalsProvider provider) {
     final controller = TextEditingController();
     final l10n = AppLocalizations.of(context);
     showDialog(
@@ -382,9 +368,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
             style: TextStyle(color: BrainTheme.textPrimary)),
         content: TextField(
           controller: controller,
-          keyboardType:
-              const TextInputType.numberWithOptions(
-                  decimal: true),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           autofocus: true,
           decoration: InputDecoration(
             labelText: l10n.goalAmountToAdd,
@@ -397,11 +381,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
           ),
           FilledButton(
             onPressed: () {
-              final amount =
-                  double.tryParse(controller.text
-                          .trim()
-                          .replaceAll(',', '.')) ??
-                      0;
+              final amount = double.tryParse(
+                      controller.text.trim().replaceAll(',', '.')) ??
+                  0;
               if (amount > 0) {
                 final updated = goal.copyWith(
                   currentValue: goal.currentValue + amount,
@@ -423,8 +405,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
       decoration: BoxDecoration(
         color: BrainTheme.primaryDark,
         border: Border(
-          top: BorderSide(
-              color: BrainTheme.borderDark, width: 1),
+          top: BorderSide(color: BrainTheme.borderDark, width: 1),
         ),
       ),
       child: SafeArea(
@@ -434,11 +415,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
           height: 48,
           child: FilledButton.icon(
             onPressed: () => _saveProgress(),
-            icon: const Icon(Icons.trending_up_rounded,
-                size: 18),
-            label: Text(AppLocalizations.of(context)!.goalUpdateProgress,
-                style: TextStyle(
-                    fontWeight: FontWeight.w600)),
+            icon: const Icon(Icons.trending_up_rounded, size: 18),
+            label: Text(AppLocalizations.of(context).goalUpdateProgress,
+                style: TextStyle(fontWeight: FontWeight.w600)),
             style: FilledButton.styleFrom(
               backgroundColor: Color(_colorValue),
               shape: RoundedRectangleBorder(
@@ -453,8 +432,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
 
   Future<void> _saveProgress() async {
     final goalsProvider = context.read<GoalsProvider>();
-    final goal =
-        goalsProvider.getGoalById(widget.goalId!);
+    final goal = goalsProvider.getGoalById(widget.goalId!);
     if (goal == null) return;
 
     _showAddProgressDialog(goal, goalsProvider);
@@ -463,7 +441,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
   Widget _buildFormView(Color color) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isNew ? AppLocalizations.of(context)!.createGoal : AppLocalizations.of(context)!.editGoal),
+        title: Text(_isNew
+            ? AppLocalizations.of(context).createGoal
+            : AppLocalizations.of(context).editGoal),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
@@ -478,9 +458,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
           TextButton(
             onPressed: _save,
             child: Text(
-              AppLocalizations.of(context)!.save,
-              style:
-                  TextStyle(fontWeight: FontWeight.w600),
+              AppLocalizations.of(context).save,
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -498,10 +477,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                     width: 54,
                     height: 54,
                     decoration: BoxDecoration(
-                      color:
-                          color.withValues(alpha: 0.16),
-                      borderRadius:
-                          BorderRadius.circular(14),
+                      color: color.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
                       Icons.track_changes_rounded,
@@ -518,7 +495,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                       fontWeight: FontWeight.w600,
                     ),
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.goalNameHint,
+                      hintText: AppLocalizations.of(context).goalNameHint,
                       border: InputBorder.none,
                       filled: false,
                     ),
@@ -535,31 +512,31 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                 color: BrainTheme.textSecondary,
               ),
               decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.description,
+                hintText: AppLocalizations.of(context).description,
                 border: InputBorder.none,
                 filled: false,
               ),
               maxLines: null,
             ),
             const SizedBox(height: 20),
-            _buildSectionLabel(AppLocalizations.of(context)!.horizon),
+            _buildSectionLabel(AppLocalizations.of(context).horizon),
             const SizedBox(height: 10),
             SegmentedButton<GoalHorizon>(
               segments: [
                 ButtonSegment(
                   value: GoalHorizon.monthly,
                   icon: const Icon(Icons.calendar_view_month),
-                  label: Text(AppLocalizations.of(context)!.goalMonthly),
+                  label: Text(AppLocalizations.of(context).goalMonthly),
                 ),
                 ButtonSegment(
                   value: GoalHorizon.quarterly,
                   icon: const Icon(Icons.view_week_outlined),
-                  label: Text(AppLocalizations.of(context)!.goalQuarterly),
+                  label: Text(AppLocalizations.of(context).goalQuarterly),
                 ),
                 ButtonSegment(
                   value: GoalHorizon.yearly,
                   icon: const Icon(Icons.event_available_outlined),
-                  label: Text(AppLocalizations.of(context)!.goalYearly),
+                  label: Text(AppLocalizations.of(context).goalYearly),
                 ),
               ],
               selected: {_horizon},
@@ -567,15 +544,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                   setState(() => _horizon = value.first),
             ),
             const SizedBox(height: 20),
-            _buildSectionLabel(AppLocalizations.of(context)!.color),
+            _buildSectionLabel(AppLocalizations.of(context).color),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               children: BrainTheme.projectColors.map((c) {
                 final isSelected = c == _colorValue;
                 return GestureDetector(
-                  onTap: () =>
-                      setState(() => _colorValue = c),
+                  onTap: () => setState(() => _colorValue = c),
                   child: Container(
                     width: 32,
                     height: 32,
@@ -583,40 +559,34 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                       color: Color(c),
                       shape: BoxShape.circle,
                       border: isSelected
-                          ? Border.all(
-                              color: Colors.white,
-                              width: 2.5)
+                          ? Border.all(color: Colors.white, width: 2.5)
                           : null,
                     ),
                     child: isSelected
-                        ? const Icon(Icons.check,
-                            size: 16,
-                            color: Colors.white)
+                        ? const Icon(Icons.check, size: 16, color: Colors.white)
                         : null,
                   ),
                 );
               }).toList(),
             ),
             const SizedBox(height: 24),
-            _buildSectionLabel(AppLocalizations.of(context)!.tags),
+            _buildSectionLabel(AppLocalizations.of(context).tags),
             const SizedBox(height: 10),
             Consumer<TagsProvider>(
               builder: (context, tagsProvider, _) {
                 final allTags = tagsProvider.tags;
                 if (allTags.isEmpty) {
                   return Text(
-                    AppLocalizations.of(context)!.goalNoTagsAvailable,
-                    style: TextStyle(
-                        color: BrainTheme.textTertiary,
-                        fontSize: 13),
+                    AppLocalizations.of(context).goalNoTagsAvailable,
+                    style:
+                        TextStyle(color: BrainTheme.textTertiary, fontSize: 13),
                   );
                 }
                 return Wrap(
                   spacing: 8,
                   runSpacing: 6,
                   children: allTags.map((tag) {
-                    final selected =
-                        _tagIds.contains(tag.id);
+                    final selected = _tagIds.contains(tag.id);
                     return FilterChip(
                       label: Text(tag.name),
                       selected: selected,
@@ -643,11 +613,10 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppLocalizations.of(context)!.goalProgressMetric,
+                      AppLocalizations.of(context).goalProgressMetric,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: BrainTheme.textPrimary,
@@ -657,54 +626,44 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                     TextField(
                       controller: _metricController,
                       decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.metric),
+                          labelText: AppLocalizations.of(context).metric),
                     ),
                     const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
                           child: TextField(
-                            controller:
-                                _currentController,
-                            keyboardType:
-                                const TextInputType
-                                    .numberWithOptions(
-                                    decimal: true),
+                            controller: _currentController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
                             decoration: InputDecoration(
-                                labelText: AppLocalizations.of(context)!.goalCurrent),
-                            onChanged: (_) =>
-                                setState(() {}),
+                                labelText:
+                                    AppLocalizations.of(context).goalCurrent),
+                            onChanged: (_) => setState(() {}),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: TextField(
-                            controller:
-                                _targetController,
-                            keyboardType:
-                                const TextInputType
-                                    .numberWithOptions(
-                                    decimal: true),
+                            controller: _targetController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
                             decoration: InputDecoration(
-                                labelText: AppLocalizations.of(context)!.goalTarget),
-                            onChanged: (_) =>
-                                setState(() {}),
+                                labelText:
+                                    AppLocalizations.of(context).goalTarget),
+                            onChanged: (_) => setState(() {}),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     ClipRRect(
-                      borderRadius:
-                          BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: _progress,
                         minHeight: 8,
-                        backgroundColor:
-                            BrainTheme.borderDark,
-                        valueColor:
-                            AlwaysStoppedAnimation(
-                                color),
+                        backgroundColor: BrainTheme.borderDark,
+                        valueColor: AlwaysStoppedAnimation(color),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -724,25 +683,23 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
               ),
             ),
             const SizedBox(height: 24),
-            _buildSectionLabel(AppLocalizations.of(context)!.goalLinkedProjects),
+            _buildSectionLabel(AppLocalizations.of(context).goalLinkedProjects),
             const SizedBox(height: 10),
             Consumer<ProjectsProvider>(
               builder: (context, projectsProvider, _) {
                 final projects = projectsProvider.projects;
                 if (projects.isEmpty) {
                   return Text(
-                    AppLocalizations.of(context)!.emptyState,
-                    style: TextStyle(
-                        color: BrainTheme.textTertiary,
-                        fontSize: 13),
+                    AppLocalizations.of(context).emptyState,
+                    style:
+                        TextStyle(color: BrainTheme.textTertiary, fontSize: 13),
                   );
                 }
                 return Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: projects.map((project) {
-                    final isSelected =
-                        _projectIds.contains(project.id);
+                    final isSelected = _projectIds.contains(project.id);
                     return FilterChip(
                       label: Text(project.title),
                       selected: isSelected,
@@ -785,8 +742,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
       context: context,
       backgroundColor: BrainTheme.cardDark,
       shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(20),
@@ -797,16 +753,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
             Container(
               width: 40,
               height: 4,
-              margin: const EdgeInsets.only(
-                  bottom: 16, left: 0),
+              margin: const EdgeInsets.only(bottom: 16, left: 0),
               decoration: BoxDecoration(
-                color: BrainTheme.textTertiary
-                    .withValues(alpha: 0.3),
+                color: BrainTheme.textTertiary.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             Text(
-              AppLocalizations.of(context)!.goalChooseColor,
+              AppLocalizations.of(context).goalChooseColor,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -831,15 +785,12 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                       color: Color(c),
                       shape: BoxShape.circle,
                       border: isSelected
-                          ? Border.all(
-                              color: Colors.white,
-                              width: 3)
+                          ? Border.all(color: Colors.white, width: 3)
                           : null,
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: Color(c)
-                                    .withValues(alpha: 0.4),
+                                color: Color(c).withValues(alpha: 0.4),
                                 blurRadius: 12,
                                 spreadRadius: 1,
                               )
@@ -847,9 +798,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                           : null,
                     ),
                     child: isSelected
-                        ? const Icon(Icons.check,
-                            size: 22,
-                            color: Colors.white)
+                        ? const Icon(Icons.check, size: 22, color: Colors.white)
                         : null,
                   ),
                 );
@@ -863,9 +812,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
   }
 
   double _readDouble(String value, double fallback) {
-    return double.tryParse(
-            value.trim().replaceAll(',', '.')) ??
-        fallback;
+    return double.tryParse(value.trim().replaceAll(',', '.')) ?? fallback;
   }
 
   String _formatNumber(double value) {
@@ -914,13 +861,11 @@ class _HeaderSliver extends StatelessWidget {
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.edit_outlined,
-              color: BrainTheme.textSecondary),
+          icon: Icon(Icons.edit_outlined, color: BrainTheme.textSecondary),
           onPressed: onEdit,
         ),
         IconButton(
-          icon: Icon(Icons.delete_outline,
-              color: BrainTheme.accentRed),
+          icon: Icon(Icons.delete_outline, color: BrainTheme.accentRed),
           onPressed: onDelete,
         ),
       ],
@@ -993,8 +938,7 @@ class _HeaderSliver extends StatelessWidget {
                             ),
                             if (goal.tags.isNotEmpty) ...[
                               const SizedBox(width: 8),
-                              Consumer<TagsProvider>(
-                                  builder: (context, tp, _) {
+                              Consumer<TagsProvider>(builder: (context, tp, _) {
                                 final tag = goal.tags
                                     .map((id) => tp.getById(id))
                                     .whereType<Tag>()
@@ -1044,8 +988,7 @@ class _Badge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
@@ -1076,7 +1019,7 @@ class _InfoTab extends StatelessWidget {
         if (goal.description.isNotEmpty) ...[
           _InfoCard(
             icon: Icons.description_outlined,
-            title: AppLocalizations.of(context)!.description,
+            title: AppLocalizations.of(context).description,
             child: Text(
               goal.description,
               style: TextStyle(
@@ -1090,48 +1033,37 @@ class _InfoTab extends StatelessWidget {
         ],
         _InfoCard(
           icon: Icons.track_changes_rounded,
-          title: AppLocalizations.of(context)!.details,
+          title: AppLocalizations.of(context).details,
           child: Column(
             children: [
               _InfoRow(
-                label: AppLocalizations.of(context)!.metric,
+                label: AppLocalizations.of(context).metric,
                 value: goal.metricLabel,
               ),
-              Divider(
-                  height: 1,
-                  color: BrainTheme.borderDark),
+              Divider(height: 1, color: BrainTheme.borderDark),
               _InfoRow(
-                label: AppLocalizations.of(context)!.goalCurrent,
+                label: AppLocalizations.of(context).goalCurrent,
                 value: _compact(goal.currentValue),
               ),
-              Divider(
-                  height: 1,
-                  color: BrainTheme.borderDark),
+              Divider(height: 1, color: BrainTheme.borderDark),
               _InfoRow(
-                label: AppLocalizations.of(context)!.goalTarget,
+                label: AppLocalizations.of(context).goalTarget,
                 value: _compact(goal.targetValue),
               ),
-              Divider(
-                  height: 1,
-                  color: BrainTheme.borderDark),
+              Divider(height: 1, color: BrainTheme.borderDark),
               _InfoRow(
-                label: AppLocalizations.of(context)!.goalsProgress,
-                value:
-                    '${(goal.progress * 100).round()}%',
+                label: AppLocalizations.of(context).goalsProgress,
+                value: '${(goal.progress * 100).round()}%',
                 valueColor: color,
               ),
-              Divider(
-                  height: 1,
-                  color: BrainTheme.borderDark),
+              Divider(height: 1, color: BrainTheme.borderDark),
               _InfoRow(
-                label: AppLocalizations.of(context)!.itemCreated,
+                label: AppLocalizations.of(context).itemCreated,
                 value: _formatDate(goal.createdAt),
               ),
-              Divider(
-                  height: 1,
-                  color: BrainTheme.borderDark),
+              Divider(height: 1, color: BrainTheme.borderDark),
               _InfoRow(
-                label: AppLocalizations.of(context)!.itemUpdated,
+                label: AppLocalizations.of(context).itemUpdated,
                 value: _formatDate(goal.updatedAt),
               ),
             ],
@@ -1150,8 +1082,18 @@ class _InfoTab extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-      'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
+      'ene',
+      'feb',
+      'mar',
+      'abr',
+      'may',
+      'jun',
+      'jul',
+      'ago',
+      'sep',
+      'oct',
+      'nov',
+      'dic'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
@@ -1161,8 +1103,7 @@ class _ProjectsTab extends StatelessWidget {
   final List<Project> projects;
   final Color color;
 
-  const _ProjectsTab(
-      {required this.projects, required this.color});
+  const _ProjectsTab({required this.projects, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -1173,11 +1114,10 @@ class _ProjectsTab extends StatelessWidget {
           children: [
             Icon(Icons.folder_open,
                 size: 48,
-                color: BrainTheme.textTertiary
-                    .withValues(alpha: 0.4)),
+                color: BrainTheme.textTertiary.withValues(alpha: 0.4)),
             const SizedBox(height: 12),
             Text(
-              AppLocalizations.of(context)!.goalNoLinkedProjects,
+              AppLocalizations.of(context).goalNoLinkedProjects,
               style: TextStyle(
                 fontSize: 15,
                 color: BrainTheme.textSecondary,
@@ -1207,7 +1147,8 @@ class _ProjectsTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
-                child: Text(project.emoji, style: const TextStyle(fontSize: 20)),
+                child:
+                    Text(project.emoji, style: const TextStyle(fontSize: 20)),
               ),
             ),
             title: Text(
@@ -1230,8 +1171,7 @@ class _ProjectsTab extends StatelessWidget {
                 color: BrainTheme.textTertiary,
               ),
             ),
-            trailing: Icon(Icons.chevron_right,
-                color: BrainTheme.textTertiary),
+            trailing: Icon(Icons.chevron_right, color: BrainTheme.textTertiary),
             onTap: () => Navigator.pushNamed(
               context,
               '/project',
@@ -1266,8 +1206,7 @@ class _InfoCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon,
-                    size: 16, color: BrainTheme.textTertiary),
+                Icon(icon, size: 16, color: BrainTheme.textTertiary),
                 const SizedBox(width: 8),
                 Text(
                   title,
@@ -1349,8 +1288,7 @@ class _ActionChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(14),

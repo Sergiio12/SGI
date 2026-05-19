@@ -47,10 +47,14 @@ class TaskCard extends StatelessWidget {
             ? Colors.transparent
             : priColor;
 
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final card = Semantics(
       label: '${task.title}, ${task.status.name}',
-      value: isDone ? l10n.statusCompleted : isCancelled ? l10n.statusCancelled : l10n.active,
+      value: isDone
+          ? l10n.statusCompleted
+          : isCancelled
+              ? l10n.statusCancelled
+              : l10n.active,
       button: true,
       onTapHint: onTap != null ? l10n.details : null,
       child: Card(
@@ -76,7 +80,8 @@ class TaskCard extends StatelessWidget {
                   width: 4,
                   decoration: BoxDecoration(
                     color: leftBarColor,
-                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(18)),
+                    borderRadius: const BorderRadius.horizontal(
+                        left: Radius.circular(18)),
                   ),
                 ),
                 Expanded(
@@ -100,7 +105,9 @@ class TaskCard extends StatelessWidget {
                                   color: isDimmed
                                       ? BrainTheme.textTertiary
                                       : BrainTheme.textPrimary,
-                                  decoration: isDone ? TextDecoration.lineThrough : null,
+                                  decoration: isDone
+                                      ? TextDecoration.lineThrough
+                                      : null,
                                 ),
                               ),
                             ),
@@ -132,9 +139,10 @@ class TaskCard extends StatelessWidget {
                             _StatusBadge(status: task.status),
                             _PriorityBadge(priority: task.priority),
                             if (task.dueDate != null)
-                              _DateBadge(date: task.dueDate!, isOverdue: task.isOverdue),
-                            if (task.subtasks.isNotEmpty)
-                              _subtabsBadge(task),
+                              _DateBadge(
+                                  date: task.dueDate!,
+                                  isOverdue: task.isOverdue),
+                            if (task.subtasks.isNotEmpty) _subtabsBadge(task),
                             if (task.projectId != null)
                               _ProjectBadge(projectId: task.projectId!),
                             _DateBadge(
@@ -168,7 +176,7 @@ class TaskCard extends StatelessWidget {
             backgroundColor: BrainTheme.accentRed.withValues(alpha: 0.2),
             foregroundColor: BrainTheme.accentRed,
             icon: Icons.delete_outline,
-            label: AppLocalizations.of(context)!.delete,
+            label: AppLocalizations.of(context).delete,
             borderRadius: BorderRadius.circular(18),
           ),
         ],
@@ -238,18 +246,23 @@ class _StatusBadge extends StatelessWidget {
   }
 
   _StatusData _statusData(TaskStatus status, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (status) {
       case TaskStatus.pending:
-        return _StatusData(Icons.circle_outlined, BrainTheme.textTertiary, l10n.statusPending);
+        return _StatusData(
+            Icons.circle_outlined, BrainTheme.textTertiary, l10n.statusPending);
       case TaskStatus.inProgress:
-        return _StatusData(Icons.play_circle_outline, BrainTheme.accentBlue, l10n.statusInProgress);
+        return _StatusData(Icons.play_circle_outline, BrainTheme.accentBlue,
+            l10n.statusInProgress);
       case TaskStatus.inReview:
-        return _StatusData(Icons.rate_review_outlined, BrainTheme.accentOrange, l10n.statusInReview);
+        return _StatusData(Icons.rate_review_outlined, BrainTheme.accentOrange,
+            l10n.statusInReview);
       case TaskStatus.completed:
-        return _StatusData(Icons.check_circle, BrainTheme.accentGreen, l10n.statusCompleted);
+        return _StatusData(
+            Icons.check_circle, BrainTheme.accentGreen, l10n.statusCompleted);
       case TaskStatus.cancelled:
-        return _StatusData(Icons.cancel_outlined, BrainTheme.accentRed, l10n.statusCancelled);
+        return _StatusData(
+            Icons.cancel_outlined, BrainTheme.accentRed, l10n.statusCancelled);
     }
   }
 }
@@ -261,14 +274,18 @@ class _PriorityBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final color = BrainTheme.priorityColor(priority.index);
     String label;
     switch (priority) {
-      case TaskPriority.low: label = l10n.priorityLow;
-      case TaskPriority.medium: label = l10n.priorityMedium;
-      case TaskPriority.high: label = l10n.priorityHigh;
-      case TaskPriority.urgent: label = l10n.priorityUrgent;
+      case TaskPriority.low:
+        label = l10n.priorityLow;
+      case TaskPriority.medium:
+        label = l10n.priorityMedium;
+      case TaskPriority.high:
+        label = l10n.priorityHigh;
+      case TaskPriority.urgent:
+        label = l10n.priorityUrgent;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
@@ -376,7 +393,7 @@ class _ProjectBadge extends StatelessWidget {
     );
     if (project == null) return const SizedBox.shrink();
     return Semantics(
-      label: '${AppLocalizations.of(context)!.project}: ${project.title}',
+      label: '${AppLocalizations.of(context).project}: ${project.title}',
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
         decoration: BoxDecoration(

@@ -90,8 +90,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
               searchQuery: _searchQuery,
               showSearch: _showSearch,
               sortBy: _sortBy,
-              onHorizonFilterChanged: (h) =>
-                  setState(() => _horizonFilter = h),
+              onHorizonFilterChanged: (h) => setState(() => _horizonFilter = h),
               onSortChanged: (s) => setState(() => _sortBy = s),
               onToggleSearch: () => setState(() {
                 _showSearch = !_showSearch;
@@ -110,7 +109,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   onChanged: (v) => setState(() => _searchQuery = v),
                   style: const TextStyle(fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.searchInGoals,
+                    hintText: AppLocalizations.of(context).searchInGoals,
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
@@ -122,16 +121,16 @@ class _GoalsScreenState extends State<GoalsScreen> {
                           )
                         : null,
                     isDense: true,
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
-                      borderSide:
-                          BorderSide(color: BrainTheme.borderDark),
+                      borderSide: BorderSide(color: BrainTheme.borderDark),
                     ),
                   ),
-                ).animate().fadeIn(duration: 200.ms).slideY(
-                    begin: -0.2, end: 0),
+                )
+                    .animate()
+                    .fadeIn(duration: 200.ms)
+                    .slideY(begin: -0.2, end: 0),
               ),
             if (filtered.isEmpty)
               Expanded(
@@ -146,8 +145,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
                       const SizedBox(height: 16),
                       Text(
                         _searchQuery.isNotEmpty
-                            ? '${AppLocalizations.of(context)!.noResults}: "$_searchQuery"'
-                            : AppLocalizations.of(context)!.noResults,
+                            ? '${AppLocalizations.of(context).noResults}: "$_searchQuery"'
+                            : AppLocalizations.of(context).noResults,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -161,13 +160,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
             else
               Expanded(
                 child: ListView(
-                  padding:
-                      const EdgeInsets.fromLTRB(16, 4, 16, 80),
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
                   children: [
                     if (monthly.isNotEmpty)
                       _buildSection(
                         context,
-                        AppLocalizations.of(context)!.goalMonthly,
+                        AppLocalizations.of(context).goalMonthly,
                         monthly,
                         BrainTheme.accentGreen,
                         Icons.calendar_view_month,
@@ -176,7 +174,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     if (quarterly.isNotEmpty)
                       _buildSection(
                         context,
-                        AppLocalizations.of(context)!.goalQuarterly,
+                        AppLocalizations.of(context).goalQuarterly,
                         quarterly,
                         BrainTheme.accentPurple,
                         Icons.view_week_outlined,
@@ -185,7 +183,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     if (yearly.isNotEmpty)
                       _buildSection(
                         context,
-                        AppLocalizations.of(context)!.goalYearly,
+                        AppLocalizations.of(context).goalYearly,
                         yearly,
                         BrainTheme.accentBlue,
                         Icons.event_available_outlined,
@@ -237,8 +235,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 3),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
@@ -258,28 +256,27 @@ class _GoalsScreenState extends State<GoalsScreen> {
         ...List.generate(goals.length, (index) {
           return GoalCard(
             goal: goals[index],
-            projectCount: projectsProvider
-                .getProjectsByGoal(goals[index].id)
-                .length,
+            projectCount:
+                projectsProvider.getProjectsByGoal(goals[index].id).length,
             onTap: () => Navigator.pushNamed(
               context,
               '/goal',
               arguments: goals[index].id,
             ),
-            onDelete: () =>
-                _deleteGoal(context, goals[index]),
-          ).animate().fadeIn(
-            duration: 300.ms,
-            delay: (index * 60).ms,
-          ).slideX(
-              begin: 0.05, end: 0, curve: Curves.easeOut);
+            onDelete: () => _deleteGoal(context, goals[index]),
+          )
+              .animate()
+              .fadeIn(
+                duration: 300.ms,
+                delay: (index * 60).ms,
+              )
+              .slideX(begin: 0.05, end: 0, curve: Curves.easeOut);
         }),
       ],
     );
   }
 
-  Future<void> _deleteGoal(
-      BuildContext context, Goal goal) async {
+  Future<void> _deleteGoal(BuildContext context, Goal goal) async {
     final l10n = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
@@ -306,9 +303,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
       ),
     );
     if (confirm == true) {
-      await context
-          .read<GoalsProvider>()
-          .deleteGoal(goal.id);
+      await context.read<GoalsProvider>().deleteGoal(goal.id);
     }
   }
 }
@@ -327,8 +322,7 @@ class _StatsBar extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      padding: const EdgeInsets.symmetric(
-          horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -340,8 +334,7 @@ class _StatsBar extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color:
-              BrainTheme.accentPurple.withValues(alpha: 0.15),
+          color: BrainTheme.accentPurple.withValues(alpha: 0.15),
         ),
       ),
       child: Row(
@@ -350,31 +343,33 @@ class _StatsBar extends StatelessWidget {
           _StatItem(
             icon: Icons.track_changes_rounded,
             value: '$total',
-            label: AppLocalizations.of(context)!.totalTasks,
+            label: AppLocalizations.of(context).totalTasks,
             color: BrainTheme.accentPurple,
           ),
           _StatItem(
             icon: Icons.calendar_view_month,
             value: '$monthly',
-            label: AppLocalizations.of(context)!.goalMonthly,
+            label: AppLocalizations.of(context).goalMonthly,
             color: BrainTheme.accentGreen,
           ),
           _StatItem(
             icon: Icons.view_week_outlined,
             value: '$quarterly',
-            label: AppLocalizations.of(context)!.goalQuarterly,
+            label: AppLocalizations.of(context).goalQuarterly,
             color: BrainTheme.accentOrange,
           ),
           _StatItem(
             icon: Icons.event_available_outlined,
             value: '$yearly',
-            label: AppLocalizations.of(context)!.goalYearly,
+            label: AppLocalizations.of(context).goalYearly,
             color: BrainTheme.accentBlue,
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 400.ms).slideY(
-        begin: -0.2, end: 0, curve: Curves.easeOut);
+    )
+        .animate()
+        .fadeIn(duration: 400.ms)
+        .slideY(begin: -0.2, end: 0, curve: Curves.easeOut);
   }
 }
 
@@ -454,20 +449,17 @@ class _FilterBar extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     children: [
                       _FilterChip(
-                        label: AppLocalizations.of(context)!.all,
+                        label: AppLocalizations.of(context).all,
                         selected: horizonFilter == null,
                         color: BrainTheme.accentPurple,
-                        onTap: () =>
-                            onHorizonFilterChanged(null),
+                        onTap: () => onHorizonFilterChanged(null),
                       ),
                       const SizedBox(width: 8),
                       _FilterChip(
-                        label: AppLocalizations.of(context)!.goalMonthly,
-                        selected:
-                            horizonFilter == GoalHorizon.monthly,
+                        label: AppLocalizations.of(context).goalMonthly,
+                        selected: horizonFilter == GoalHorizon.monthly,
                         color: BrainTheme.accentGreen,
-                        onTap: () =>
-                            onHorizonFilterChanged(
+                        onTap: () => onHorizonFilterChanged(
                           horizonFilter == GoalHorizon.monthly
                               ? null
                               : GoalHorizon.monthly,
@@ -475,27 +467,21 @@ class _FilterBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       _FilterChip(
-                        label: AppLocalizations.of(context)!.goalQuarterly,
-                        selected:
-                            horizonFilter ==
-                                GoalHorizon.quarterly,
+                        label: AppLocalizations.of(context).goalQuarterly,
+                        selected: horizonFilter == GoalHorizon.quarterly,
                         color: BrainTheme.accentOrange,
-                        onTap: () =>
-                            onHorizonFilterChanged(
-                          horizonFilter ==
-                                  GoalHorizon.quarterly
+                        onTap: () => onHorizonFilterChanged(
+                          horizonFilter == GoalHorizon.quarterly
                               ? null
                               : GoalHorizon.quarterly,
                         ),
                       ),
                       const SizedBox(width: 8),
                       _FilterChip(
-                        label: AppLocalizations.of(context)!.goalYearly,
-                        selected:
-                            horizonFilter == GoalHorizon.yearly,
+                        label: AppLocalizations.of(context).goalYearly,
+                        selected: horizonFilter == GoalHorizon.yearly,
                         color: BrainTheme.accentBlue,
-                        onTap: () =>
-                            onHorizonFilterChanged(
+                        onTap: () => onHorizonFilterChanged(
                           horizonFilter == GoalHorizon.yearly
                               ? null
                               : GoalHorizon.yearly,
@@ -508,14 +494,12 @@ class _FilterBar extends StatelessWidget {
               const SizedBox(width: 8),
               _IconButton(
                 icon: Icons.search,
-                isActive:
-                    showSearch || searchQuery.isNotEmpty,
+                isActive: showSearch || searchQuery.isNotEmpty,
                 activeColor: BrainTheme.accentPurple,
                 onTap: onToggleSearch,
               ),
               const SizedBox(width: 6),
-              _SortDropdown(
-                  sortBy: sortBy, onChanged: onSortChanged),
+              _SortDropdown(sortBy: sortBy, onChanged: onSortChanged),
             ],
           ),
         ],
@@ -543,17 +527,13 @@ class _FilterChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: 250.ms,
-        padding: const EdgeInsets.symmetric(
-            horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: 0.15)
-              : BrainTheme.cardDark,
+          color: selected ? color.withValues(alpha: 0.15) : BrainTheme.cardDark,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selected
-                ? color.withValues(alpha: 0.4)
-                : BrainTheme.borderDark,
+            color:
+                selected ? color.withValues(alpha: 0.4) : BrainTheme.borderDark,
             width: 1,
           ),
         ),
@@ -562,9 +542,7 @@ class _FilterChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: selected
-                ? color
-                : BrainTheme.textSecondary,
+            color: selected ? color : BrainTheme.textSecondary,
           ),
         ),
       ),
@@ -606,9 +584,7 @@ class _IconButton extends StatelessWidget {
         child: Icon(
           icon,
           size: 18,
-          color: isActive
-              ? activeColor
-              : BrainTheme.textSecondary,
+          color: isActive ? activeColor : BrainTheme.textSecondary,
         ),
       ),
     );
@@ -619,8 +595,7 @@ class _SortDropdown extends StatelessWidget {
   final _GoalSortBy sortBy;
   final ValueChanged<_GoalSortBy> onChanged;
 
-  const _SortDropdown(
-      {required this.sortBy, required this.onChanged});
+  const _SortDropdown({required this.sortBy, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -629,18 +604,15 @@ class _SortDropdown extends StatelessWidget {
       decoration: BoxDecoration(
         color: BrainTheme.cardDark,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: BrainTheme.borderDark, width: 1),
+        border: Border.all(color: BrainTheme.borderDark, width: 1),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<_GoalSortBy>(
           value: sortBy,
           isDense: true,
           dropdownColor: BrainTheme.cardDark,
-          icon: Icon(Icons.sort,
-              size: 18, color: BrainTheme.textSecondary),
-          style: TextStyle(
-              fontSize: 13, color: BrainTheme.textSecondary),
+          icon: Icon(Icons.sort, size: 18, color: BrainTheme.textSecondary),
+          style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
           items: _GoalSortBy.values.map((sort) {
             final l10n = AppLocalizations.of(context);
             String label;

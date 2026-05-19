@@ -43,21 +43,21 @@ class ProgressScreen extends StatelessWidget {
                 childAspectRatio: 1.1,
                 children: [
                   StatsCard(
-                    title: AppLocalizations.of(context)!.active,
+                    title: AppLocalizations.of(context).active,
                     value: '$activeTasks',
                     icon: Icons.task_alt_outlined,
                     color: BrainTheme.accentBlue,
                     subtitle: '$completed finalizadas',
                   ),
                   StatsCard(
-                    title: AppLocalizations.of(context)!.projects,
+                    title: AppLocalizations.of(context).projects,
                     value: '${projects.activeProjects.length}',
                     icon: Icons.folder_open_outlined,
                     color: BrainTheme.accentGreen,
                     subtitle: '${projects.completedProjects.length} cerrados',
                   ),
                   StatsCard(
-                    title: AppLocalizations.of(context)!.notes,
+                    title: AppLocalizations.of(context).notes,
                     value: '${notes.notes.length}',
                     icon: Icons.sticky_note_2_outlined,
                     color: BrainTheme.accentCyan,
@@ -74,7 +74,7 @@ class ProgressScreen extends StatelessWidget {
               ),
               const SizedBox(height: 22),
               Text(
-                AppLocalizations.of(context)!.goals,
+                AppLocalizations.of(context).goals,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,

@@ -14,7 +14,7 @@ class TodayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.today)),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).today)),
       body: Consumer<TasksProvider>(
         builder: (context, provider, _) {
           final overdue = provider.overdueTasks;
@@ -24,8 +24,8 @@ class TodayScreen extends StatelessWidget {
           if (overdue.isEmpty && todayTasks.isEmpty && inProgress.isEmpty) {
             return EmptyState(
               emoji: '🎉',
-              title: AppLocalizations.of(context)!.noTasks,
-              subtitle: AppLocalizations.of(context)!.emptyStateDescription,
+              title: AppLocalizations.of(context).noTasks,
+              subtitle: AppLocalizations.of(context).emptyStateDescription,
             );
           }
 
@@ -33,7 +33,7 @@ class TodayScreen extends StatelessWidget {
 
           if (overdue.isNotEmpty) {
             sections.add(_Section(
-              title: AppLocalizations.of(context)!.overdueTasks,
+              title: AppLocalizations.of(context).overdueTasks,
               icon: Icons.warning_amber_rounded,
               color: BrainTheme.accentRed,
               tasks: overdue,
@@ -42,7 +42,7 @@ class TodayScreen extends StatelessWidget {
 
           if (todayTasks.isNotEmpty) {
             sections.add(_Section(
-              title: AppLocalizations.of(context)!.todayView,
+              title: AppLocalizations.of(context).todayView,
               icon: Icons.today_rounded,
               color: BrainTheme.accentOrange,
               tasks: todayTasks,
@@ -51,7 +51,7 @@ class TodayScreen extends StatelessWidget {
 
           if (inProgress.isNotEmpty) {
             sections.add(_Section(
-              title: AppLocalizations.of(context)!.statusInProgress,
+              title: AppLocalizations.of(context).statusInProgress,
               icon: Icons.play_circle_outline,
               color: BrainTheme.accentBlue,
               tasks: inProgress,
@@ -75,8 +75,7 @@ class TodayScreen extends StatelessWidget {
                     '/task',
                     arguments: task.id,
                   ),
-                  onTaskToggle: (task) =>
-                      provider.toggleTaskStatus(task.id),
+                  onTaskToggle: (task) => provider.toggleTaskStatus(task.id),
                 ),
               ),
             ],
@@ -138,21 +137,21 @@ class _TodayHeader extends StatelessWidget {
             children: [
               _HeaderStat(
                 count: overdueCount,
-                label: AppLocalizations.of(context)!.overdueTasks,
+                label: AppLocalizations.of(context).overdueTasks,
                 color: Colors.white.withValues(alpha: 0.9),
                 bgColor: Colors.white.withValues(alpha: 0.15),
               ),
               const SizedBox(width: 12),
               _HeaderStat(
                 count: todayCount,
-                label: AppLocalizations.of(context)!.todayView,
+                label: AppLocalizations.of(context).todayView,
                 color: Colors.white,
                 bgColor: Colors.white.withValues(alpha: 0.15),
               ),
               const SizedBox(width: 12),
               _HeaderStat(
                 count: inProgressCount,
-                label: AppLocalizations.of(context)!.statusInProgress,
+                label: AppLocalizations.of(context).statusInProgress,
                 color: Colors.white,
                 bgColor: Colors.white.withValues(alpha: 0.15),
               ),
@@ -226,12 +225,28 @@ class _Section {
 }
 
 const _dayNames = [
-  'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo',
+  'Lunes',
+  'Martes',
+  'Miércoles',
+  'Jueves',
+  'Viernes',
+  'Sábado',
+  'Domingo',
 ];
 
 const _months = [
-  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
 ];
 
 class _TaskSection extends StatelessWidget {

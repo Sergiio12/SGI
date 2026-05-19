@@ -143,23 +143,27 @@ class NoteCard extends StatelessWidget {
 
   Widget _buildMetaRow() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            _NoteTypeBadge(type: note.type),
-            if (note.attachments.isNotEmpty) ...[
-              const SizedBox(width: 8),
-              _MetaBadge(
-                icon: Icons.attach_file,
-                label: '${note.attachments.length}',
-                color: BrainTheme.accentCyan,
-              ),
+        Flexible(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _NoteTypeBadge(type: note.type),
+              if (note.attachments.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                _MetaBadge(
+                  icon: Icons.attach_file,
+                  label: '${note.attachments.length}',
+                  color: BrainTheme.accentCyan,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
+        const SizedBox(width: 8),
         Text(
           DateFormat('d MMM, HH:mm').format(note.updatedAt),
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w500,
@@ -275,6 +279,7 @@ class _NoteTypeBadge extends StatelessWidget {
       ),
       child: Text(
         label,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
             fontSize: 10, color: color, fontWeight: FontWeight.w600),
       ),
@@ -306,10 +311,13 @@ class _MetaBadge extends StatelessWidget {
         children: [
           Icon(icon, size: 10, color: color),
           const SizedBox(width: 3),
-          Text(
-            label,
-            style: TextStyle(
-                fontSize: 10, color: color, fontWeight: FontWeight.w600),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 10, color: color, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),

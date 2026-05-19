@@ -43,9 +43,9 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         if (allProjects.isEmpty) {
           return EmptyState(
             emoji: '🚀',
-            title: AppLocalizations.of(context)!.emptyState,
-            subtitle: AppLocalizations.of(context)!.emptyStateDescription,
-            actionLabel: AppLocalizations.of(context)!.createProject,
+            title: AppLocalizations.of(context).emptyState,
+            subtitle: AppLocalizations.of(context).emptyStateDescription,
+            actionLabel: AppLocalizations.of(context).createProject,
             onAction: () => Navigator.pushNamed(context, '/project'),
           );
         }
@@ -68,16 +68,21 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               final bDate = b.deadline ?? DateTime(9999);
               return aDate.compareTo(bDate);
             case _ProjectSortBy.progress:
-              return _projectProgress(b, provider).compareTo(_projectProgress(a, provider));
+              return _projectProgress(b, provider)
+                  .compareTo(_projectProgress(a, provider));
             case _ProjectSortBy.updatedAt:
               return b.updatedAt.compareTo(a.updatedAt);
           }
         });
 
-        final active = filtered.where((p) => p.status == ProjectStatus.active).toList();
-        final paused = filtered.where((p) => p.status == ProjectStatus.paused).toList();
-        final completed = filtered.where((p) => p.status == ProjectStatus.completed).toList();
-        final abandoned = filtered.where((p) => p.status == ProjectStatus.abandoned).toList();
+        final active =
+            filtered.where((p) => p.status == ProjectStatus.active).toList();
+        final paused =
+            filtered.where((p) => p.status == ProjectStatus.paused).toList();
+        final completed =
+            filtered.where((p) => p.status == ProjectStatus.completed).toList();
+        final abandoned =
+            filtered.where((p) => p.status == ProjectStatus.abandoned).toList();
 
         return Column(
           children: [
@@ -106,7 +111,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   onChanged: (v) => setState(() => _searchQuery = v),
                   style: const TextStyle(fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.searchInProjects,
+                    hintText: AppLocalizations.of(context).searchInProjects,
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
@@ -124,7 +129,10 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                       borderSide: BorderSide(color: BrainTheme.borderDark),
                     ),
                   ),
-                ).animate().fadeIn(duration: 200.ms).slideY(begin: -0.2, end: 0),
+                )
+                    .animate()
+                    .fadeIn(duration: 200.ms)
+                    .slideY(begin: -0.2, end: 0),
               ),
             if (filtered.isEmpty)
               Expanded(
@@ -139,10 +147,10 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                       const SizedBox(height: 16),
                       Text(
                         _searchQuery.isNotEmpty
-                            ? '${AppLocalizations.of(context)!.noResults} "$_searchQuery"'
+                            ? '${AppLocalizations.of(context).noResults} "$_searchQuery"'
                             : _statusFilter != null
-                                ? '${AppLocalizations.of(context)!.no} ${AppLocalizations.of(context)!.projects.toLowerCase()} ${_statusLabel(_statusFilter!).toLowerCase()}'
-                                : '${AppLocalizations.of(context)!.no} ${AppLocalizations.of(context)!.projects}',
+                                ? '${AppLocalizations.of(context).no} ${AppLocalizations.of(context).projects.toLowerCase()} ${_statusLabel(_statusFilter!).toLowerCase()}'
+                                : '${AppLocalizations.of(context).no} ${AppLocalizations.of(context).projects}',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -179,7 +187,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                     if (completed.isNotEmpty)
                       _buildSection(
                         context,
-                        AppLocalizations.of(context)!.statusCompleted,
+                        AppLocalizations.of(context).statusCompleted,
                         completed,
                         BrainTheme.accentBlue,
                         Icons.check_rounded,
@@ -244,7 +252,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
@@ -270,36 +279,40 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               arguments: projects[index].id,
             ),
             onDelete: () => _deleteProject(context, projects[index], provider),
-          ).animate().fadeIn(
-            duration: 300.ms,
-            delay: (index * 60).ms,
-          ).slideX(begin: 0.05, end: 0, curve: Curves.easeOut);
+          )
+              .animate()
+              .fadeIn(
+                duration: 300.ms,
+                delay: (index * 60).ms,
+              )
+              .slideX(begin: 0.05, end: 0, curve: Curves.easeOut);
         }),
       ],
     );
   }
 
-  Future<void> _deleteProject(BuildContext context, Project project, ProjectsProvider provider) async {
+  Future<void> _deleteProject(
+      BuildContext context, Project project, ProjectsProvider provider) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
-        title: Text(AppLocalizations.of(context)!.itemDeleted,
+        title: Text(AppLocalizations.of(context).itemDeleted,
             style: TextStyle(color: BrainTheme.textPrimary)),
         content: Text(
-          '${AppLocalizations.of(context)!.no} "${project.title}"?',
+          '${AppLocalizations.of(context).no} "${project.title}"?',
           style: TextStyle(color: BrainTheme.textSecondary),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text(AppLocalizations.of(context)!.cancel)),
+              child: Text(AppLocalizations.of(context).cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
                 backgroundColor: BrainTheme.accentRed,
                 foregroundColor: Colors.white),
-            child: Text(AppLocalizations.of(context)!.delete),
+            child: Text(AppLocalizations.of(context).delete),
           ),
         ],
       ),
@@ -311,13 +324,16 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
   String _statusLabel(ProjectStatus status) {
     switch (status) {
-      case ProjectStatus.active: return AppLocalizations.of(context)!.active;
-      case ProjectStatus.paused: return 'Pausados';
-      case ProjectStatus.completed: return AppLocalizations.of(context)!.statusCompleted;
-      case ProjectStatus.abandoned: return 'Abandonados';
+      case ProjectStatus.active:
+        return AppLocalizations.of(context).active;
+      case ProjectStatus.paused:
+        return 'Pausados';
+      case ProjectStatus.completed:
+        return AppLocalizations.of(context).statusCompleted;
+      case ProjectStatus.abandoned:
+        return 'Abandonados';
     }
   }
-
 }
 
 class _StatsBar extends StatelessWidget {
@@ -352,16 +368,16 @@ class _StatsBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-            _StatItem(
+          _StatItem(
             icon: Icons.folder_outlined,
             value: '$total',
-            label: AppLocalizations.of(context)!.all,
+            label: AppLocalizations.of(context).all,
             color: BrainTheme.accentPurple,
           ),
           _StatItem(
             icon: Icons.play_arrow_rounded,
             value: '$active',
-            label: AppLocalizations.of(context)!.active,
+            label: AppLocalizations.of(context).active,
             color: BrainTheme.accentGreen,
           ),
           _StatItem(
@@ -373,12 +389,15 @@ class _StatsBar extends StatelessWidget {
           _StatItem(
             icon: Icons.check_rounded,
             value: '$completed',
-            label: AppLocalizations.of(context)!.completedTasks,
+            label: AppLocalizations.of(context).completedTasks,
             color: BrainTheme.accentBlue,
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2, end: 0, curve: Curves.easeOut);
+    )
+        .animate()
+        .fadeIn(duration: 400.ms)
+        .slideY(begin: -0.2, end: 0, curve: Curves.easeOut);
   }
 }
 
@@ -458,18 +477,20 @@ class _FilterBar extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     children: [
                       _FilterChip(
-                        label: AppLocalizations.of(context)!.all,
+                        label: AppLocalizations.of(context).all,
                         selected: statusFilter == null,
                         color: BrainTheme.accentPurple,
                         onTap: () => onStatusFilterChanged(null),
                       ),
                       const SizedBox(width: 8),
                       _FilterChip(
-                        label: AppLocalizations.of(context)!.active,
+                        label: AppLocalizations.of(context).active,
                         selected: statusFilter == ProjectStatus.active,
                         color: BrainTheme.accentGreen,
                         onTap: () => onStatusFilterChanged(
-                          statusFilter == ProjectStatus.active ? null : ProjectStatus.active,
+                          statusFilter == ProjectStatus.active
+                              ? null
+                              : ProjectStatus.active,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -478,16 +499,20 @@ class _FilterBar extends StatelessWidget {
                         selected: statusFilter == ProjectStatus.paused,
                         color: BrainTheme.accentOrange,
                         onTap: () => onStatusFilterChanged(
-                          statusFilter == ProjectStatus.paused ? null : ProjectStatus.paused,
+                          statusFilter == ProjectStatus.paused
+                              ? null
+                              : ProjectStatus.paused,
                         ),
                       ),
                       const SizedBox(width: 8),
                       _FilterChip(
-                        label: AppLocalizations.of(context)!.statusCompleted,
+                        label: AppLocalizations.of(context).statusCompleted,
                         selected: statusFilter == ProjectStatus.completed,
                         color: BrainTheme.accentBlue,
                         onTap: () => onStatusFilterChanged(
-                          statusFilter == ProjectStatus.completed ? null : ProjectStatus.completed,
+                          statusFilter == ProjectStatus.completed
+                              ? null
+                              : ProjectStatus.completed,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -496,7 +521,9 @@ class _FilterBar extends StatelessWidget {
                         selected: statusFilter == ProjectStatus.abandoned,
                         color: BrainTheme.textTertiary,
                         onTap: () => onStatusFilterChanged(
-                          statusFilter == ProjectStatus.abandoned ? null : ProjectStatus.abandoned,
+                          statusFilter == ProjectStatus.abandoned
+                              ? null
+                              : ProjectStatus.abandoned,
                         ),
                       ),
                     ],
@@ -544,7 +571,8 @@ class _FilterChip extends StatelessWidget {
           color: selected ? color.withValues(alpha: 0.15) : BrainTheme.cardDark,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selected ? color.withValues(alpha: 0.4) : BrainTheme.borderDark,
+            color:
+                selected ? color.withValues(alpha: 0.4) : BrainTheme.borderDark,
             width: 1,
           ),
         ),
@@ -581,10 +609,14 @@ class _IconButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isActive ? activeColor.withValues(alpha: 0.12) : BrainTheme.cardDark,
+          color: isActive
+              ? activeColor.withValues(alpha: 0.12)
+              : BrainTheme.cardDark,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isActive ? activeColor.withValues(alpha: 0.3) : BrainTheme.borderDark,
+            color: isActive
+                ? activeColor.withValues(alpha: 0.3)
+                : BrainTheme.borderDark,
             width: 1,
           ),
         ),
@@ -623,10 +655,14 @@ class _SortDropdown extends StatelessWidget {
           items: _ProjectSortBy.values.map((sort) {
             String label;
             switch (sort) {
-              case _ProjectSortBy.updatedAt: label = AppLocalizations.of(context)!.sortCreatedAt;
-              case _ProjectSortBy.title: label = AppLocalizations.of(context)!.sortTitle;
-              case _ProjectSortBy.deadline: label = AppLocalizations.of(context)!.sortDueDate;
-              case _ProjectSortBy.progress: label = 'Progreso';
+              case _ProjectSortBy.updatedAt:
+                label = AppLocalizations.of(context).sortCreatedAt;
+              case _ProjectSortBy.title:
+                label = AppLocalizations.of(context).sortTitle;
+              case _ProjectSortBy.deadline:
+                label = AppLocalizations.of(context).sortDueDate;
+              case _ProjectSortBy.progress:
+                label = 'Progreso';
             }
             return DropdownMenuItem(
               value: sort,

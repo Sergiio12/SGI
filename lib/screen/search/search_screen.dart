@@ -50,7 +50,7 @@ class _SearchScreenState extends State<SearchScreen> {
           onChanged: _onSearch,
           style: const TextStyle(fontSize: 17),
           decoration: InputDecoration(
-            hintText: AppLocalizations.of(context)!.searchTasks,
+            hintText: AppLocalizations.of(context).searchTasks,
             border: InputBorder.none,
             filled: false,
           ),
@@ -76,7 +76,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   Text('🔍', style: TextStyle(fontSize: 48)),
                   SizedBox(height: 16),
                   Text(
-                    AppLocalizations.of(context)!.search,
+                    AppLocalizations.of(context).search,
                     style: TextStyle(
                       color: BrainTheme.textSecondary,
                       fontSize: 15,
@@ -84,7 +84,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    AppLocalizations.of(context)!.searchInTasks,
+                    AppLocalizations.of(context).searchInTasks,
                     style: TextStyle(
                       color: BrainTheme.textTertiary,
                       fontSize: 13,
@@ -103,7 +103,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   const Text('😕', style: TextStyle(fontSize: 48)),
                   const SizedBox(height: 16),
                   Text(
-                    '${AppLocalizations.of(context)!.noResults} para "${search.query}"',
+                    '${AppLocalizations.of(context).noResults} para "${search.query}"',
                     style: TextStyle(
                       color: BrainTheme.textSecondary,
                       fontSize: 15,

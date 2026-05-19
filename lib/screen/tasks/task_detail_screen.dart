@@ -96,7 +96,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
 
   Future<void> _save() async {
     if (_titleController.text.trim().isEmpty) {
-      showWarningNotification(AppLocalizations.of(context)!.task);
+      showWarningNotification(AppLocalizations.of(context).task);
       return;
     }
 
@@ -178,16 +178,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             onEdit: () => setState(() => _showForm = true),
             onDelete: () => _deleteTask(task),
             onStatusChanged: (status) {
-              context
-                  .read<TasksProvider>()
-                  .updateTask(task.copyWith(status: status, lastActivityAt: DateTime.now()));
+              context.read<TasksProvider>().updateTask(task.copyWith(
+                  status: status, lastActivityAt: DateTime.now()));
             },
             onToggle: () {
               context.read<TasksProvider>().toggleTaskStatus(task.id);
             },
           ),
           SliverToBoxAdapter(
-            child: _TaskQuickActions(task: task).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0),
+            child: _TaskQuickActions(task: task)
+                .animate()
+                .fadeIn(delay: 200.ms)
+                .slideY(begin: 0.1, end: 0),
           ),
           SliverToBoxAdapter(
             child: _TaskMetaSection(
@@ -232,11 +234,14 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   Widget _buildFormView(Task? task) {
     final isEditing = task != null;
     final subtaskDone = _subtasks.where((s) => s.isDone).length;
-    final subtaskProgress = _subtasks.isEmpty ? 0.0 : subtaskDone / _subtasks.length;
+    final subtaskProgress =
+        _subtasks.isEmpty ? 0.0 : subtaskDone / _subtasks.length;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? AppLocalizations.of(context)!.editTask : AppLocalizations.of(context)!.createTask),
+        title: Text(isEditing
+            ? AppLocalizations.of(context).editTask
+            : AppLocalizations.of(context).createTask),
         actions: [
           if (isEditing)
             IconButton(
@@ -246,7 +251,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
           TextButton(
             onPressed: _save,
             child: Text(
-              AppLocalizations.of(context)!.save,
+              AppLocalizations.of(context).save,
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
@@ -265,7 +270,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 color: BrainTheme.textPrimary,
               ),
               decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.sortTitle,
+                hintText: AppLocalizations.of(context).sortTitle,
                 border: InputBorder.none,
                 filled: false,
               ),
@@ -279,7 +284,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 color: BrainTheme.textSecondary,
               ),
               decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.description,
+                hintText: AppLocalizations.of(context).description,
                 border: InputBorder.none,
                 filled: false,
               ),
@@ -287,34 +292,37 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ),
             const SizedBox(height: 16),
             _FormSection(
-              title: AppLocalizations.of(context)!.details,
+              title: AppLocalizations.of(context).details,
               icon: Icons.tune,
               children: [
                 _FormRow(
                   icon: Icons.flag_outlined,
-                  label: AppLocalizations.of(context)!.filterStatus,
+                  label: AppLocalizations.of(context).filterStatus,
                   child: DropdownButton<TaskStatus>(
                     value: _status,
                     dropdownColor: BrainTheme.cardDark,
                     underline: const SizedBox.shrink(),
                     isExpanded: true,
-                    items: TaskStatus.values.map((s) => DropdownMenuItem(
-                      value: s,
-                      child: Row(
-                        children: [
-                          Icon(_statusIcon(s), size: 16, color: _statusColor(s)),
-                          const SizedBox(width: 8),
-                          Text(_statusLabel(s, context)),
-                        ],
-                      ),
-                    )).toList(),
+                    items: TaskStatus.values
+                        .map((s) => DropdownMenuItem(
+                              value: s,
+                              child: Row(
+                                children: [
+                                  Icon(_statusIcon(s),
+                                      size: 16, color: _statusColor(s)),
+                                  const SizedBox(width: 8),
+                                  Text(_statusLabel(s, context)),
+                                ],
+                              ),
+                            ))
+                        .toList(),
                     onChanged: (value) => setState(() => _status = value!),
                   ),
                 ),
                 const SizedBox(height: 10),
                 _FormRow(
                   icon: Icons.priority_high,
-                  label: AppLocalizations.of(context)!.sortPriority,
+                  label: AppLocalizations.of(context).sortPriority,
                   child: Row(
                     children: TaskPriority.values.map((priority) {
                       final isSelected = priority == _priority;
@@ -326,7 +334,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? BrainTheme.priorityColor(priority.index).withValues(alpha: 0.2)
+                                  ? BrainTheme.priorityColor(priority.index)
+                                      .withValues(alpha: 0.2)
                                   : BrainTheme.surfaceDark,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
@@ -338,9 +347,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                             child: Column(
                               children: [
                                 Container(
-                                  width: 8, height: 8,
+                                  width: 8,
+                                  height: 8,
                                   decoration: BoxDecoration(
-                                    color: BrainTheme.priorityColor(priority.index),
+                                    color: BrainTheme.priorityColor(
+                                        priority.index),
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -351,7 +362,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                     color: isSelected
-                                        ? BrainTheme.priorityColor(priority.index)
+                                        ? BrainTheme.priorityColor(
+                                            priority.index)
                                         : BrainTheme.textSecondary,
                                   ),
                                 ),
@@ -366,19 +378,22 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 const SizedBox(height: 10),
                 _FormRow(
                   icon: Icons.calendar_today_outlined,
-                  label: AppLocalizations.of(context)!.dueDate,
+                  label: AppLocalizations.of(context).dueDate,
                   child: GestureDetector(
                     onTap: () async {
                       final date = await showDatePicker(
                         context: context,
                         initialDate: _dueDate ?? DateTime.now(),
-                        firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                        lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
+                        firstDate:
+                            DateTime.now().subtract(const Duration(days: 365)),
+                        lastDate:
+                            DateTime.now().add(const Duration(days: 365 * 3)),
                       );
                       if (date != null) setState(() => _dueDate = date);
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: BrainTheme.surfaceDark,
                         borderRadius: BorderRadius.circular(8),
@@ -388,11 +403,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            _dueDate != null && _dueDate!.isBefore(DateTime.now())
+                            _dueDate != null &&
+                                    _dueDate!.isBefore(DateTime.now())
                                 ? Icons.error_outline
                                 : Icons.event,
                             size: 14,
-                            color: _dueDate != null && _dueDate!.isBefore(DateTime.now())
+                            color: _dueDate != null &&
+                                    _dueDate!.isBefore(DateTime.now())
                                 ? BrainTheme.accentRed
                                 : BrainTheme.textSecondary,
                           ),
@@ -400,14 +417,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           Text(
                             _dueDate != null
                                 ? DateFormat('dd MMM yyyy').format(_dueDate!)
-                                : AppLocalizations.of(context)!.noDueDate,
+                                : AppLocalizations.of(context).noDueDate,
                             style: TextStyle(color: BrainTheme.textPrimary),
                           ),
                           if (_dueDate != null) ...[
                             const SizedBox(width: 6),
                             GestureDetector(
                               onTap: () => setState(() => _dueDate = null),
-                              child: Icon(Icons.close, size: 14, color: BrainTheme.textTertiary),
+                              child: Icon(Icons.close,
+                                  size: 14, color: BrainTheme.textTertiary),
                             ),
                           ],
                         ],
@@ -418,23 +436,29 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 const SizedBox(height: 10),
                 _FormRow(
                   icon: Icons.folder_outlined,
-                  label: AppLocalizations.of(context)!.project,
+                  label: AppLocalizations.of(context).project,
                   child: Consumer<ProjectsProvider>(
                     builder: (context, projects, _) {
                       return DropdownButton<String?>(
                         value: _projectId,
                         dropdownColor: BrainTheme.cardDark,
                         underline: const SizedBox.shrink(),
-                        hint: Text(AppLocalizations.of(context)!.noDueDate),
+                        hint: Text(AppLocalizations.of(context).noDueDate),
                         isExpanded: true,
                         items: [
-                          DropdownMenuItem(value: null, child: Text(AppLocalizations.of(context)!.noDueDate)),
-                          ...projects.projects.map((project) => DropdownMenuItem(
-                            value: project.id,
-                            child: Text('${project.emoji} ${project.title}'),
-                          )),
+                          DropdownMenuItem(
+                              value: null,
+                              child:
+                                  Text(AppLocalizations.of(context).noDueDate)),
+                          ...projects.projects
+                              .map((project) => DropdownMenuItem(
+                                    value: project.id,
+                                    child: Text(
+                                        '${project.emoji} ${project.title}'),
+                                  )),
                         ],
-                        onChanged: (value) => setState(() => _projectId = value),
+                        onChanged: (value) =>
+                            setState(() => _projectId = value),
                       );
                     },
                   ),
@@ -443,7 +467,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ),
             const SizedBox(height: 14),
             _FormSection(
-              title: AppLocalizations.of(context)!.notifications,
+              title: AppLocalizations.of(context).notifications,
               icon: Icons.timer_outlined,
               children: [
                 Row(
@@ -451,9 +475,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     Expanded(
                       child: TextField(
                         controller: _estimatedHoursController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.task,
+                          labelText: AppLocalizations.of(context).task,
                           isDense: true,
                         ),
                       ),
@@ -462,9 +487,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     Expanded(
                       child: TextField(
                         controller: _actualHoursController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.note,
+                          labelText: AppLocalizations.of(context).note,
                           isDense: true,
                         ),
                       ),
@@ -474,7 +500,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                         controller: _reminderController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.notifications,
+                          labelText: AppLocalizations.of(context).notifications,
                           hintText: '60',
                           isDense: true,
                         ),
@@ -486,7 +512,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ),
             const SizedBox(height: 14),
             _FormSection(
-              title: AppLocalizations.of(context)!.tags,
+              title: AppLocalizations.of(context).tags,
               icon: Icons.label_outline,
               children: [
                 Consumer<TagsProvider>(builder: (context, tagsProv, _) {
@@ -504,20 +530,27 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                             runSpacing: 4,
                             children: selected.map((tag) {
                               return GestureDetector(
-                                onTap: () => setState(() => _selectedTags.remove(tag.id)),
+                                onTap: () => setState(
+                                    () => _selectedTags.remove(tag.id)),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
                                   decoration: BoxDecoration(
                                     color: tag.color.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: tag.color.withValues(alpha: 0.3)),
+                                    border: Border.all(
+                                        color:
+                                            tag.color.withValues(alpha: 0.3)),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(tag.name, style: TextStyle(fontSize: 12, color: tag.color)),
+                                      Text(tag.name,
+                                          style: TextStyle(
+                                              fontSize: 12, color: tag.color)),
                                       const SizedBox(width: 4),
-                                      Icon(Icons.close, size: 12, color: tag.color),
+                                      Icon(Icons.close,
+                                          size: 12, color: tag.color),
                                     ],
                                   ),
                                 ),
@@ -531,10 +564,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                             child: OutlinedButton.icon(
                               onPressed: _showTagPicker,
                               icon: const Icon(Icons.playlist_add, size: 16),
-                              label: Text(AppLocalizations.of(context)!.filter),
+                              label: Text(AppLocalizations.of(context).filter),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: BrainTheme.accentPurple,
-                                side: BorderSide(color: BrainTheme.accentPurple.withValues(alpha: 0.3)),
+                                side: BorderSide(
+                                    color: BrainTheme.accentPurple
+                                        .withValues(alpha: 0.3)),
                               ),
                             ),
                           ),
@@ -542,7 +577,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           OutlinedButton.icon(
                             onPressed: _showManageTagsModal,
                             icon: const Icon(Icons.settings, size: 16),
-                            label: Text(AppLocalizations.of(context)!.settings),
+                            label: Text(AppLocalizations.of(context).settings),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: BrainTheme.textSecondary,
                               side: BorderSide(color: BrainTheme.borderDark),
@@ -557,7 +592,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ),
             const SizedBox(height: 14),
             _FormSection(
-              title: AppLocalizations.of(context)!.notes,
+              title: AppLocalizations.of(context).notes,
               icon: Icons.link,
               children: [
                 Consumer<NotesProvider>(builder: (context, notesProv, _) {
@@ -577,22 +612,31 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                             ),
                             child: Row(
                               children: [
-                                Text(note.emoji, style: const TextStyle(fontSize: 16)),
+                                Text(note.emoji,
+                                    style: const TextStyle(fontSize: 16)),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(note.title,
-                                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: BrainTheme.textPrimary)),
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: BrainTheme.textPrimary)),
                                       Text(note.notebook,
-                                          style: TextStyle(fontSize: 11, color: BrainTheme.textTertiary)),
+                                          style: TextStyle(
+                                              fontSize: 11,
+                                              color: BrainTheme.textTertiary)),
                                     ],
                                   ),
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.link_off, size: 16, color: BrainTheme.accentRed),
-                                  onPressed: () => setState(() => _linkedNoteIds.remove(id)),
+                                  icon: Icon(Icons.link_off,
+                                      size: 16, color: BrainTheme.accentRed),
+                                  onPressed: () =>
+                                      setState(() => _linkedNoteIds.remove(id)),
                                   visualDensity: VisualDensity.compact,
                                 ),
                               ],
@@ -602,10 +646,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       OutlinedButton.icon(
                         onPressed: _showLinkNotes,
                         icon: const Icon(Icons.add, size: 16),
-                        label: Text(AppLocalizations.of(context)!.note),
+                        label: Text(AppLocalizations.of(context).note),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: BrainTheme.accentPurple,
-                          side: BorderSide(color: BrainTheme.accentPurple.withValues(alpha: 0.3)),
+                          side: BorderSide(
+                              color: BrainTheme.accentPurple
+                                  .withValues(alpha: 0.3)),
                         ),
                       ),
                     ],
@@ -615,7 +661,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ),
             const SizedBox(height: 14),
             _FormSection(
-              title: AppLocalizations.of(context)!.subtasks,
+              title: AppLocalizations.of(context).subtasks,
               icon: Icons.checklist,
               trailing: Text(
                 '$subtaskDone/${_subtasks.length}',
@@ -629,7 +675,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       value: subtaskProgress,
                       minHeight: 4,
                       backgroundColor: BrainTheme.borderDark,
-                      valueColor: AlwaysStoppedAnimation(BrainTheme.accentGreen),
+                      valueColor:
+                          AlwaysStoppedAnimation(BrainTheme.accentGreen),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -643,22 +690,28 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                         GestureDetector(
                           onTap: () {
                             setState(() {
-                              _subtasks[entry.key] = subtask.copyWith(isDone: !subtask.isDone);
+                              _subtasks[entry.key] =
+                                  subtask.copyWith(isDone: !subtask.isDone);
                             });
                           },
                           child: Container(
                             width: 20,
                             height: 20,
                             decoration: BoxDecoration(
-                              color: subtask.isDone ? BrainTheme.accentGreen : Colors.transparent,
+                              color: subtask.isDone
+                                  ? BrainTheme.accentGreen
+                                  : Colors.transparent,
                               borderRadius: BorderRadius.circular(5),
                               border: Border.all(
-                                color: subtask.isDone ? BrainTheme.accentGreen : BrainTheme.borderDark,
+                                color: subtask.isDone
+                                    ? BrainTheme.accentGreen
+                                    : BrainTheme.borderDark,
                                 width: 2,
                               ),
                             ),
                             child: subtask.isDone
-                                ? const Icon(Icons.check, size: 12, color: Colors.white)
+                                ? const Icon(Icons.check,
+                                    size: 12, color: Colors.white)
                                 : null,
                           ),
                         ),
@@ -668,14 +721,20 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                             subtask.title,
                             style: TextStyle(
                               fontSize: 14,
-                              color: subtask.isDone ? BrainTheme.textTertiary : BrainTheme.textPrimary,
-                              decoration: subtask.isDone ? TextDecoration.lineThrough : null,
+                              color: subtask.isDone
+                                  ? BrainTheme.textTertiary
+                                  : BrainTheme.textPrimary,
+                              decoration: subtask.isDone
+                                  ? TextDecoration.lineThrough
+                                  : null,
                             ),
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.close, size: 16, color: BrainTheme.textTertiary),
-                          onPressed: () => setState(() => _subtasks.removeAt(entry.key)),
+                          icon: Icon(Icons.close,
+                              size: 16, color: BrainTheme.textTertiary),
+                          onPressed: () =>
+                              setState(() => _subtasks.removeAt(entry.key)),
                           visualDensity: VisualDensity.compact,
                         ),
                       ],
@@ -688,8 +747,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     Expanded(
                       child: TextField(
                         controller: _subtaskController,
-                          decoration: InputDecoration(
-                            hintText: AppLocalizations.of(context)!.addSubtask,
+                        decoration: InputDecoration(
+                          hintText: AppLocalizations.of(context).addSubtask,
                           border: InputBorder.none,
                           filled: false,
                           contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -698,7 +757,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.add_circle, color: BrainTheme.accentPurple),
+                      icon: Icon(Icons.add_circle,
+                          color: BrainTheme.accentPurple),
                       onPressed: _addSubtask,
                     ),
                   ],
@@ -717,20 +777,20 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
-        title: Text(AppLocalizations.of(context)!.delete,
+        title: Text(AppLocalizations.of(context).delete,
             style: TextStyle(color: BrainTheme.textPrimary)),
-        content: Text(AppLocalizations.of(context)!.taskDeleted,
+        content: Text(AppLocalizations.of(context).taskDeleted,
             style: TextStyle(color: BrainTheme.textSecondary)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text(AppLocalizations.of(context)!.cancel)),
+              child: Text(AppLocalizations.of(context).cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
                 backgroundColor: BrainTheme.accentRed,
                 foregroundColor: Colors.white),
-            child: Text(AppLocalizations.of(context)!.delete),
+            child: Text(AppLocalizations.of(context).delete),
           ),
         ],
       ),
@@ -760,7 +820,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       ),
       builder: (ctx) {
         return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
           child: Container(
             height: 480,
             padding: const EdgeInsets.all(16),
@@ -771,12 +832,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   Row(
                     children: [
                       Expanded(
-                        child: Text(AppLocalizations.of(context)!.tags,
+                        child: Text(AppLocalizations.of(context).tags,
                             style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w700, color: BrainTheme.textPrimary)),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: BrainTheme.textPrimary)),
                       ),
                       IconButton(
-                        icon: Icon(Icons.close, color: BrainTheme.textSecondary),
+                        icon:
+                            Icon(Icons.close, color: BrainTheme.textSecondary),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -795,7 +859,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                               shape: BoxShape.circle,
                             ),
                           ),
-                          title: Text(t.name, style: TextStyle(color: BrainTheme.textPrimary)),
+                          title: Text(t.name,
+                              style: TextStyle(color: BrainTheme.textPrimary)),
                           value: isSelected,
                           activeColor: BrainTheme.accentPurple,
                           onChanged: (v) => setState(() {
@@ -815,7 +880,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     style: FilledButton.styleFrom(
                       backgroundColor: BrainTheme.accentPurple,
                     ),
-                    child: Text(AppLocalizations.of(context)!.ok),
+                    child: Text(AppLocalizations.of(context).ok),
                   ),
                 ],
               );
@@ -839,9 +904,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         return StatefulBuilder(
           builder: (sCtx, setS) {
             final notesProv = context.read<NotesProvider>();
-            final notes = query.isEmpty
-                ? notesProv.notes
-                : notesProv.search(query);
+            final notes =
+                query.isEmpty ? notesProv.notes : notesProv.search(query);
             return Padding(
               padding:
                   EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
@@ -854,12 +918,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     Row(
                       children: [
                         Expanded(
-                          child: Text(AppLocalizations.of(context)!.notes,
+                          child: Text(AppLocalizations.of(context).notes,
                               style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w700, color: BrainTheme.textPrimary)),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: BrainTheme.textPrimary)),
                         ),
                         IconButton(
-                          icon: Icon(Icons.close, color: BrainTheme.textSecondary),
+                          icon: Icon(Icons.close,
+                              color: BrainTheme.textSecondary),
                           onPressed: () => Navigator.pop(ctx),
                         ),
                       ],
@@ -867,7 +934,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     const SizedBox(height: 12),
                     TextField(
                       decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context)!.searchInNotes,
+                        hintText: AppLocalizations.of(context).searchInNotes,
                         prefixIcon: const Icon(Icons.search, size: 20),
                         isDense: true,
                       ),
@@ -879,13 +946,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                         children: notes.map((n) {
                           final isLinked = _linkedNoteIds.contains(n.id);
                           return ListTile(
-                            leading: Text(n.emoji, style: const TextStyle(fontSize: 20)),
+                            leading: Text(n.emoji,
+                                style: const TextStyle(fontSize: 20)),
                             title: Text(n.title,
-                                style: TextStyle(color: BrainTheme.textPrimary)),
+                                style:
+                                    TextStyle(color: BrainTheme.textPrimary)),
                             subtitle: Text(n.notebook,
-                                style: TextStyle(color: BrainTheme.textTertiary)),
+                                style:
+                                    TextStyle(color: BrainTheme.textTertiary)),
                             trailing: isLinked
-                                ? Icon(Icons.check_circle, color: BrainTheme.accentGreen)
+                                ? Icon(Icons.check_circle,
+                                    color: BrainTheme.accentGreen)
                                 : null,
                             onTap: () {
                               if (!isLinked) {
@@ -931,12 +1002,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   Row(
                     children: [
                       Expanded(
-                        child: Text(AppLocalizations.of(context)!.tags,
+                        child: Text(AppLocalizations.of(context).tags,
                             style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700, color: BrainTheme.textPrimary)),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: BrainTheme.textPrimary)),
                       ),
                       IconButton(
-                        icon: Icon(Icons.close, color: BrainTheme.textSecondary),
+                        icon:
+                            Icon(Icons.close, color: BrainTheme.textSecondary),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -949,17 +1023,22 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                             .map((t) => ListTile(
                                   leading: CircleAvatar(
                                       backgroundColor: t.color, radius: 16),
-                                  title: Text(t.name, style: TextStyle(color: BrainTheme.textPrimary)),
+                                  title: Text(t.name,
+                                      style: TextStyle(
+                                          color: BrainTheme.textPrimary)),
                                   trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         IconButton(
-                                            icon: Icon(Icons.edit, color: BrainTheme.textSecondary),
+                                            icon: Icon(Icons.edit,
+                                                color:
+                                                    BrainTheme.textSecondary),
                                             onPressed: () {
                                               int editColorValue =
                                                   t.color.toARGB32();
                                               final editNameCtrl =
-                                                  TextEditingController(text: t.name);
+                                                  TextEditingController(
+                                                      text: t.name);
                                               showDialog(
                                                   context: context,
                                                   builder: (dctx) =>
@@ -967,49 +1046,66 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                                           builder: (dState,
                                                                   setDialogState) =>
                                                               AlertDialog(
-                                                                backgroundColor: BrainTheme.cardDark,
-                                                                title: Text(AppLocalizations.of(context)!.tags),
-                                                                content: SingleChildScrollView(
-                                                                    child: Column(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize.min,
-                                                                        children: [
-                                                                          TextField(
-                                                                              controller:
-                                                                                  editNameCtrl,
-                                                                              decoration:
-                                                                                  InputDecoration(hintText: AppLocalizations.of(context)!.tagName)),
-                                                                          const SizedBox(
-                                                                              height: 16),
-                                                                          TagColorPicker(
-                                                                            selectedColorValue:
-                                                                                editColorValue,
-                                                                            onColorChanged:
-                                                                                (v) =>
-                                                                                    setDialogState(() => editColorValue = v),
-                                                                          ),
-                                                                        ])),
+                                                                backgroundColor:
+                                                                    BrainTheme
+                                                                        .cardDark,
+                                                                title: Text(
+                                                                    AppLocalizations.of(
+                                                                            context)
+                                                                        .tags),
+                                                                content:
+                                                                    SingleChildScrollView(
+                                                                        child: Column(
+                                                                            mainAxisSize:
+                                                                                MainAxisSize.min,
+                                                                            children: [
+                                                                      TextField(
+                                                                          controller:
+                                                                              editNameCtrl,
+                                                                          decoration:
+                                                                              InputDecoration(hintText: AppLocalizations.of(context).tagName)),
+                                                                      const SizedBox(
+                                                                          height:
+                                                                              16),
+                                                                      TagColorPicker(
+                                                                        selectedColorValue:
+                                                                            editColorValue,
+                                                                        onColorChanged:
+                                                                            (v) =>
+                                                                                setDialogState(() => editColorValue = v),
+                                                                      ),
+                                                                    ])),
                                                                 actions: [
                                                                   TextButton(
                                                                       onPressed: () =>
-                                                                          Navigator.pop(dctx),
-                                                                      child: Text(AppLocalizations.of(context)!.cancel)),
+                                                                          Navigator.pop(
+                                                                              dctx),
+                                                                      child: Text(
+                                                                          AppLocalizations.of(context)
+                                                                              .cancel)),
                                                                   FilledButton(
                                                                       onPressed:
                                                                           () async {
                                                                         await prov.updateTag(t.copyWith(
-                                                                            name: editNameCtrl.text,
+                                                                            name:
+                                                                                editNameCtrl.text,
                                                                             color: Color(editColorValue)));
-                                                                        Navigator.pop(dctx);
-                                                                        Navigator.pop(ctx);
+                                                                        Navigator.pop(
+                                                                            dctx);
+                                                                        Navigator.pop(
+                                                                            ctx);
                                                                       },
-                                                                      child: Text(AppLocalizations.of(context)!.save))
-                                                                  ],
+                                                                      child: Text(
+                                                                          AppLocalizations.of(context)
+                                                                              .save))
+                                                                ],
                                                               )));
                                             }),
                                         IconButton(
-                                            icon: Icon(Icons.delete_outline, color: BrainTheme.accentRed),
-                                            onPressed: () => prov.deleteTag(t.id)),
+                                            icon: Icon(Icons.delete_outline,
+                                                color: BrainTheme.accentRed),
+                                            onPressed: () =>
+                                                prov.deleteTag(t.id)),
                                       ]),
                                 ))
                             .toList(),
@@ -1019,8 +1115,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   const Divider(),
                   TextField(
                       controller: nameCtrl,
-                      decoration:
-                          InputDecoration(labelText: AppLocalizations.of(context)!.tag)),
+                      decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context).tag)),
                   const SizedBox(height: 12),
                   TagColorPicker(
                     selectedColorValue: newTagColorValue,
@@ -1035,14 +1131,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           name: nameCtrl.text.trim(),
                           colorValue: newTagColorValue);
                       nameCtrl.clear();
-                      setModalState(() =>
-                          newTagColorValue =
-                              BrainTheme.accentPurple.toARGB32());
+                      setModalState(() => newTagColorValue =
+                          BrainTheme.accentPurple.toARGB32());
                     },
                     style: FilledButton.styleFrom(
                       backgroundColor: BrainTheme.accentPurple,
                     ),
-                    child: Text(AppLocalizations.of(context)!.createTask),
+                    child: Text(AppLocalizations.of(context).createTask),
                   ),
                 ],
               ),
@@ -1054,43 +1149,62 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   }
 
   String _statusLabel(TaskStatus status, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (status) {
-      case TaskStatus.pending: return l10n.statusPending;
-      case TaskStatus.inProgress: return l10n.statusInProgress;
-      case TaskStatus.inReview: return l10n.statusInReview;
-      case TaskStatus.completed: return l10n.statusCompleted;
-      case TaskStatus.cancelled: return l10n.statusCancelled;
+      case TaskStatus.pending:
+        return l10n.statusPending;
+      case TaskStatus.inProgress:
+        return l10n.statusInProgress;
+      case TaskStatus.inReview:
+        return l10n.statusInReview;
+      case TaskStatus.completed:
+        return l10n.statusCompleted;
+      case TaskStatus.cancelled:
+        return l10n.statusCancelled;
     }
   }
 
   Color _statusColor(TaskStatus status) {
     switch (status) {
-      case TaskStatus.pending: return BrainTheme.textTertiary;
-      case TaskStatus.inProgress: return BrainTheme.accentBlue;
-      case TaskStatus.inReview: return BrainTheme.accentOrange;
-      case TaskStatus.completed: return BrainTheme.accentGreen;
-      case TaskStatus.cancelled: return BrainTheme.accentRed;
+      case TaskStatus.pending:
+        return BrainTheme.textTertiary;
+      case TaskStatus.inProgress:
+        return BrainTheme.accentBlue;
+      case TaskStatus.inReview:
+        return BrainTheme.accentOrange;
+      case TaskStatus.completed:
+        return BrainTheme.accentGreen;
+      case TaskStatus.cancelled:
+        return BrainTheme.accentRed;
     }
   }
 
   IconData _statusIcon(TaskStatus status) {
     switch (status) {
-      case TaskStatus.pending: return Icons.circle_outlined;
-      case TaskStatus.inProgress: return Icons.play_circle_outline;
-      case TaskStatus.inReview: return Icons.rate_review_outlined;
-      case TaskStatus.completed: return Icons.check_circle;
-      case TaskStatus.cancelled: return Icons.cancel_outlined;
+      case TaskStatus.pending:
+        return Icons.circle_outlined;
+      case TaskStatus.inProgress:
+        return Icons.play_circle_outline;
+      case TaskStatus.inReview:
+        return Icons.rate_review_outlined;
+      case TaskStatus.completed:
+        return Icons.check_circle;
+      case TaskStatus.cancelled:
+        return Icons.cancel_outlined;
     }
   }
 
   String _priorityLabel(TaskPriority priority, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (priority) {
-      case TaskPriority.low: return l10n.priorityLow;
-      case TaskPriority.medium: return l10n.priorityMedium;
-      case TaskPriority.high: return l10n.priorityHigh;
-      case TaskPriority.urgent: return l10n.priorityUrgent;
+      case TaskPriority.low:
+        return l10n.priorityLow;
+      case TaskPriority.medium:
+        return l10n.priorityMedium;
+      case TaskPriority.high:
+        return l10n.priorityHigh;
+      case TaskPriority.urgent:
+        return l10n.priorityUrgent;
     }
   }
 
@@ -1162,7 +1276,8 @@ class _TaskHeaderSliver extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.edit_outlined, color: Colors.white, size: 18),
+            child:
+                const Icon(Icons.edit_outlined, color: Colors.white, size: 18),
           ),
           onPressed: onEdit,
         ),
@@ -1173,7 +1288,8 @@ class _TaskHeaderSliver extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.delete_outline, color: Colors.white, size: 18),
+            child:
+                const Icon(Icons.delete_outline, color: Colors.white, size: 18),
           ),
           onPressed: onDelete,
         ),
@@ -1224,7 +1340,8 @@ class _TaskHeaderSliver extends StatelessWidget {
                             height: 56,
                             decoration: BoxDecoration(
                               color: task.status == TaskStatus.completed
-                                  ? BrainTheme.accentGreen.withValues(alpha: 0.3)
+                                  ? BrainTheme.accentGreen
+                                      .withValues(alpha: 0.3)
                                   : Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
@@ -1242,11 +1359,11 @@ class _TaskHeaderSliver extends StatelessWidget {
                               ),
                             ),
                           ).animate().scaleXY(
-                            begin: 0,
-                            end: 1,
-                            duration: 500.ms,
-                            curve: Curves.easeOutBack,
-                          ),
+                                begin: 0,
+                                end: 1,
+                                duration: 500.ms,
+                                curve: Curves.easeOutBack,
+                              ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
@@ -1262,7 +1379,10 @@ class _TaskHeaderSliver extends StatelessWidget {
                                   ),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1, end: 0),
+                                )
+                                    .animate()
+                                    .fadeIn(delay: 200.ms)
+                                    .slideX(begin: 0.1, end: 0),
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
@@ -1270,13 +1390,20 @@ class _TaskHeaderSliver extends StatelessWidget {
                                       label: _statusLabel(task.status, context),
                                       color: _statusColor(task.status),
                                       icon: _statusIcon(task.status),
-                                    ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),
+                                    )
+                                        .animate()
+                                        .fadeIn(delay: 300.ms)
+                                        .slideX(begin: 0.1, end: 0),
                                     const SizedBox(width: 6),
                                     _TaskHeaderBadge(
-                                      label: _priorityLabel(task.priority, context),
+                                      label: _priorityLabel(
+                                          task.priority, context),
                                       color: priColor,
                                       icon: Icons.flag_outlined,
-                                    ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.1, end: 0),
+                                    )
+                                        .animate()
+                                        .fadeIn(delay: 400.ms)
+                                        .slideX(begin: 0.1, end: 0),
                                   ],
                                 ),
                               ],
@@ -1309,43 +1436,62 @@ class _TaskHeaderSliver extends StatelessWidget {
   }
 
   String _statusLabel(TaskStatus s, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (s) {
-      case TaskStatus.pending: return l10n.statusPending;
-      case TaskStatus.inProgress: return l10n.statusInProgress;
-      case TaskStatus.inReview: return l10n.statusInReview;
-      case TaskStatus.completed: return l10n.statusCompleted;
-      case TaskStatus.cancelled: return l10n.statusCancelled;
+      case TaskStatus.pending:
+        return l10n.statusPending;
+      case TaskStatus.inProgress:
+        return l10n.statusInProgress;
+      case TaskStatus.inReview:
+        return l10n.statusInReview;
+      case TaskStatus.completed:
+        return l10n.statusCompleted;
+      case TaskStatus.cancelled:
+        return l10n.statusCancelled;
     }
   }
 
   Color _statusColor(TaskStatus s) {
     switch (s) {
-      case TaskStatus.pending: return BrainTheme.textTertiary;
-      case TaskStatus.inProgress: return BrainTheme.accentBlue;
-      case TaskStatus.inReview: return BrainTheme.accentOrange;
-      case TaskStatus.completed: return BrainTheme.accentGreen;
-      case TaskStatus.cancelled: return Colors.grey;
+      case TaskStatus.pending:
+        return BrainTheme.textTertiary;
+      case TaskStatus.inProgress:
+        return BrainTheme.accentBlue;
+      case TaskStatus.inReview:
+        return BrainTheme.accentOrange;
+      case TaskStatus.completed:
+        return BrainTheme.accentGreen;
+      case TaskStatus.cancelled:
+        return Colors.grey;
     }
   }
 
   IconData _statusIcon(TaskStatus s) {
     switch (s) {
-      case TaskStatus.pending: return Icons.circle_outlined;
-      case TaskStatus.inProgress: return Icons.play_circle_outline;
-      case TaskStatus.inReview: return Icons.rate_review_outlined;
-      case TaskStatus.completed: return Icons.check_circle;
-      case TaskStatus.cancelled: return Icons.cancel_outlined;
+      case TaskStatus.pending:
+        return Icons.circle_outlined;
+      case TaskStatus.inProgress:
+        return Icons.play_circle_outline;
+      case TaskStatus.inReview:
+        return Icons.rate_review_outlined;
+      case TaskStatus.completed:
+        return Icons.check_circle;
+      case TaskStatus.cancelled:
+        return Icons.cancel_outlined;
     }
   }
 
   String _priorityLabel(TaskPriority p, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (p) {
-      case TaskPriority.low: return l10n.priorityLow;
-      case TaskPriority.medium: return l10n.priorityMedium;
-      case TaskPriority.high: return l10n.priorityHigh;
-      case TaskPriority.urgent: return l10n.priorityUrgent;
+      case TaskPriority.low:
+        return l10n.priorityLow;
+      case TaskPriority.medium:
+        return l10n.priorityMedium;
+      case TaskPriority.high:
+        return l10n.priorityHigh;
+      case TaskPriority.urgent:
+        return l10n.priorityUrgent;
     }
   }
 }
@@ -1355,7 +1501,8 @@ class _TaskHeaderBadge extends StatelessWidget {
   final Color color;
   final IconData icon;
 
-  const _TaskHeaderBadge({required this.label, required this.color, required this.icon});
+  const _TaskHeaderBadge(
+      {required this.label, required this.color, required this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -1372,7 +1519,8 @@ class _TaskHeaderBadge extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+            style: TextStyle(
+                fontSize: 11, fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),
@@ -1397,7 +1545,9 @@ class _TaskQuickActions extends StatelessWidget {
         children: [
           _QuickBtn(
             icon: isDone ? Icons.undo : Icons.check_circle_outline,
-            label: isDone ? AppLocalizations.of(context)!.restore : AppLocalizations.of(context)!.statusCompleted,
+            label: isDone
+                ? AppLocalizations.of(context).restore
+                : AppLocalizations.of(context).statusCompleted,
             color: isDone ? BrainTheme.accentOrange : BrainTheme.accentGreen,
             onTap: () {
               context.read<TasksProvider>().toggleTaskStatus(task.id);
@@ -1406,7 +1556,7 @@ class _TaskQuickActions extends StatelessWidget {
           const SizedBox(width: 8),
           _QuickBtn(
             icon: Icons.play_circle_outline,
-            label: AppLocalizations.of(context)!.statusInProgress,
+            label: AppLocalizations.of(context).statusInProgress,
             color: BrainTheme.accentBlue,
             onTap: () {
               context.read<TasksProvider>().moveTaskToStatus(
@@ -1420,7 +1570,7 @@ class _TaskQuickActions extends StatelessWidget {
           const SizedBox(width: 8),
           _QuickBtn(
             icon: Icons.rate_review_outlined,
-            label: AppLocalizations.of(context)!.statusInReview,
+            label: AppLocalizations.of(context).statusInReview,
             color: BrainTheme.accentOrange,
             onTap: () {
               context.read<TasksProvider>().moveTaskToStatus(
@@ -1466,7 +1616,9 @@ class _QuickBtn extends StatelessWidget {
             children: [
               Icon(icon, size: 20, color: color),
               const SizedBox(height: 2),
-              Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color)),
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 10, fontWeight: FontWeight.w600, color: color)),
             ],
           ),
         ),
@@ -1499,14 +1651,14 @@ class _TaskMetaSection extends StatelessWidget {
               _MetaTile(
                 icon: Icons.checklist,
                 value: '${task.subtasks.length}',
-                label: AppLocalizations.of(context)!.subtasks,
+                label: AppLocalizations.of(context).subtasks,
                 color: BrainTheme.accentPurple,
               ),
               const SizedBox(width: 8),
               _MetaTile(
                 icon: Icons.timer_outlined,
                 value: '${task.estimatedHours.toStringAsFixed(0)}h',
-                label: AppLocalizations.of(context)!.task,
+                label: AppLocalizations.of(context).task,
                 color: BrainTheme.accentBlue,
               ),
               const SizedBox(width: 8),
@@ -1515,7 +1667,7 @@ class _TaskMetaSection extends StatelessWidget {
                 value: task.actualHours != null
                     ? '${task.actualHours!.toStringAsFixed(0)}h'
                     : '—',
-                label: AppLocalizations.of(context)!.note,
+                label: AppLocalizations.of(context).note,
                 color: BrainTheme.accentOrange,
               ),
               const SizedBox(width: 8),
@@ -1526,7 +1678,7 @@ class _TaskMetaSection extends StatelessWidget {
                 value: task.dueDate != null
                     ? DateFormat('dd MMM').format(task.dueDate!)
                     : '—',
-                label: AppLocalizations.of(context)!.dueDate,
+                label: AppLocalizations.of(context).dueDate,
                 color: task.isOverdue
                     ? BrainTheme.accentRed
                     : BrainTheme.textTertiary,
@@ -1548,8 +1700,11 @@ class _TaskMetaSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(AppLocalizations.of(context)!.subtasks,
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: BrainTheme.textPrimary)),
+                        Text(AppLocalizations.of(context).subtasks,
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: BrainTheme.textPrimary)),
                         const SizedBox(height: 6),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
@@ -1557,7 +1712,8 @@ class _TaskMetaSection extends StatelessWidget {
                             value: subtaskProgress,
                             minHeight: 8,
                             backgroundColor: BrainTheme.borderDark,
-                            valueColor: AlwaysStoppedAnimation(BrainTheme.accentGreen),
+                            valueColor:
+                                AlwaysStoppedAnimation(BrainTheme.accentGreen),
                           ),
                         ),
                       ],
@@ -1643,7 +1799,8 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       height: 56,
       color: BrainTheme.primaryDark,
@@ -1656,24 +1813,27 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
         indicatorWeight: 3,
         labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         tabs: [
-          Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Tab(
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
             const Icon(Icons.info_outline, size: 16),
             SizedBox(width: 6),
-            Text(AppLocalizations.of(context)!.details),
+            Text(AppLocalizations.of(context).details),
           ])),
-          Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Tab(
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
             const Icon(Icons.checklist, size: 16),
             const SizedBox(width: 6),
-            Text(AppLocalizations.of(context)!.subtasks),
+            Text(AppLocalizations.of(context).subtasks),
             if (subtaskCount > 0) ...[
               const SizedBox(width: 4),
               _tabCount(subtaskCount),
             ],
           ])),
-          Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Tab(
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
             const Icon(Icons.link, size: 16),
             const SizedBox(width: 6),
-            Text(AppLocalizations.of(context)!.notes),
+            Text(AppLocalizations.of(context).notes),
             if (noteCount > 0) ...[
               const SizedBox(width: 4),
               _tabCount(noteCount),
@@ -1691,7 +1851,11 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
         color: BrainTheme.accentPurple.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text('$count', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: BrainTheme.accentPurple)),
+      child: Text('$count',
+          style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: BrainTheme.accentPurple)),
     );
   }
 
@@ -1727,17 +1891,26 @@ class _TaskInfoTab extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.description_outlined, size: 18, color: BrainTheme.accentPurple),
+                    Icon(Icons.description_outlined,
+                        size: 18, color: BrainTheme.accentPurple),
                     const SizedBox(width: 8),
-                    Text(AppLocalizations.of(context)!.description, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: BrainTheme.textPrimary)),
+                    Text(AppLocalizations.of(context).description,
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: BrainTheme.textPrimary)),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  task.description.isNotEmpty ? task.description : AppLocalizations.of(context)!.noData,
+                  task.description.isNotEmpty
+                      ? task.description
+                      : AppLocalizations.of(context).noData,
                   style: TextStyle(
                     fontSize: 14,
-                    color: task.description.isNotEmpty ? BrainTheme.textSecondary : BrainTheme.textTertiary,
+                    color: task.description.isNotEmpty
+                        ? BrainTheme.textSecondary
+                        : BrainTheme.textTertiary,
                     height: 1.5,
                   ),
                 ),
@@ -1754,26 +1927,37 @@ class _TaskInfoTab extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.info_outline, size: 18, color: BrainTheme.accentBlue),
+                    Icon(Icons.info_outline,
+                        size: 18, color: BrainTheme.accentBlue),
                     const SizedBox(width: 8),
-                    Text(AppLocalizations.of(context)!.details, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: BrainTheme.textPrimary)),
+                    Text(AppLocalizations.of(context).details,
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: BrainTheme.textPrimary)),
                   ],
                 ),
                 const SizedBox(height: 16),
-                _detailRow(Icons.flag_outlined, AppLocalizations.of(context)!.filterStatus, _statusLabel(task.status, context)),
+                _detailRow(
+                    Icons.flag_outlined,
+                    AppLocalizations.of(context).filterStatus,
+                    _statusLabel(task.status, context)),
                 const Divider(height: 20),
-                _detailRow(Icons.priority_high, AppLocalizations.of(context)!.sortPriority, _priorityLabel(task.priority, context)),
+                _detailRow(
+                    Icons.priority_high,
+                    AppLocalizations.of(context).sortPriority,
+                    _priorityLabel(task.priority, context)),
                 const Divider(height: 20),
                 _detailRow(
                   Icons.calendar_today_outlined,
-                  AppLocalizations.of(context)!.itemCreated,
+                  AppLocalizations.of(context).itemCreated,
                   DateFormat('dd MMM yyyy, HH:mm').format(task.createdAt),
                 ),
                 if (task.dueDate != null) ...[
                   const Divider(height: 20),
                   _detailRow(
                     task.isOverdue ? Icons.error_outline : Icons.event,
-                    AppLocalizations.of(context)!.dueDate,
+                    AppLocalizations.of(context).dueDate,
                     DateFormat('dd MMM yyyy').format(task.dueDate!),
                     valueColor: task.isOverdue ? BrainTheme.accentRed : null,
                   ),
@@ -1784,16 +1968,22 @@ class _TaskInfoTab extends StatelessWidget {
                     final project = pp.getProjectById(task.projectId!);
                     return _detailRow(
                       Icons.folder_outlined,
-                      AppLocalizations.of(context)!.project,
-                      project != null ? '${project.emoji} ${project.title}' : '—',
+                      AppLocalizations.of(context).project,
+                      project != null
+                          ? '${project.emoji} ${project.title}'
+                          : '—',
                     );
                   }),
                 ],
                 const Divider(height: 20),
-                _detailRow(Icons.timer_outlined, AppLocalizations.of(context)!.task, '${task.estimatedHours.toStringAsFixed(1)}h'),
+                _detailRow(
+                    Icons.timer_outlined,
+                    AppLocalizations.of(context).task,
+                    '${task.estimatedHours.toStringAsFixed(1)}h'),
                 if (task.actualHours != null) ...[
                   const Divider(height: 20),
-                  _detailRow(Icons.schedule, AppLocalizations.of(context)!.note, '${task.actualHours!.toStringAsFixed(1)}h'),
+                  _detailRow(Icons.schedule, AppLocalizations.of(context).note,
+                      '${task.actualHours!.toStringAsFixed(1)}h'),
                 ],
               ],
             ),
@@ -1804,34 +1994,45 @@ class _TaskInfoTab extends StatelessWidget {
   }
 
   String _statusLabel(TaskStatus s, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (s) {
-      case TaskStatus.pending: return l10n.statusPending;
-      case TaskStatus.inProgress: return l10n.statusInProgress;
-      case TaskStatus.inReview: return l10n.statusInReview;
-      case TaskStatus.completed: return l10n.statusCompleted;
-      case TaskStatus.cancelled: return l10n.statusCancelled;
+      case TaskStatus.pending:
+        return l10n.statusPending;
+      case TaskStatus.inProgress:
+        return l10n.statusInProgress;
+      case TaskStatus.inReview:
+        return l10n.statusInReview;
+      case TaskStatus.completed:
+        return l10n.statusCompleted;
+      case TaskStatus.cancelled:
+        return l10n.statusCancelled;
     }
   }
 
   String _priorityLabel(TaskPriority p, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (p) {
-      case TaskPriority.low: return l10n.priorityLow;
-      case TaskPriority.medium: return l10n.priorityMedium;
-      case TaskPriority.high: return l10n.priorityHigh;
-      case TaskPriority.urgent: return l10n.priorityUrgent;
+      case TaskPriority.low:
+        return l10n.priorityLow;
+      case TaskPriority.medium:
+        return l10n.priorityMedium;
+      case TaskPriority.high:
+        return l10n.priorityHigh;
+      case TaskPriority.urgent:
+        return l10n.priorityUrgent;
     }
   }
 
-  Widget _detailRow(IconData icon, String label, String value, {Color? valueColor}) {
+  Widget _detailRow(IconData icon, String label, String value,
+      {Color? valueColor}) {
     return Row(
       children: [
         Icon(icon, size: 16, color: BrainTheme.textTertiary),
         const SizedBox(width: 10),
         SizedBox(
           width: 80,
-          child: Text(label, style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary)),
+          child: Text(label,
+              style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary)),
         ),
         Expanded(
           child: Text(
@@ -1870,9 +2071,12 @@ class _TaskSubtabsTab extends StatelessWidget {
           children: [
             Text('📋', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
-            Text(AppLocalizations.of(context)!.noTasks, style: TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
+            Text(AppLocalizations.of(context).noTasks,
+                style:
+                    TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
             const SizedBox(height: 8),
-            Text(AppLocalizations.of(context)!.emptyStateDescription, style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
+            Text(AppLocalizations.of(context).emptyStateDescription,
+                style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
           ],
         ),
       );
@@ -1893,12 +2097,17 @@ class _TaskSubtabsTab extends StatelessWidget {
                 onChanged(updated);
               },
               child: Container(
-                width: 22, height: 22,
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
-                  color: subtask.isDone ? BrainTheme.accentGreen : Colors.transparent,
+                  color: subtask.isDone
+                      ? BrainTheme.accentGreen
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: subtask.isDone ? BrainTheme.accentGreen : BrainTheme.borderDark,
+                    color: subtask.isDone
+                        ? BrainTheme.accentGreen
+                        : BrainTheme.borderDark,
                     width: 2,
                   ),
                 ),
@@ -1911,7 +2120,9 @@ class _TaskSubtabsTab extends StatelessWidget {
               subtask.title,
               style: TextStyle(
                 fontSize: 14,
-                color: subtask.isDone ? BrainTheme.textTertiary : BrainTheme.textPrimary,
+                color: subtask.isDone
+                    ? BrainTheme.textTertiary
+                    : BrainTheme.textPrimary,
                 decoration: subtask.isDone ? TextDecoration.lineThrough : null,
               ),
             ),
@@ -1942,9 +2153,12 @@ class _TaskNotesTab extends StatelessWidget {
           children: [
             Text('🔗', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
-            Text(AppLocalizations.of(context)!.noData, style: TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
+            Text(AppLocalizations.of(context).noData,
+                style:
+                    TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
             const SizedBox(height: 8),
-            Text(AppLocalizations.of(context)!.emptyStateDescription, style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
+            Text(AppLocalizations.of(context).emptyStateDescription,
+                style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
           ],
         ),
       );
@@ -1962,12 +2176,18 @@ class _TaskNotesTab extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 8),
               child: ListTile(
                 leading: Text(note.emoji, style: const TextStyle(fontSize: 24)),
-                title: Text(note.title, style: TextStyle(fontWeight: FontWeight.w500, color: BrainTheme.textPrimary)),
-                subtitle: Text(note.notebook, style: TextStyle(color: BrainTheme.textTertiary)),
+                title: Text(note.title,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: BrainTheme.textPrimary)),
+                subtitle: Text(note.notebook,
+                    style: TextStyle(color: BrainTheme.textTertiary)),
                 trailing: IconButton(
-                  icon: Icon(Icons.link_off, color: BrainTheme.accentRed, size: 18),
+                  icon: Icon(Icons.link_off,
+                      color: BrainTheme.accentRed, size: 18),
                   onPressed: () {
-                    final updated = List<String>.from(linkedNoteIds)..removeAt(index);
+                    final updated = List<String>.from(linkedNoteIds)
+                      ..removeAt(index);
                     onChanged(updated);
                   },
                 ),
@@ -2007,7 +2227,11 @@ class _FormSection extends StatelessWidget {
               children: [
                 Icon(icon, size: 16, color: BrainTheme.accentPurple),
                 const SizedBox(width: 8),
-                Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: BrainTheme.textPrimary)),
+                Text(title,
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: BrainTheme.textPrimary)),
                 if (trailing != null) ...[
                   const Spacer(),
                   trailing!,

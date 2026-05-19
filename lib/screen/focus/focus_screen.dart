@@ -14,7 +14,7 @@ class FocusScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.focusMode),
+        title: Text(AppLocalizations.of(context).focusMode),
       ),
       body: Consumer<TasksProvider>(
         builder: (context, provider, _) {
@@ -22,8 +22,8 @@ class FocusScreen extends StatelessWidget {
           if (tasks.isEmpty) {
             return EmptyState(
               emoji: '✨',
-              title: AppLocalizations.of(context)!.emptyState,
-              subtitle: AppLocalizations.of(context)!.emptyStateDescription,
+              title: AppLocalizations.of(context).emptyState,
+              subtitle: AppLocalizations.of(context).emptyStateDescription,
             );
           }
 
@@ -48,7 +48,7 @@ class FocusScreen extends StatelessWidget {
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        AppLocalizations.of(context)!.focusMode,
+                        AppLocalizations.of(context).focusMode,
                         style: TextStyle(color: BrainTheme.textSecondary),
                       ),
                     ),

@@ -11,7 +11,7 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.notifications)),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).notifications)),
       body: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
           return ListView(
@@ -19,7 +19,7 @@ class NotificationsScreen extends StatelessWidget {
             children: [
               _SettingsSwitch(
                 icon: Icons.notifications_active_rounded,
-                title: AppLocalizations.of(context)!.notifications,
+                title: AppLocalizations.of(context).notifications,
                 subtitle: 'Activar o desactivar todas las notificaciones',
                 value: settings.notificationsEnabled,
                 onChanged: (v) => settings.setNotificationsEnabled(v),
@@ -37,7 +37,8 @@ class NotificationsScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: BrainTheme.accentOrange, size: 20),
+                      Icon(Icons.info_outline,
+                          color: BrainTheme.accentOrange, size: 20),
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -61,7 +62,8 @@ class NotificationsScreen extends StatelessWidget {
                     _SettingsSwitch(
                       icon: Icons.schedule,
                       title: '24 horas antes',
-                      subtitle: 'Recibir notificación un día antes del vencimiento',
+                      subtitle:
+                          'Recibir notificación un día antes del vencimiento',
                       value: settings.remind24h,
                       onChanged: (v) => settings.setRemind24h(v),
                     ),
@@ -69,7 +71,8 @@ class NotificationsScreen extends StatelessWidget {
                     _SettingsSwitch(
                       icon: Icons.timer_outlined,
                       title: '1 hora antes',
-                      subtitle: 'Recibir notificación una hora antes del vencimiento',
+                      subtitle:
+                          'Recibir notificación una hora antes del vencimiento',
                       value: settings.remind1h,
                       onChanged: (v) => settings.setRemind1h(v),
                     ),
@@ -91,7 +94,8 @@ class NotificationsScreen extends StatelessWidget {
                     _SettingsSwitch(
                       icon: Icons.nightlight_round,
                       title: 'Horario silencioso',
-                      subtitle: 'No recibir notificaciones durante este período',
+                      subtitle:
+                          'No recibir notificaciones durante este período',
                       value: settings.quietHoursEnabled,
                       onChanged: (v) => settings.setQuietHoursEnabled(v),
                     ),
@@ -116,7 +120,7 @@ class NotificationsScreen extends StatelessWidget {
                   children: [
                     _SettingsSwitch(
                       icon: Icons.check_circle_outline,
-                      title: AppLocalizations.of(context)!.taskCompleted,
+                      title: AppLocalizations.of(context).taskCompleted,
                       subtitle: 'Notificar al marcar una tarea como finalizada',
                       value: settings.notifyOnComplete,
                       onChanged: (v) => settings.setNotifyOnComplete(v),
@@ -145,7 +149,8 @@ class NotificationsScreen extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline, color: BrainTheme.accentBlue, size: 20),
+                    Icon(Icons.info_outline,
+                        color: BrainTheme.accentBlue, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -153,7 +158,8 @@ class NotificationsScreen extends StatelessWidget {
                         'Para aplicar los cambios a tareas existentes, reinicia la aplicación.',
                         style: TextStyle(
                           fontSize: 13,
-                          color: BrainTheme.textSecondary.withValues(alpha: 0.9),
+                          color:
+                              BrainTheme.textSecondary.withValues(alpha: 0.9),
                           height: 1.4,
                         ),
                       ),
@@ -229,7 +235,8 @@ class _SettingsSwitch extends StatelessWidget {
                 child: Icon(
                   icon,
                   size: 20,
-                  color: value ? BrainTheme.accentPurple : BrainTheme.textTertiary,
+                  color:
+                      value ? BrainTheme.accentPurple : BrainTheme.textTertiary,
                 ),
               ),
               const SizedBox(width: 14),
@@ -259,7 +266,8 @@ class _SettingsSwitch extends StatelessWidget {
                 value: value,
                 onChanged: onChanged,
                 activeThumbColor: BrainTheme.accentPurple,
-                activeTrackColor: BrainTheme.accentPurple.withValues(alpha: 0.4),
+                activeTrackColor:
+                    BrainTheme.accentPurple.withValues(alpha: 0.4),
               ),
             ],
           ),

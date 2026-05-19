@@ -22,7 +22,7 @@ class StatsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF09090B),
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.statistics),
+        title: Text(AppLocalizations.of(context).statistics),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -55,7 +55,7 @@ class StatsScreen extends StatelessWidget {
           children: [
             Expanded(
               child: StatsCard(
-                title: AppLocalizations.of(context)!.tasks,
+                title: AppLocalizations.of(context).tasks,
                 value: '${tasks.totalTasks}',
                 icon: Icons.checklist_rounded,
                 color: BrainTheme.accentBlue,
@@ -64,7 +64,7 @@ class StatsScreen extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: StatsCard(
-                title: AppLocalizations.of(context)!.completedTasks,
+                title: AppLocalizations.of(context).completedTasks,
                 value: '${tasks.doneTasks.length}',
                 icon: Icons.check_circle_rounded,
                 color: BrainTheme.accentGreen,
@@ -77,7 +77,7 @@ class StatsScreen extends StatelessWidget {
           children: [
             Expanded(
               child: StatsCard(
-                title: AppLocalizations.of(context)!.projects,
+                title: AppLocalizations.of(context).projects,
                 value: '${projects.projects.length}',
                 icon: Icons.folder_rounded,
                 color: BrainTheme.accentOrange,
@@ -86,7 +86,7 @@ class StatsScreen extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: StatsCard(
-                title: AppLocalizations.of(context)!.goals,
+                title: AppLocalizations.of(context).goals,
                 value: '${goals.goals.length}',
                 icon: Icons.track_changes_rounded,
                 color: BrainTheme.accentPurple,
@@ -111,7 +111,7 @@ class StatsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.of(context)!.taskCompletionRate,
+              AppLocalizations.of(context).taskCompletionRate,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -151,8 +151,10 @@ class StatsScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _legendItem(BrainTheme.accentGreen, AppLocalizations.of(context)!.completedTasks),
-                _legendItem(BrainTheme.surfaceDark, AppLocalizations.of(context)!.pendingTasks),
+                _legendItem(BrainTheme.accentGreen,
+                    AppLocalizations.of(context).completedTasks),
+                _legendItem(BrainTheme.surfaceDark,
+                    AppLocalizations.of(context).pendingTasks),
               ],
             ),
           ],
@@ -162,7 +164,7 @@ class StatsScreen extends StatelessWidget {
   }
 
   Widget _buildTaskDistribution(BuildContext context, TasksProvider tasks) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final statuses = {
       l10n.statusPending: tasks.todoTasks.length.toDouble(),
       l10n.statusInProgress: tasks.inProgressTasks.length.toDouble(),
@@ -179,7 +181,7 @@ class StatsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.of(context)!.tasksByStatus,
+              AppLocalizations.of(context).tasksByStatus,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -193,8 +195,8 @@ class StatsScreen extends StatelessWidget {
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
                   maxY: statuses.values
-                          .reduce((a, b) => a > b ? a : b)
-                          .clamp(1, double.infinity),
+                      .reduce((a, b) => a > b ? a : b)
+                      .clamp(1, double.infinity),
                   barGroups: statuses.entries.map((e) {
                     return BarChartGroupData(
                       x: statuses.keys.toList().indexOf(e.key),
@@ -271,7 +273,7 @@ class StatsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.of(context)!.sortPriority,
+              AppLocalizations.of(context).sortPriority,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -339,7 +341,7 @@ class StatsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.of(context)!.goalsProgress,
+              AppLocalizations.of(context).goalsProgress,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -397,7 +399,7 @@ class StatsScreen extends StatelessWidget {
   }
 
   Color _statusColor(String status, BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     if (status == l10n.statusPending) return BrainTheme.textTertiary;
     if (status == l10n.statusInProgress) return BrainTheme.accentBlue;
     if (status == l10n.statusInReview) return BrainTheme.accentOrange;
