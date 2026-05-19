@@ -691,11 +691,14 @@ class _GoalSummaryRow extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              Text(
-                '${(goal.progress * 100).toInt()}% ${goal.metricLabel}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: BrainTheme.textSecondary,
+              Flexible(
+                child: Text(
+                  '${(goal.progress * 100).toInt()}% ${goal.metricLabel}',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: BrainTheme.textSecondary,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),

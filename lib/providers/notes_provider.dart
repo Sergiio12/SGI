@@ -25,6 +25,24 @@ class NotesProvider extends ChangeNotifier {
   List<Note> get recentNotes => _recentNotes;
   List<String> get notebooks => _notebooks;
 
+  Map<String, int> get notebookCounts {
+    final counts = <String, int>{};
+    for (final n in _notes) {
+      counts[n.notebook] = (counts[n.notebook] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  Map<String, int> get tagCounts {
+    final counts = <String, int>{};
+    for (final n in _notes) {
+      for (final tag in n.tags) {
+        counts[tag] = (counts[tag] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }
+
   Future<void> loadNotes() async {
     _notes = await StorageService.loadNotes();
     _updateComputedLists();
@@ -55,6 +73,10 @@ class NotesProvider extends ChangeNotifier {
 
   List<Note> getNotesByTag(String tag) =>
       _notes.where((n) => n.tags.contains(tag)).toList();
+
+  List<Note> getNotesByTags(List<String> tags) => _notes
+      .where((n) => tags.any((t) => n.tags.contains(t)))
+      .toList();
 
   List<Note> getNotesByType(NoteType type) =>
       _notes.where((n) => n.type == type).toList();
@@ -113,7 +135,6 @@ class NotesProvider extends ChangeNotifier {
       if (index != -1) {
         _notes[index] = note;
         _notifyAndScheduleSave();
-        showSuccessNotification('Nota actualizada');
       }
     } catch (e) {
       showErrorNotification('Error al actualizar nota');
@@ -182,6 +203,27 @@ class NotesProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> renameNotebook(String oldName, String newName) async {
+    if (oldName == newName || newName.trim().isEmpty) return;
+    for (var i = 0; i < _notes.length; i++) {
+      if (_notes[i].notebook == oldName) {
+        _notes[i] = _notes[i].copyWith(notebook: newName.trim());
+      }
+    }
+    _notifyAndScheduleSave();
+    showSuccessNotification('Cuaderno renombrado');
+  }
+
+  Future<void> deleteNotebook(String name) async {
+    for (var i = 0; i < _notes.length; i++) {
+      if (_notes[i].notebook == name) {
+        _notes[i] = _notes[i].copyWith(notebook: 'General');
+      }
+    }
+    _notifyAndScheduleSave();
+    showSuccessNotification('Cuaderno eliminado, notas movidas a General');
+  }
+
   Future<void> replaceAll(List<Note> notes) async {
     _notes = notes;
     _notifyAndScheduleSave();
@@ -196,6 +238,40 @@ class NotesProvider extends ChangeNotifier {
           n.notebook.toLowerCase().contains(lower) ||
           n.tags.any((t) => t.toLowerCase().contains(lower));
     }).toList();
+  }
+
+  List<Note> filteredNotes({
+    NoteType? type,
+    String? notebook,
+    List<String>? tags,
+    String? searchQuery,
+    String? projectId,
+  }) {
+    var result = _notes;
+
+    if (projectId != null) {
+      result = result.where((n) => n.projectId == projectId).toList();
+    }
+    if (type != null) {
+      result = result.where((n) => n.type == type).toList();
+    }
+    if (notebook != null) {
+      result = result.where((n) => n.notebook == notebook).toList();
+    }
+    if (tags != null && tags.isNotEmpty) {
+      result = result.where((n) => tags.any((t) => n.tags.contains(t))).toList();
+    }
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      final lower = searchQuery.toLowerCase();
+      result = result.where((n) {
+        return n.title.toLowerCase().contains(lower) ||
+            n.content.toLowerCase().contains(lower) ||
+            n.notebook.toLowerCase().contains(lower) ||
+            n.tags.any((t) => t.toLowerCase().contains(lower));
+      }).toList();
+    }
+
+    return result;
   }
 
   @override
