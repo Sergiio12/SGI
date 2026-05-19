@@ -5,6 +5,7 @@ import '../core/result.dart';
 import '../models/note.dart';
 import '../services/interfaces/storage_service_interface.dart';
 import '../utils/debouncer.dart';
+import '../utils/haptic_helper.dart';
 import '../utils/notification_service_v2.dart';
 
 class NotesProvider extends ChangeNotifier {
@@ -125,6 +126,7 @@ class NotesProvider extends ChangeNotifier {
       );
       _notes.add(note);
       _notifyAndScheduleSave();
+      HapticHelper.light();
       showSuccessNotification('Nota creada: ${note.title}');
       return Result.success(note);
     } catch (e, s) {
@@ -159,6 +161,7 @@ class NotesProvider extends ChangeNotifier {
         final note = _notes[index];
         _notes[index] = note.copyWith(isPinned: !note.isPinned);
         _notifyAndScheduleSave();
+        HapticHelper.selection();
         showSuccessNotification(
             note.isPinned ? 'Nota desanclada' : 'Nota anclada');
       }
@@ -177,6 +180,7 @@ class NotesProvider extends ChangeNotifier {
       trash.add(note);
       await _storage.saveTrashNotes(trash);
       _notifyAndScheduleSave();
+      HapticHelper.medium();
       showSuccessNotification('Nota movida a la papelera');
     } catch (e, s) {
       AppException(message: 'Error al eliminar nota', code: 'DELETE_NOTE', stackTrace: s).log();
@@ -193,6 +197,7 @@ class NotesProvider extends ChangeNotifier {
         _notes.add(note);
         await _storage.saveTrashNotes(trash);
         _notifyAndScheduleSave();
+        HapticHelper.light();
         showSuccessNotification('Nota restaurada');
       }
     } catch (e, s) {

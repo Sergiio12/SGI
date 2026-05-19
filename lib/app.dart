@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'config/theme.dart';
 import 'config/routes.dart';
 import 'core/error_boundary.dart';
+import 'l10n/app_localizations.dart';
 import 'providers/settings_provider.dart';
 import 'utils/notification_service_v2.dart';
 
@@ -29,6 +30,9 @@ class SecondBrainApp extends StatelessWidget {
       initialRoute: AppRoutes.loading,
       routes: AppRoutes.routes,
       onGenerateRoute: AppRoutes.onGenerateRoute,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: settings.locale,
       builder: (context, child) {
         return NotificationWrapper(
           child: ErrorBoundary(child: child ?? const SizedBox.shrink()),

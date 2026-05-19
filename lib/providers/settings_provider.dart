@@ -16,6 +16,8 @@ class SettingsProvider extends ChangeNotifier {
   static const _kQuietEndMinute = 'quiet_end_minute';
   static const _kNotifyOnComplete = 'notify_on_complete';
   static const _kNotifyOnOverdue = 'notify_on_overdue';
+  static const _kHapticFeedback = 'haptic_feedback';
+  static const _kLanguageCode = 'language_code';
 
   late SharedPreferences _prefs;
   bool _isLoaded = false;
@@ -34,8 +36,12 @@ class SettingsProvider extends ChangeNotifier {
   int _quietEndMinute = 0;
   bool _notifyOnComplete = true;
   bool _notifyOnOverdue = true;
+  bool _hapticFeedback = true;
+  String _languageCode = 'es';
 
   bool get isLoaded => _isLoaded;
+  bool get hapticFeedback => _hapticFeedback;
+  Locale get locale => Locale(_languageCode);
   ThemeMode get themeMode => _themeMode;
   bool get notificationsEnabled => _notificationsEnabled;
   bool get remind24h => _remind24h;
@@ -80,6 +86,8 @@ class SettingsProvider extends ChangeNotifier {
     _quietEndMinute = _prefs.getInt(_kQuietEndMinute) ?? 0;
     _notifyOnComplete = _prefs.getBool(_kNotifyOnComplete) ?? true;
     _notifyOnOverdue = _prefs.getBool(_kNotifyOnOverdue) ?? true;
+    _hapticFeedback = _prefs.getBool(_kHapticFeedback) ?? true;
+    _languageCode = _prefs.getString(_kLanguageCode) ?? 'es';
 
     _isLoaded = true;
     notifyListeners();
@@ -154,6 +162,18 @@ class SettingsProvider extends ChangeNotifier {
     _notifyOnOverdue = value;
     notifyListeners();
     await _prefs.setBool(_kNotifyOnOverdue, value);
+  }
+
+  Future<void> setHapticFeedback(bool value) async {
+    _hapticFeedback = value;
+    notifyListeners();
+    await _prefs.setBool(_kHapticFeedback, value);
+  }
+
+  Future<void> setLocale(Locale locale) async {
+    _languageCode = locale.languageCode;
+    notifyListeners();
+    await _prefs.setString(_kLanguageCode, locale.languageCode);
   }
 
   void _syncNotificationService() {

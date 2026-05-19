@@ -6,6 +6,7 @@ import '../models/task.dart';
 import '../services/notification_service.dart';
 import '../services/interfaces/storage_service_interface.dart';
 import '../utils/debouncer.dart';
+import '../utils/haptic_helper.dart';
 import '../utils/notification_service_v2.dart';
 
 class TasksProvider extends ChangeNotifier {
@@ -169,6 +170,7 @@ class TasksProvider extends ChangeNotifier {
       _tasks.add(task);
       _notifyAndScheduleSave();
       await NotificationService.scheduleTaskReminders(task);
+      HapticHelper.light();
       showSuccessNotification('Tarea creada: ${task.title}');
       return Result.success(task);
     } catch (e, s) {
@@ -214,9 +216,11 @@ class TasksProvider extends ChangeNotifier {
         _notifyAndScheduleSave();
         if (newStatus == TaskStatus.completed) {
           await NotificationService.cancelTaskReminders(taskId);
+          HapticHelper.light();
           showSuccessNotification('Tarea completada');
         } else {
           await NotificationService.scheduleTaskReminders(updated);
+          HapticHelper.light();
           showSuccessNotification('Tarea reabierta');
         }
       }
@@ -248,6 +252,7 @@ class TasksProvider extends ChangeNotifier {
           : status == TaskStatus.cancelled
               ? 'Tarea anulada'
               : 'Tarea actualizada';
+      HapticHelper.light();
       showSuccessNotification(message);
     } catch (e, s) {
       AppException(message: 'Error al mover tarea', code: 'MOVE_TASK', stackTrace: s).log();
@@ -310,6 +315,7 @@ class TasksProvider extends ChangeNotifier {
       await _storage.saveTrashTasks(trash);
       _notifyAndScheduleSave();
       await NotificationService.cancelTaskReminders(taskId);
+      HapticHelper.medium();
       showSuccessNotification('Tarea movida a la papelera');
     } catch (e, s) {
       AppException(message: 'Error al eliminar tarea', code: 'DELETE_TASK', stackTrace: s).log();
@@ -326,6 +332,7 @@ class TasksProvider extends ChangeNotifier {
         _tasks.add(task);
         await _storage.saveTrashTasks(trash);
         _notifyAndScheduleSave();
+        HapticHelper.light();
         showSuccessNotification('Tarea restaurada');
       }
     } catch (e, s) {

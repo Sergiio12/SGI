@@ -5,6 +5,7 @@ import '../core/result.dart';
 import '../models/goal.dart';
 import '../services/interfaces/storage_service_interface.dart';
 import '../utils/debouncer.dart';
+import '../utils/haptic_helper.dart';
 import '../utils/notification_service_v2.dart';
 
 class GoalsProvider extends ChangeNotifier {
@@ -85,6 +86,7 @@ class GoalsProvider extends ChangeNotifier {
       );
       _goals.add(goal);
       _notifyAndScheduleSave();
+      HapticHelper.light();
       showSuccessNotification('Objetivo creado: ${goal.title}');
       return Result.success(goal);
     } catch (e, s) {
@@ -122,6 +124,7 @@ class GoalsProvider extends ChangeNotifier {
       trash.add(goal);
       await _storage.saveTrashGoals(trash);
       _notifyAndScheduleSave();
+      HapticHelper.medium();
       showSuccessNotification('Objetivo movido a la papelera');
     } catch (e, s) {
       AppException(message: 'Error al eliminar objetivo', code: 'DELETE_GOAL', stackTrace: s).log();
@@ -138,6 +141,7 @@ class GoalsProvider extends ChangeNotifier {
         _goals.add(goal);
         await _storage.saveTrashGoals(trash);
         _notifyAndScheduleSave();
+        HapticHelper.light();
         showSuccessNotification('Objetivo restaurado');
       }
     } catch (e, s) {

@@ -6,6 +6,7 @@ import '../models/project.dart';
 import '../models/task.dart';
 import '../services/interfaces/storage_service_interface.dart';
 import '../utils/debouncer.dart';
+import '../utils/haptic_helper.dart';
 import '../utils/notification_service_v2.dart';
 
 class ProjectsProvider extends ChangeNotifier {
@@ -98,6 +99,7 @@ class ProjectsProvider extends ChangeNotifier {
       );
       _projects.add(project);
       _notifyAndScheduleSave();
+      HapticHelper.light();
       showSuccessNotification('Proyecto creado: ${project.title}');
       return Result.success(project);
     } catch (e, s) {
@@ -171,6 +173,7 @@ class ProjectsProvider extends ChangeNotifier {
       trash.add(project);
       await _storage.saveTrashProjects(trash);
       _notifyAndScheduleSave();
+      HapticHelper.medium();
       showSuccessNotification('Proyecto movido a la papelera');
     } catch (e, s) {
       AppException(message: 'Error al eliminar proyecto', code: 'DELETE_PROJECT', stackTrace: s).log();
@@ -187,6 +190,7 @@ class ProjectsProvider extends ChangeNotifier {
         _projects.add(project);
         await _storage.saveTrashProjects(trash);
         _notifyAndScheduleSave();
+        HapticHelper.light();
         showSuccessNotification('Proyecto restaurado');
       }
     } catch (e, s) {

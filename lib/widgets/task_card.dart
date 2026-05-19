@@ -4,6 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 
 import '../config/theme.dart';
+import '../models/project.dart';
 import '../models/task.dart';
 import '../providers/projects_provider.dart';
 import 'package:provider/provider.dart';
@@ -45,103 +46,108 @@ class TaskCard extends StatelessWidget {
             ? Colors.transparent
             : priColor;
 
-    final card = Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      elevation: 0,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: borderColor, width: 1.2),
-      ),
-      color: isDone
-          ? BrainTheme.surfaceDark.withValues(alpha: 0.5)
-          : isCancelled
-              ? BrainTheme.surfaceDark.withValues(alpha: 0.3)
-              : BrainTheme.cardDark,
-      child: InkWell(
-        onTap: onTap,
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                width: 4,
-                decoration: BoxDecoration(
-                  color: leftBarColor,
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(18)),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(compact ? 10 : 14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              task.title,
-                              maxLines: compact ? 1 : 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: compact ? 13 : 15,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.3,
-                                color: isDimmed
-                                    ? BrainTheme.textTertiary
-                                    : BrainTheme.textPrimary,
-                                decoration:
-                                    isDone ? TextDecoration.lineThrough : null,
-                              ),
-                            ),
-                          ),
-                          if (action != null)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4),
-                              child: action,
-                            ),
-                        ],
-                      ),
-                      if (task.description.isNotEmpty && !compact) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          task.description,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: BrainTheme.textSecondary,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 5,
-                        runSpacing: 4,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          _StatusBadge(status: task.status),
-                          _PriorityBadge(priority: task.priority),
-                          if (task.dueDate != null)
-                            _DateBadge(date: task.dueDate!, isOverdue: task.isOverdue),
-                          if (task.subtasks.isNotEmpty)
-                            _subtabsBadge(task),
-                          if (task.projectId != null)
-                            _ProjectBadge(projectId: task.projectId!),
-                          _DateBadge(
-                            date: task.createdAt,
-                            isOverdue: false,
-                            compact: true,
-                          ),
-                        ],
-                      ),
-                    ],
+    final card = Semantics(
+      label: '${task.title}, ${task.status.name}',
+      value: isDone ? 'Completada' : isCancelled ? 'Anulada' : 'Activa',
+      button: true,
+      onTapHint: onTap != null ? 'Abrir detalles' : null,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 10),
+        elevation: 0,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide(color: borderColor, width: 1.2),
+        ),
+        color: isDone
+            ? BrainTheme.surfaceDark.withValues(alpha: 0.5)
+            : isCancelled
+                ? BrainTheme.surfaceDark.withValues(alpha: 0.3)
+                : BrainTheme.cardDark,
+        child: InkWell(
+          onTap: onTap,
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  width: 4,
+                  decoration: BoxDecoration(
+                    color: leftBarColor,
+                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(18)),
                   ),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(compact ? 10 : 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                task.title,
+                                maxLines: compact ? 1 : 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: compact ? 13 : 15,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.3,
+                                  color: isDimmed
+                                      ? BrainTheme.textTertiary
+                                      : BrainTheme.textPrimary,
+                                  decoration: isDone ? TextDecoration.lineThrough : null,
+                                ),
+                              ),
+                            ),
+                            if (action != null)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 4),
+                                child: action,
+                              ),
+                          ],
+                        ),
+                        if (task.description.isNotEmpty && !compact) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            task.description,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: BrainTheme.textSecondary,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 5,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            _StatusBadge(status: task.status),
+                            _PriorityBadge(priority: task.priority),
+                            if (task.dueDate != null)
+                              _DateBadge(date: task.dueDate!, isOverdue: task.isOverdue),
+                            if (task.subtasks.isNotEmpty)
+                              _subtabsBadge(task),
+                            if (task.projectId != null)
+                              _ProjectBadge(projectId: task.projectId!),
+                            _DateBadge(
+                              date: task.createdAt,
+                              isOverdue: false,
+                              compact: true,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -361,23 +367,28 @@ class _ProjectBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final project = context.watch<ProjectsProvider>().getProjectById(projectId);
+    final project = context.select<ProjectsProvider, Project?>(
+      (p) => p.getProjectById(projectId),
+    );
     if (project == null) return const SizedBox.shrink();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: Color(project.colorValue).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(7),
-      ),
-      child: Text(
-        '${project.emoji} ${project.title}',
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-          color: Color(project.colorValue),
+    return Semantics(
+      label: 'Proyecto: ${project.title}',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: Color(project.colorValue).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(7),
         ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+        child: Text(
+          '${project.emoji} ${project.title}',
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+            color: Color(project.colorValue),
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }

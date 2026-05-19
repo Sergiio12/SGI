@@ -14,6 +14,7 @@ import 'providers/trash_provider.dart';
 import 'services/interfaces/storage_service_interface.dart';
 import 'services/notification_service.dart';
 import 'services/storage_service.dart';
+import 'utils/haptic_helper.dart';
 import 'utils/notification_service_v2.dart';
 
 class AppBootstrap {
@@ -22,6 +23,7 @@ class AppBootstrap {
 
     final settingsProvider = SettingsProvider();
     await settingsProvider.load();
+    setHapticSettings(settingsProvider);
 
     final tasksProvider = TasksProvider(storage: storageService);
     settingsProvider.onNotificationSettingsChanged =

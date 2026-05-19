@@ -15,6 +15,9 @@ import 'interfaces/storage_service_interface.dart';
 
 class HiveStorageService implements IStorageService {
   static const String _boxName = 'second_brain_store';
+  static const String _schemaVersionKey = 'schema_version';
+  static const int _currentSchemaVersion = 2;
+
   static const String _tasksKey = 'brain_tasks';
   static const String _projectsKey = 'brain_projects';
   static const String _notesKey = 'brain_notes';
@@ -44,6 +47,72 @@ class HiveStorageService implements IStorageService {
     await Hive.initFlutter();
     _box = await Hive.openBox<String>(_boxName);
     await _migrateSharedPreferences();
+    await _runSchemaMigrations();
+  }
+
+  Future<void> _runSchemaMigrations() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedVersion = prefs.getInt(_schemaVersionKey) ?? 1;
+
+    if (storedVersion < _currentSchemaVersion) {
+      for (int v = storedVersion; v < _currentSchemaVersion; v++) {
+        await _migrate(v, v + 1);
+      }
+      await prefs.setInt(_schemaVersionKey, _currentSchemaVersion);
+    }
+  }
+
+  Future<void> _migrate(int fromVersion, int toVersion) async {
+    if (fromVersion == 1 && toVersion == 2) {
+      await _migrateV1toV2();
+    }
+  }
+
+  Future<void> _migrateV1toV2() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    for (final key in [_tasksKey, _projectsKey, _notesKey, _goalsKey]) {
+      final raw = _store.get(key);
+      if (raw == null || raw.isEmpty) continue;
+
+      try {
+        final decoded = await Isolate.run(() {
+          final list = jsonDecode(raw);
+          if (list is! List) return raw;
+          final updated = list.map((item) {
+            if (item is! Map) return item;
+            final map = Map<String, dynamic>.from(item);
+
+            if (!map.containsKey('version')) {
+              map['version'] = 2;
+            }
+
+            if (key == _tasksKey && map['status'] is String) {
+              final legacyStatus = map['status'] as String;
+              if (legacyStatus == 'done') map['status'] = 'completed';
+              if (legacyStatus == 'todo') map['status'] = 'pending';
+            }
+
+            if (key == _projectsKey && map['status'] is String) {
+              final legacyStatus = map['status'] as String;
+              if (legacyStatus == 'planning') map['status'] = 'active';
+              if (legacyStatus == 'finished') map['status'] = 'completed';
+            }
+
+            return map;
+          }).toList();
+          return jsonEncode(updated);
+        });
+        await _store.put(key, decoded);
+      } catch (e) {
+        debugPrint('Migration V1->V2 error for $key: $e');
+      }
+    }
+
+    final locale = prefs.getString('language_code');
+    if (locale == null) {
+      await prefs.setString('language_code', 'es');
+    }
   }
 
   Box<String> get _store {
