@@ -73,8 +73,8 @@ class BrainTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-              color: Colors.white.withValues(alpha: 0.05), width: 1),
+          side:
+              BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
         ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -126,9 +126,7 @@ class BrainTheme {
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: accentPurple);
+                fontSize: 12, fontWeight: FontWeight.w700, color: accentPurple);
           }
           return const TextStyle(
               fontSize: 12,
@@ -244,9 +242,7 @@ class BrainTheme {
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: accentPurple);
+                fontSize: 12, fontWeight: FontWeight.w700, color: accentPurple);
           }
           return const TextStyle(
               fontSize: 12,

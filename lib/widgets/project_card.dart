@@ -1,19 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../config/theme.dart';
 import '../models/project.dart';
 import '../models/tag.dart';
 import '../models/task.dart';
+import '../providers/projects_provider.dart';
 import '../providers/tags_provider.dart';
 import '../providers/tasks_provider.dart';
 
 class ProjectCard extends StatelessWidget {
   final Project project;
   final VoidCallback? onTap;
+  final VoidCallback? onDelete;
 
-  const ProjectCard({super.key, required this.project, this.onTap});
+  const ProjectCard({
+    super.key,
+    required this.project,
+    this.onTap,
+    this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +33,7 @@ class ProjectCard extends StatelessWidget {
     final progress =
         projectTasks.isEmpty ? 0.0 : completedTasks / projectTasks.length;
 
-    return Card(
+    final card = Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -38,31 +47,16 @@ class ProjectCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: onTap,
+        onLongPress: () => _showQuickActions(context),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Color(project.colorValue).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Color(project.colorValue).withValues(alpha: 0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        project.emoji,
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
+                  _ProjectAvatar(project: project, progress: progress),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
@@ -79,30 +73,44 @@ class ProjectCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: _statusColor(project.status).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                _statusLabel(project.status),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: _statusColor(project.status),
-                                ),
-                              ),
-                            ),
+                            _StatusBadge(project: project),
                             const SizedBox(width: 8),
                             _PriorityDot(priority: project.priority),
+                            if (project.deadline != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                DateFormat('dd MMM').format(project.deadline!),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: project.deadline!.isBefore(DateTime.now())
+                                      ? BrainTheme.accentRed
+                                      : BrainTheme.textTertiary,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ],
                     ),
+                  ),
+                  PopupMenuButton<_QuickAction>(
+                    icon: Icon(Icons.more_horiz, color: BrainTheme.textTertiary, size: 20),
+                    onSelected: (action) => _handleQuickAction(context, action),
+                    itemBuilder: (_) => [
+                      _popupItem(_QuickAction.edit, Icons.edit_outlined, 'Editar'),
+                      _popupItem(_QuickAction.duplicate, Icons.copy_outlined, 'Duplicar'),
+                      _popupItem(_QuickAction.changeStatus, Icons.swap_horiz, 'Cambiar estado'),
+                      _popupItem(
+                        _QuickAction.delete,
+                        Icons.delete_outline,
+                        'Eliminar',
+                        color: BrainTheme.accentRed,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -113,6 +121,7 @@ class ProjectCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     color: BrainTheme.textSecondary,
+                    height: 1.3,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -170,7 +179,7 @@ class ProjectCard extends StatelessWidget {
                   );
                 }),
               ],
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               Row(
                 children: [
                   Expanded(
@@ -211,6 +220,14 @@ class ProjectCard extends StatelessWidget {
                     value: '${project.noteIds.length}',
                     label: 'notas',
                   ),
+                  const Spacer(),
+                  Text(
+                    DateFormat('dd MMM yyyy').format(project.updatedAt),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: BrainTheme.textTertiary,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -218,18 +235,201 @@ class ProjectCard extends StatelessWidget {
         ),
       ),
     ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOut);
+
+    return Slidable(
+      key: Key(project.id),
+      endActionPane: ActionPane(
+        motion: const StretchMotion(),
+        extentRatio: 0.3,
+        children: [
+          SlidableAction(
+            onPressed: (_) => _handleQuickAction(context, _QuickAction.changeStatus),
+            backgroundColor: BrainTheme.accentBlue.withValues(alpha: 0.2),
+            foregroundColor: BrainTheme.accentBlue,
+            icon: Icons.swap_horiz,
+            label: 'Estado',
+            borderRadius: BorderRadius.circular(20),
+          ),
+          SlidableAction(
+            onPressed: (_) => onDelete?.call(),
+            backgroundColor: BrainTheme.accentRed.withValues(alpha: 0.2),
+            foregroundColor: BrainTheme.accentRed,
+            icon: Icons.delete_outline,
+            label: 'Eliminar',
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ],
+      ),
+      child: card,
+    );
   }
 
-  String _statusLabel(ProjectStatus status) {
+  void _showQuickActions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: BrainTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                project.title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: BrainTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _actionTile(ctx, Icons.edit_outlined, 'Editar proyecto', () {
+                Navigator.pop(ctx);
+                onTap?.call();
+              }),
+              _actionTile(ctx, Icons.swap_horiz, 'Cambiar estado', () {
+                Navigator.pop(ctx);
+                _showStatusPicker(context);
+              }),
+              _actionTile(ctx, Icons.copy_outlined, 'Duplicar', () {
+                Navigator.pop(ctx);
+                _duplicateProject(context);
+              }),
+              _actionTile(ctx, Icons.delete_outline, 'Mover a papelera', () {
+                Navigator.pop(ctx);
+                onDelete?.call();
+              }, isDestructive: true),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _actionTile(BuildContext context, IconData icon, String label, VoidCallback onTap, {bool isDestructive = false}) {
+    return ListTile(
+      leading: Icon(icon, color: isDestructive ? BrainTheme.accentRed : BrainTheme.textPrimary),
+      title: Text(label, style: TextStyle(color: isDestructive ? BrainTheme.accentRed : BrainTheme.textPrimary)),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
+  }
+
+  void _handleQuickAction(BuildContext context, _QuickAction action) {
+    switch (action) {
+      case _QuickAction.edit:
+        onTap?.call();
+      case _QuickAction.duplicate:
+        _duplicateProject(context);
+      case _QuickAction.changeStatus:
+        _showStatusPicker(context);
+      case _QuickAction.delete:
+        onDelete?.call();
+    }
+  }
+
+  void _duplicateProject(BuildContext context) {
+    final provider = context.read<ProjectsProvider>();
+    provider.addProject(
+      title: '${project.title} (copia)',
+      description: project.description,
+      emoji: project.emoji,
+      colorValue: project.colorValue,
+      status: project.status,
+      startDate: project.startDate,
+      deadline: project.deadline,
+      priority: project.priority,
+      objective: project.objective,
+    );
+  }
+
+  void _showStatusPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: BrainTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cambiar estado',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: BrainTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...ProjectStatus.values.map((status) {
+                final isActive = status == project.status;
+                return ListTile(
+                  leading: Icon(
+                    _statusIcon(status),
+                    color: _statusColor(status),
+                  ),
+                  title: Text(
+                    _statusLabel(status),
+                    style: TextStyle(
+                      color: isActive ? _statusColor(status) : BrainTheme.textPrimary,
+                      fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                  trailing: isActive
+                      ? Icon(Icons.check, color: _statusColor(status))
+                      : null,
+                  onTap: () {
+                    final provider = context.read<ProjectsProvider>();
+                    provider.updateProject(project.copyWith(status: status));
+                    Navigator.pop(ctx);
+                  },
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<_QuickAction> _popupItem(
+    _QuickAction action,
+    IconData icon,
+    String label, {
+    Color? color,
+  }) {
+    return PopupMenuItem(
+      value: action,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color ?? BrainTheme.textSecondary),
+          const SizedBox(width: 10),
+          Text(label, style: TextStyle(color: color)),
+        ],
+      ),
+    );
+  }
+
+  IconData _statusIcon(ProjectStatus status) {
     switch (status) {
       case ProjectStatus.active:
-        return 'Activo';
+        return Icons.play_circle_outline;
       case ProjectStatus.paused:
-        return 'Pausado';
+        return Icons.pause_circle_outline;
       case ProjectStatus.completed:
-        return 'Finalizado';
+        return Icons.check_circle_outline;
       case ProjectStatus.abandoned:
-        return 'Abandonado';
+        return Icons.cancel_outlined;
     }
   }
 
@@ -244,6 +444,113 @@ class ProjectCard extends StatelessWidget {
       case ProjectStatus.abandoned:
         return BrainTheme.textTertiary;
     }
+  }
+
+  String _statusLabel(ProjectStatus status) {
+    switch (status) {
+      case ProjectStatus.active:
+        return 'Activo';
+      case ProjectStatus.paused:
+        return 'Pausado';
+      case ProjectStatus.completed:
+        return 'Finalizado';
+      case ProjectStatus.abandoned:
+        return 'Abandonado';
+    }
+  }
+}
+
+class _ProjectAvatar extends StatelessWidget {
+  final Project project;
+  final double progress;
+
+  const _ProjectAvatar({required this.project, required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: Color(project.colorValue).withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Color(project.colorValue).withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(project.emoji, style: const TextStyle(fontSize: 20)),
+            if (progress >= 1.0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+                decoration: BoxDecoration(
+                  color: BrainTheme.accentGreen.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Icon(Icons.check, size: 8, color: Colors.white),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final Project project;
+
+  const _StatusBadge({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
+    Color color;
+    String label;
+    IconData icon;
+    switch (project.status) {
+      case ProjectStatus.active:
+        color = BrainTheme.accentGreen;
+        label = 'Activo';
+        icon = Icons.play_arrow_rounded;
+      case ProjectStatus.paused:
+        color = BrainTheme.accentOrange;
+        label = 'Pausado';
+        icon = Icons.pause_rounded;
+      case ProjectStatus.completed:
+        color = BrainTheme.accentBlue;
+        label = 'Finalizado';
+        icon = Icons.check_rounded;
+      case ProjectStatus.abandoned:
+        color = BrainTheme.textTertiary;
+        label = 'Abandonado';
+        icon = Icons.stop_rounded;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -301,3 +608,5 @@ class _PriorityDot extends StatelessWidget {
     );
   }
 }
+
+enum _QuickAction { edit, duplicate, changeStatus, delete }
