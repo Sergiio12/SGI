@@ -5,10 +5,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/theme.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/task.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../widgets/paginated_list.dart';
+import '../../widgets/skeleton_card.dart';
 import '../../widgets/task_card.dart';
 
 enum _TaskSortOption { priority, dueDate, createdAt, title }
@@ -134,61 +136,65 @@ class _TasksScreenState extends State<TasksScreen> {
     return b.createdAt.compareTo(a.createdAt);
   }
 
-  String _sortLabel() {
+  String _sortLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (_sortOption) {
       case _TaskSortOption.priority:
-        return 'Prioridad';
+        return l10n.sortPriority;
       case _TaskSortOption.dueDate:
-        return 'Fecha limite';
+        return l10n.sortDueDate;
       case _TaskSortOption.createdAt:
-        return 'Creacion';
+        return l10n.sortCreatedAt;
       case _TaskSortOption.title:
-        return 'Titulo';
+        return l10n.sortTitle;
     }
   }
 
-  String _dueDateFilterLabel() => _dueDateFilterLabelFor(_dueDateFilter);
+  String _dueDateFilterLabel(BuildContext context) => _dueDateFilterLabelFor(_dueDateFilter, context);
 
-  String _dueDateFilterLabelFor(_TaskDueDateFilter filter) {
+  String _dueDateFilterLabelFor(_TaskDueDateFilter filter, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (filter) {
       case _TaskDueDateFilter.all:
-        return 'Todas';
+        return l10n.all;
       case _TaskDueDateFilter.today:
-        return 'Hoy';
+        return l10n.today;
       case _TaskDueDateFilter.thisWeek:
-        return 'Esta semana';
+        return l10n.thisWeek;
       case _TaskDueDateFilter.overdue:
-        return 'Vencidas';
+        return l10n.overdueTasks;
       case _TaskDueDateFilter.noDate:
-        return 'Sin fecha';
+        return l10n.noDueDate;
     }
   }
 
-  String _priorityLabel(TaskPriority priority) {
+  String _priorityLabel(TaskPriority priority, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (priority) {
       case TaskPriority.low:
-        return 'Baja';
+        return l10n.priorityLow;
       case TaskPriority.medium:
-        return 'Media';
+        return l10n.priorityMedium;
       case TaskPriority.high:
-        return 'Alta';
+        return l10n.priorityHigh;
       case TaskPriority.urgent:
-        return 'Urgente';
+        return l10n.priorityUrgent;
     }
   }
 
-  String _statusLabel(TaskStatus status) {
+  String _statusLabel(TaskStatus status, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case TaskStatus.pending:
-        return 'Pendiente';
+        return l10n.statusPending;
       case TaskStatus.inProgress:
-        return 'En progreso';
+        return l10n.statusInProgress;
       case TaskStatus.inReview:
-        return 'Revision';
+        return l10n.statusInReview;
       case TaskStatus.completed:
-        return 'Finalizada';
+        return l10n.statusCompleted;
       case TaskStatus.cancelled:
-        return 'Anulada';
+        return l10n.statusCancelled;
     }
   }
 
@@ -200,6 +206,7 @@ class _TasksScreenState extends State<TasksScreen> {
   Widget build(BuildContext context) {
     return Consumer<TasksProvider>(
       builder: (context, provider, _) {
+        if (!provider.isLoaded) return const SkeletonList();
         return Column(
           children: [
             _StatsBar(provider: provider),
@@ -226,7 +233,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 child: Wrap(
                   spacing: 6,
                   runSpacing: 4,
-                  children: _buildFilterChips(),
+                  children: _buildFilterChips(context),
                 ),
               ),
             const SizedBox(height: 8),
@@ -273,7 +280,7 @@ class _TasksScreenState extends State<TasksScreen> {
               child: Row(
                 children: [
                   Text(
-                    'Tablero de tareas',
+                    AppLocalizations.of(context)!.tasks,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -298,7 +305,7 @@ class _TasksScreenState extends State<TasksScreen> {
                   ),
                   const Spacer(),
                   Text(
-                    _sortLabel(),
+                    _sortLabel(context),
                     style: TextStyle(
                       fontSize: 11,
                       color: BrainTheme.textTertiary,
@@ -318,7 +325,7 @@ class _TasksScreenState extends State<TasksScreen> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: Text(
-                              'Selecciona al menos una columna visible',
+                              AppLocalizations.of(context)!.filterAll,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 14,
@@ -333,7 +340,7 @@ class _TasksScreenState extends State<TasksScreen> {
                             final colTasks = columns[status]!;
                             return _TaskBoardColumn(
                               status: status,
-                              title: _statusLabel(status),
+                              title: _statusLabel(status, context),
                               tasks: colTasks,
                               onTaskMoved: (task) =>
                                   provider.moveTaskToStatus(task.id, status),
@@ -383,7 +390,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            'Filtros avanzados',
+                            AppLocalizations.of(context)!.filter,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -398,7 +405,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text('Prioridad',
+                    Text(AppLocalizations.of(context)!.sortPriority,
                         style: TextStyle(color: BrainTheme.textPrimary)),
                     const SizedBox(height: 8),
                     Wrap(
@@ -407,7 +414,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       children: TaskPriority.values.map((priority) {
                         final active = selectedPriorities.contains(priority);
                         return FilterChip(
-                          label: Text(_priorityLabel(priority)),
+                          label: Text(_priorityLabel(priority, context)),
                           selected: active,
                           selectedColor:
                               BrainTheme.accentPurple.withValues(alpha: 0.12),
@@ -430,7 +437,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       }).toList(),
                     ),
                     const SizedBox(height: 16),
-                    Text('Fecha limite',
+                    Text(AppLocalizations.of(context)!.sortDueDate,
                         style: TextStyle(color: BrainTheme.textPrimary)),
                     const SizedBox(height: 8),
                     Wrap(
@@ -439,7 +446,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       children: _TaskDueDateFilter.values.map((filter) {
                         final selected = dueDateFilter == filter;
                         return ChoiceChip(
-                          label: Text(_dueDateFilterLabelFor(filter)),
+                          label: Text(_dueDateFilterLabelFor(filter, context)),
                           selected: selected,
                           selectedColor:
                               BrainTheme.accentBlue.withValues(alpha: 0.18),
@@ -459,10 +466,10 @@ class _TasksScreenState extends State<TasksScreen> {
                     SwitchListTile(
                       value: onlyWithDescription,
                       activeThumbColor: BrainTheme.accentPurple,
-                      title: Text('Solo con descripcion',
+                      title: Text(AppLocalizations.of(context)!.onlyWithDescription,
                           style: TextStyle(color: BrainTheme.textPrimary)),
                       subtitle: Text(
-                        'Muestra unicamente las tareas con texto en la descripcion.',
+                        AppLocalizations.of(context)!.description,
                         style: TextStyle(color: BrainTheme.textSecondary, fontSize: 12),
                       ),
                       onChanged: (value) {
@@ -472,10 +479,10 @@ class _TasksScreenState extends State<TasksScreen> {
                     SwitchListTile(
                       value: onlyWithProject,
                       activeThumbColor: BrainTheme.accentPurple,
-                      title: Text('Solo tareas con proyecto',
+                      title: Text(AppLocalizations.of(context)!.onlyWithProject,
                           style: TextStyle(color: BrainTheme.textPrimary)),
                       subtitle: Text(
-                        'Filtra las tareas que estan asociadas a un proyecto.',
+                        AppLocalizations.of(context)!.project,
                         style: TextStyle(color: BrainTheme.textSecondary, fontSize: 12),
                       ),
                       onChanged: (value) {
@@ -483,7 +490,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    Text('Columnas visibles',
+                    Text(AppLocalizations.of(context)!.filterStatus,
                         style: TextStyle(color: BrainTheme.textPrimary)),
                     const SizedBox(height: 8),
                     Wrap(
@@ -492,7 +499,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       children: TaskStatus.values.map((status) {
                         final selected = visibleBoardColumns.contains(status);
                         return FilterChip(
-                          label: Text(_statusLabel(status)),
+                          label: Text(_statusLabel(status, context)),
                           selected: selected,
                           selectedColor:
                               BrainTheme.accentPurple.withValues(alpha: 0.12),
@@ -515,7 +522,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       }).toList(),
                     ),
                     const SizedBox(height: 16),
-                    Text('Ordenar por',
+                    Text(AppLocalizations.of(context)!.sortBy,
                         style: TextStyle(color: BrainTheme.textPrimary)),
                     const SizedBox(height: 8),
                     Container(
@@ -533,7 +540,7 @@ class _TasksScreenState extends State<TasksScreen> {
                           items: _TaskSortOption.values.map((option) {
                             return DropdownMenuItem(
                               value: option,
-                              child: Text(_sortOptionLabel(option)),
+                              child: Text(_sortOptionLabel(option, context)),
                             );
                           }).toList(),
                           onChanged: (value) {
@@ -564,7 +571,7 @@ class _TasksScreenState extends State<TasksScreen> {
                                 sortOption = _TaskSortOption.priority;
                               });
                             },
-                            child: const Text('Limpiar'),
+                            child: Text(AppLocalizations.of(context)!.clearFilters),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -588,7 +595,7 @@ class _TasksScreenState extends State<TasksScreen> {
                                 borderRadius: BorderRadius.circular(14),
                               ),
                             ),
-                            child: const Text('Aplicar'),
+                            child: Text(AppLocalizations.of(context)!.save),
                           ),
                         ),
                       ],
@@ -604,55 +611,57 @@ class _TasksScreenState extends State<TasksScreen> {
     );
   }
 
-  String _sortOptionLabel(_TaskSortOption option) {
+  String _sortOptionLabel(_TaskSortOption option, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (option) {
       case _TaskSortOption.priority:
-        return 'Prioridad';
+        return l10n.sortPriority;
       case _TaskSortOption.dueDate:
-        return 'Fecha limite';
+        return l10n.sortDueDate;
       case _TaskSortOption.createdAt:
-        return 'Fecha de creacion';
+        return l10n.sortCreatedAt;
       case _TaskSortOption.title:
-        return 'Titulo';
+        return l10n.sortTitle;
     }
   }
 
-  List<Widget> _buildFilterChips() {
+  List<Widget> _buildFilterChips(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final chips = <Widget>[];
     if (_searchQuery.isNotEmpty) {
-      chips.add(_buildFilterChip('Busqueda: "$_searchQuery"', () {
+      chips.add(_buildFilterChip('${l10n.search}: "$_searchQuery"', () {
         _searchController.clear();
         setState(() => _searchQuery = '');
       }));
     }
     if (_selectedPriorities.length != TaskPriority.values.length) {
       chips.add(_buildFilterChip(
-        'Prioridades: ${_selectedPriorities.map(_priorityLabel).join(', ')}',
+        '${l10n.sortPriority}: ${_selectedPriorities.map((p) => _priorityLabel(p, context)).join(', ')}',
         () => setState(() => _selectedPriorities = TaskPriority.values.toSet()),
       ));
     }
     if (_dueDateFilter != _TaskDueDateFilter.all) {
-      chips.add(_buildFilterChip('Fecha: ${_dueDateFilterLabel()}', () {
+      chips.add(_buildFilterChip('${l10n.dueDate}: ${_dueDateFilterLabel(context)}', () {
         setState(() => _dueDateFilter = _TaskDueDateFilter.all);
       }));
     }
     if (_onlyWithDescription) {
-      chips.add(_buildFilterChip('Con descripcion', () {
+      chips.add(_buildFilterChip(l10n.onlyWithDescription, () {
         setState(() => _onlyWithDescription = false);
       }));
     }
     if (_onlyWithProject) {
-      chips.add(_buildFilterChip('Con proyecto', () {
+      chips.add(_buildFilterChip(l10n.onlyWithProject, () {
         setState(() => _onlyWithProject = false);
       }));
     }
     if (_selectedProjectId != null) {
-      chips.add(_buildFilterChip('Proyecto asignado', () {
+      chips.add(_buildFilterChip(l10n.project, () {
         setState(() => _selectedProjectId = null);
       }));
     }
     chips.add(
-        _buildFilterChip('Orden: ${_sortLabel()}', _showAdvancedFilters));
+        _buildFilterChip('${l10n.sortBy}: ${_sortLabel(context)}', _showAdvancedFilters));
     return chips;
   }
 
@@ -691,7 +700,7 @@ class _TasksScreenState extends State<TasksScreen> {
           enabled: false,
           height: 32,
           child: Text(
-            'Mover a...',
+            AppLocalizations.of(context)!.filterStatus,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -717,7 +726,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  _statusLabel(status),
+                  _statusLabel(status, context),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -804,25 +813,25 @@ class _StatsBar extends StatelessWidget {
           _StatItem(
             icon: Icons.task_alt,
             value: '$total',
-            label: 'Total',
+            label: AppLocalizations.of(context)!.totalTasks,
             color: BrainTheme.accentPurple,
           ),
           _StatItem(
             icon: Icons.warning_amber_rounded,
             value: '$overdue',
-            label: 'Vencidas',
+            label: AppLocalizations.of(context)!.overdueTasks,
             color: overdue > 0 ? BrainTheme.accentRed : BrainTheme.textTertiary,
           ),
           _StatItem(
             icon: Icons.calendar_today,
             value: '$today',
-            label: 'Hoy',
+            label: AppLocalizations.of(context)!.today,
             color: today > 0 ? BrainTheme.accentOrange : BrainTheme.textTertiary,
           ),
           _StatItem(
             icon: Icons.check_circle,
             value: '$doneToday',
-            label: 'Hoy hechas',
+            label: AppLocalizations.of(context)!.completedTasks,
             color: BrainTheme.accentGreen,
           ),
         ],
@@ -912,7 +921,7 @@ class _SearchFilterBar extends StatelessWidget {
                   onChanged: onSearchChanged,
                   style: const TextStyle(fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: 'Buscar tareas...',
+                    hintText: AppLocalizations.of(context)!.searchTasks,
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: searchQuery.isNotEmpty
                         ? IconButton(
@@ -952,21 +961,21 @@ class _SearchFilterBar extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   children: [
                     _QuickChip(
-                      label: 'Todas',
+                      label: AppLocalizations.of(context)!.all,
                       selected: selectedProjectId == null && activeFilterCount == 0,
                       color: BrainTheme.accentPurple,
                       onTap: () => onProjectChanged(null),
                     ),
                     const SizedBox(width: 6),
                     _QuickChip(
-                      label: 'Hoy',
+                      label: AppLocalizations.of(context)!.today,
                       selected: false,
                       color: BrainTheme.accentOrange,
                       onTap: () {},
                     ),
                     const SizedBox(width: 6),
                     _QuickChip(
-                      label: 'Vencidas',
+                      label: AppLocalizations.of(context)!.overdueTasks,
                       selected: false,
                       color: BrainTheme.accentRed,
                       onTap: () {},
@@ -1214,7 +1223,7 @@ class _TaskBoardColumn extends StatelessWidget {
                             Icon(_columnIcon, size: 28, color: BrainTheme.textTertiary.withValues(alpha: 0.3)),
                             const SizedBox(height: 6),
                             Text(
-                              'Arrastra tareas aqui',
+                              AppLocalizations.of(context)!.emptyState,
                               style: TextStyle(
                                 color: BrainTheme.textTertiary,
                                 fontSize: 11,

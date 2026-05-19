@@ -2,6 +2,7 @@
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:second_brain/l10n/app_localizations.dart';
 import '../../config/theme.dart';
 import '../../models/task.dart';
 import '../../providers/tasks_provider.dart';
@@ -14,7 +15,7 @@ class CalendarScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Calendario')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.calendar)),
       body: Consumer<TasksProvider>(
         builder: (context, provider, _) {
           final grouped = _groupTasks(provider.tasks);
@@ -60,7 +61,7 @@ class CalendarScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _dateTitle(date),
+                              _dateTitle(date, context),
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -123,12 +124,12 @@ class CalendarScreen extends StatelessWidget {
     );
   }
 
-  String _dateTitle(DateTime date) {
+  String _dateTitle(DateTime date, BuildContext context) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
-    if (date == today) return 'Hoy';
-    if (date == tomorrow) return 'Manana';
+    if (date == today) return AppLocalizations.of(context)!.today;
+    if (date == tomorrow) return 'Mañana';
     return DateFormat('dd MMM').format(date);
   }
 

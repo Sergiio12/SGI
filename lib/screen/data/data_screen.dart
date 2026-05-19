@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:second_brain/l10n/app_localizations.dart';
 import '../../config/theme.dart';
 import '../../providers/goals_provider.dart';
 import '../../providers/trash_provider.dart';
@@ -26,26 +27,26 @@ class _DataScreenState extends State<DataScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Datos y respaldo')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.dataManagement)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _ActionCard(
             icon: Icons.file_download_outlined,
-            title: 'Exportar JSON',
+            title: AppLocalizations.of(context)!.exportData,
             subtitle:
                 'Guarda tareas, proyectos, objetivos, notas y relaciones en un archivo local.',
-            buttonLabel: 'Exportar',
+            buttonLabel: AppLocalizations.of(context)!.exportData,
             isBusy: _isBusy,
             onPressed: _export,
           ),
           const SizedBox(height: 12),
           _ActionCard(
             icon: Icons.restore_outlined,
-            title: 'Restaurar desde archivo',
+            title: AppLocalizations.of(context)!.importData,
             subtitle:
                 'Importa una copia JSON exportada previamente. Sustituye los datos actuales.',
-            buttonLabel: 'Restaurar',
+            buttonLabel: AppLocalizations.of(context)!.restore,
             isBusy: _isBusy,
             onPressed: _restore,
           ),
@@ -98,10 +99,10 @@ class _DataScreenState extends State<DataScreen> {
           const SizedBox(height: 12),
           _ActionCard(
             icon: Icons.delete_forever_outlined,
-            title: 'Eliminar todos los datos',
+            title: AppLocalizations.of(context)!.clearAllData,
             subtitle:
                 'BORRA TODAS las tareas, proyectos, notas y configuraciones. Esta accion NO se puede deshacer.',
-            buttonLabel: 'Borrar todo',
+            buttonLabel: AppLocalizations.of(context)!.clearAllData,
             isBusy: _isBusy,
             isDestructive: true,
             onPressed: _deleteAll,
@@ -138,18 +139,18 @@ class _DataScreenState extends State<DataScreen> {
   Future<void> _restore() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Restaurar datos'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(AppLocalizations.of(dialogContext)!.restore),
         content: const Text(
           'Esta accion sustituira los datos actuales por los del archivo seleccionado.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(AppLocalizations.of(dialogContext)!.cancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Continuar'),
           ),
         ],
@@ -194,23 +195,23 @@ class _DataScreenState extends State<DataScreen> {
   Future<void> _deleteAll() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('¿Eliminar todos los datos?'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(AppLocalizations.of(dialogContext)!.clearAllData),
         content: const Text(
           'Esta accion borrara permanentemente todas tus tareas, proyectos, objetivos y notas. No podras recuperarlos a menos que tengas un respaldo JSON.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(AppLocalizations.of(dialogContext)!.cancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: FilledButton.styleFrom(
               backgroundColor: BrainTheme.accentRed,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Eliminar definitivamente'),
+            child: Text(AppLocalizations.of(dialogContext)!.permanentlyDelete),
           ),
         ],
       ),

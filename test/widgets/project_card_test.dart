@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:second_brain/config/theme.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 import 'package:second_brain/models/project.dart';
 import 'package:second_brain/providers/projects_provider.dart';
 import 'package:second_brain/providers/settings_provider.dart';
@@ -15,6 +16,8 @@ Widget createTestWidget(Widget child) {
   final storage = MockStorageService();
   return MaterialApp(
     theme: BrainTheme.darkTheme,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>(
@@ -70,7 +73,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Activo'), findsWidgets);
+      expect(find.textContaining('Active'), findsWidgets);
     });
 
     testWidgets('calls onTap when tapped', (tester) async {

@@ -508,4 +508,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customThemes => 'Custom themes';
+
+  @override
+  String get goalMonthly => 'Monthly';
+
+  @override
+  String get goalQuarterly => 'Quarterly';
+
+  @override
+  String get goalYearly => 'Yearly';
+
+  @override
+  String get moveToTrashTitle => 'Move to trash';
+
+  @override
+  String get moveToTrashContent => 'Move goal to trash?';
+
+  @override
+  String get sortRecent => 'Recent';
+
+  @override
+  String get goalAddProgress => 'Add progress';
+
+  @override
+  String get goalAmountToAdd => 'Amount to add';
+
+  @override
+  String get goalAdd => 'Add';
+
+  @override
+  String get goalUpdateProgress => 'Update progress';
+
+  @override
+  String get goalNameHint => 'Goal name';
+
+  @override
+  String get goalProgressMetric => 'Progress metric';
+
+  @override
+  String get goalCurrent => 'Current';
+
+  @override
+  String get goalTarget => 'Target';
+
+  @override
+  String get goalChooseColor => 'Choose color';
+
+  @override
+  String get goalLinkedProjects => 'Linked projects';
+
+  @override
+  String get goalNoLinkedProjects => 'No linked projects';
+
+  @override
+  String get goalNoTagsAvailable =>
+      'No tags available. Create one from Settings.';
+
+  @override
+  String get goalPaused => 'Paused';
+
+  @override
+  String get goalAbandoned => 'Abandoned';
+
+  @override
+  String get goalNeedsName => 'Goal needs a name';
+
+  @override
+  String get goalProgressCompleted => 'completed';
+
+  @override
+  String get justNow => 'just now';
 }

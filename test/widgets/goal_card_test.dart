@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:second_brain/config/theme.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 import 'package:second_brain/models/goal.dart';
 import 'package:second_brain/providers/settings_provider.dart';
 import 'package:second_brain/providers/tags_provider.dart';
@@ -12,6 +13,8 @@ import '../helpers/mock_storage_service.dart';
 Widget createTestWidget(Widget child) {
   return MaterialApp(
     theme: BrainTheme.darkTheme,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>(

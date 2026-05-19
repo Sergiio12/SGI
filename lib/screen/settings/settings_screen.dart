@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 import '../../config/theme.dart';
 import 'appearance_screen.dart';
 import 'debug_screen.dart';
@@ -11,14 +12,14 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ajustes'),
+        title: Text(AppLocalizations.of(context)!.settings),
       ),
       body: ListView(
         children: [
           _buildSectionHeader('GENERAL'),
           _buildSettingItem(
             icon: Icons.palette_outlined,
-            title: 'Apariencia',
+            title: AppLocalizations.of(context)!.appearance,
             subtitle: 'Personaliza el tema y colores',
             onTap: () {
               Navigator.push(
@@ -29,7 +30,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           _buildSettingItem(
             icon: Icons.notifications_none_rounded,
-            title: 'Notificaciones',
+            title: AppLocalizations.of(context)!.notifications,
             subtitle: 'Configura tus recordatorios',
             onTap: () {
               Navigator.push(
@@ -42,13 +43,13 @@ class SettingsScreen extends StatelessWidget {
           _buildSectionHeader('SISTEMA'),
           _buildSettingItem(
             icon: Icons.cloud_done_outlined,
-            title: 'Datos y respaldo',
+            title: AppLocalizations.of(context)!.dataManagement,
             subtitle: 'Exportar, importar y gestionar tus datos',
             onTap: () => Navigator.pushNamed(context, '/data'),
           ),
           _buildSettingItem(
             icon: Icons.bug_report_outlined,
-            title: 'Debug',
+            title: AppLocalizations.of(context)!.debug,
             subtitle: 'Opciones de depuración y pruebas',
             onTap: () {
               Navigator.push(
@@ -59,12 +60,12 @@ class SettingsScreen extends StatelessWidget {
           ),
           _buildSettingItem(
             icon: Icons.info_outline_rounded,
-            title: 'Acerca de',
+            title: AppLocalizations.of(context)!.about,
             subtitle: 'Información de la aplicación',
             onTap: () {
               showAboutDialog(
                 context: context,
-                applicationName: 'Sistema de gestión integral',
+                applicationName: AppLocalizations.of(context)!.appTitle,
                 applicationVersion: '1.0.1-beta',
                 applicationIcon: ClipRRect(
                   borderRadius: BorderRadius.circular(12),

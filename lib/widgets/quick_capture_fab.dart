@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../config/theme.dart';
+import '../l10n/app_localizations.dart';
 
 class QuickCaptureFAB extends StatefulWidget {
   final Function(String type) onCapture;
@@ -59,7 +60,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
             children: [
               _MiniFAB(
                 icon: Icons.note_add_outlined,
-                label: 'Nota',
+                label: AppLocalizations.of(context).note,
                 color: BrainTheme.accentGreen,
                 onTap: () {
                   _toggle();
@@ -69,7 +70,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
               const SizedBox(height: 10),
               _MiniFAB(
                 icon: Icons.add_task,
-                label: 'Tarea',
+                label: AppLocalizations.of(context).task,
                 color: BrainTheme.accentBlue,
                 onTap: () {
                   _toggle();
@@ -79,7 +80,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
               const SizedBox(height: 10),
               _MiniFAB(
                 icon: Icons.create_new_folder_outlined,
-                label: 'Proyecto',
+                label: AppLocalizations.of(context).project,
                 color: BrainTheme.accentOrange,
                 onTap: () {
                   _toggle();
@@ -89,7 +90,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
               const SizedBox(height: 10),
               _MiniFAB(
                 icon: Icons.track_changes_outlined,
-                label: 'Objetivo',
+                label: AppLocalizations.of(context).goal,
                 color: BrainTheme.accentPurple,
                 onTap: () {
                   _toggle();
@@ -102,13 +103,17 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
         ),
 
         // Main FAB
-        FloatingActionButton(
-          onPressed: _toggle,
-          backgroundColor: BrainTheme.accentPurple,
-          child: AnimatedRotation(
-            turns: _isOpen ? 0.125 : 0,
-            duration: const Duration(milliseconds: 250),
-            child: const Icon(Icons.add, size: 28),
+        Semantics(
+          label: AppLocalizations.of(context).quickCapture,
+          button: true,
+          child: FloatingActionButton(
+            onPressed: _toggle,
+            backgroundColor: BrainTheme.accentPurple,
+            child: AnimatedRotation(
+              turns: _isOpen ? 0.125 : 0,
+              duration: const Duration(milliseconds: 250),
+              child: const Icon(Icons.add, size: 28),
+            ),
           ),
         ),
       ],

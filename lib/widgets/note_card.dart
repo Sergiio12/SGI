@@ -22,7 +22,11 @@ class NoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final typeLabel = note.type == NoteType.freeform ? 'Nota libre' : note.type == NoteType.checklist ? 'Checklist' : 'Lista';
+
+    return Semantics(
+      label: '${note.title}, $typeLabel',
+      child: Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -56,6 +60,7 @@ class NoteCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     ).animate().fadeIn(duration: 400.ms).slideY(
         begin: 0.1, end: 0, curve: Curves.easeOut);

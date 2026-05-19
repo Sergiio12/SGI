@@ -1099,6 +1099,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom themes'**
   String get customThemes;
+
+  /// No description provided for @goalMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get goalMonthly;
+
+  /// No description provided for @goalQuarterly.
+  ///
+  /// In en, this message translates to:
+  /// **'Quarterly'**
+  String get goalQuarterly;
+
+  /// No description provided for @goalYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get goalYearly;
+
+  /// No description provided for @moveToTrashTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to trash'**
+  String get moveToTrashTitle;
+
+  /// No description provided for @moveToTrashContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Move goal to trash?'**
+  String get moveToTrashContent;
+
+  /// No description provided for @sortRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get sortRecent;
+
+  /// No description provided for @goalAddProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Add progress'**
+  String get goalAddProgress;
+
+  /// No description provided for @goalAmountToAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to add'**
+  String get goalAmountToAdd;
+
+  /// No description provided for @goalAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get goalAdd;
+
+  /// No description provided for @goalUpdateProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Update progress'**
+  String get goalUpdateProgress;
+
+  /// No description provided for @goalNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal name'**
+  String get goalNameHint;
+
+  /// No description provided for @goalProgressMetric.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress metric'**
+  String get goalProgressMetric;
+
+  /// No description provided for @goalCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get goalCurrent;
+
+  /// No description provided for @goalTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target'**
+  String get goalTarget;
+
+  /// No description provided for @goalChooseColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose color'**
+  String get goalChooseColor;
+
+  /// No description provided for @goalLinkedProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked projects'**
+  String get goalLinkedProjects;
+
+  /// No description provided for @goalNoLinkedProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'No linked projects'**
+  String get goalNoLinkedProjects;
+
+  /// No description provided for @goalNoTagsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags available. Create one from Settings.'**
+  String get goalNoTagsAvailable;
+
+  /// No description provided for @goalPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get goalPaused;
+
+  /// No description provided for @goalAbandoned.
+  ///
+  /// In en, this message translates to:
+  /// **'Abandoned'**
+  String get goalAbandoned;
+
+  /// No description provided for @goalNeedsName.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal needs a name'**
+  String get goalNeedsName;
+
+  /// No description provided for @goalProgressCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'completed'**
+  String get goalProgressCompleted;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get justNow;
 }
 
 class _AppLocalizationsDelegate

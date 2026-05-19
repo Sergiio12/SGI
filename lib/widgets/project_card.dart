@@ -4,6 +4,8 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:second_brain/l10n/app_localizations.dart';
+
 import '../config/theme.dart';
 import '../models/project.dart';
 import '../models/tag.dart';
@@ -26,14 +28,19 @@ class ProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tasks = context.watch<TasksProvider>();
-    final projectTasks = tasks.getTasksByProject(project.id);
-    final completedTasks =
-        projectTasks.where((t) => t.status == TaskStatus.completed).length;
-    final progress =
-        projectTasks.isEmpty ? 0.0 : completedTasks / projectTasks.length;
+    final taskCount = context.select<TasksProvider, int>(
+      (p) => p.getTasksByProject(project.id).length,
+    );
+    final completedTasks = context.select<TasksProvider, int>(
+      (p) => p.getTasksByProject(project.id)
+          .where((t) => t.status == TaskStatus.completed)
+          .length,
+    );
+    final progress = taskCount == 0 ? 0.0 : completedTasks / taskCount;
 
-    final card = Card(
+    final card = Semantics(
+      label: '${project.title}, ${AppLocalizations.of(context)!.project}',
+      child: Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -101,13 +108,13 @@ class ProjectCard extends StatelessWidget {
                     icon: Icon(Icons.more_horiz, color: BrainTheme.textTertiary, size: 20),
                     onSelected: (action) => _handleQuickAction(context, action),
                     itemBuilder: (_) => [
-                      _popupItem(_QuickAction.edit, Icons.edit_outlined, 'Editar'),
+                      _popupItem(_QuickAction.edit, Icons.edit_outlined, AppLocalizations.of(context)!.editProject),
                       _popupItem(_QuickAction.duplicate, Icons.copy_outlined, 'Duplicar'),
                       _popupItem(_QuickAction.changeStatus, Icons.swap_horiz, 'Cambiar estado'),
                       _popupItem(
                         _QuickAction.delete,
                         Icons.delete_outline,
-                        'Eliminar',
+                        AppLocalizations.of(context)!.delete,
                         color: BrainTheme.accentRed,
                       ),
                     ],
@@ -211,7 +218,7 @@ class ProjectCard extends StatelessWidget {
                 children: [
                   _MiniStat(
                     icon: Icons.task_alt,
-                    value: '$completedTasks/${projectTasks.length}',
+                    value: '$completedTasks/$taskCount',
                     label: 'tareas',
                   ),
                   const SizedBox(width: 16),
@@ -234,6 +241,7 @@ class ProjectCard extends StatelessWidget {
           ),
         ),
       ),
+      ),
     ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOut);
 
     return Slidable(
@@ -247,7 +255,7 @@ class ProjectCard extends StatelessWidget {
             backgroundColor: BrainTheme.accentBlue.withValues(alpha: 0.2),
             foregroundColor: BrainTheme.accentBlue,
             icon: Icons.swap_horiz,
-            label: 'Estado',
+            label: AppLocalizations.of(context)!.filterStatus,
             borderRadius: BorderRadius.circular(20),
           ),
           SlidableAction(
@@ -255,7 +263,7 @@ class ProjectCard extends StatelessWidget {
             backgroundColor: BrainTheme.accentRed.withValues(alpha: 0.2),
             foregroundColor: BrainTheme.accentRed,
             icon: Icons.delete_outline,
-            label: 'Eliminar',
+            label: AppLocalizations.of(context)!.delete,
             borderRadius: BorderRadius.circular(20),
           ),
         ],
@@ -287,7 +295,7 @@ class ProjectCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _actionTile(ctx, Icons.edit_outlined, 'Editar proyecto', () {
+              _actionTile(ctx, Icons.edit_outlined, AppLocalizations.of(context)!.editProject, () {
                 Navigator.pop(ctx);
                 onTap?.call();
               }),
@@ -299,7 +307,7 @@ class ProjectCard extends StatelessWidget {
                 Navigator.pop(ctx);
                 _duplicateProject(context);
               }),
-              _actionTile(ctx, Icons.delete_outline, 'Mover a papelera', () {
+              _actionTile(ctx, Icons.delete_outline, AppLocalizations.of(context)!.itemDeleted, () {
                 Navigator.pop(ctx);
                 onDelete?.call();
               }, isDestructive: true),
@@ -362,7 +370,7 @@ class ProjectCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Cambiar estado',
+                AppLocalizations.of(context)!.filterStatus,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -378,7 +386,7 @@ class ProjectCard extends StatelessWidget {
                     color: _statusColor(status),
                   ),
                   title: Text(
-                    _statusLabel(status),
+                    _statusLabel(status, context),
                     style: TextStyle(
                       color: isActive ? _statusColor(status) : BrainTheme.textPrimary,
                       fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
@@ -446,14 +454,14 @@ class ProjectCard extends StatelessWidget {
     }
   }
 
-  String _statusLabel(ProjectStatus status) {
+  String _statusLabel(ProjectStatus status, BuildContext context) {
     switch (status) {
       case ProjectStatus.active:
-        return 'Activo';
+        return AppLocalizations.of(context)!.active;
       case ProjectStatus.paused:
         return 'Pausado';
       case ProjectStatus.completed:
-        return 'Finalizado';
+        return AppLocalizations.of(context)!.statusCompleted;
       case ProjectStatus.abandoned:
         return 'Abandonado';
     }
@@ -503,7 +511,7 @@ class _ProjectAvatar extends StatelessWidget {
 class _StatusBadge extends StatelessWidget {
   final Project project;
 
-  const _StatusBadge({required this.project});
+  _StatusBadge({required this.project});
 
   @override
   Widget build(BuildContext context) {
@@ -513,7 +521,7 @@ class _StatusBadge extends StatelessWidget {
     switch (project.status) {
       case ProjectStatus.active:
         color = BrainTheme.accentGreen;
-        label = 'Activo';
+        label = AppLocalizations.of(context)!.active;
         icon = Icons.play_arrow_rounded;
       case ProjectStatus.paused:
         color = BrainTheme.accentOrange;
@@ -521,7 +529,7 @@ class _StatusBadge extends StatelessWidget {
         icon = Icons.pause_rounded;
       case ProjectStatus.completed:
         color = BrainTheme.accentBlue;
-        label = 'Finalizado';
+        label = AppLocalizations.of(context)!.statusCompleted;
         icon = Icons.check_rounded;
       case ProjectStatus.abandoned:
         color = BrainTheme.textTertiary;

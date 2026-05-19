@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../../config/theme.dart';
@@ -9,6 +10,7 @@ import '../../providers/notes_provider.dart';
 import '../../providers/tags_provider.dart';
 import '../../widgets/note_card.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/skeleton_card.dart';
 
 class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key});
@@ -43,16 +45,21 @@ class _NotesScreenState extends State<NotesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildSearchBar(),
-        _buildStatsBar(),
-        _buildNotebookFilter(),
-        _buildTagFilter(),
-        _buildTypeAndViewFilter(),
-        const SizedBox(height: 8),
-        Expanded(child: _buildNotesList()),
-      ],
+    return Consumer<NotesProvider>(
+      builder: (context, provider, _) {
+        if (!provider.isLoaded) return const SkeletonGrid();
+        return Column(
+          children: [
+            _buildSearchBar(),
+            _buildStatsBar(),
+            _buildNotebookFilter(),
+            _buildTagFilter(),
+            _buildTypeAndViewFilter(),
+            const SizedBox(height: 8),
+            Expanded(child: _buildNotesList()),
+          ],
+        );
+      },
     );
   }
 
@@ -64,7 +71,7 @@ class _NotesScreenState extends State<NotesScreen> {
         onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
         style: const TextStyle(fontSize: 14),
         decoration: InputDecoration(
-          hintText: 'Buscar notas...',
+          hintText: AppLocalizations.of(context)!.searchInNotes,
           prefixIcon: const Icon(Icons.search, size: 20),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
@@ -93,7 +100,7 @@ class _NotesScreenState extends State<NotesScreen> {
           children: [
             _StatChip(
               icon: Icons.sticky_note_2_outlined,
-              label: '$total notas',
+              label: '$total ${AppLocalizations.of(context)!.notes}',
             ),
             const SizedBox(width: 12),
             _StatChip(
@@ -123,7 +130,7 @@ class _NotesScreenState extends State<NotesScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
             _NotebookChip(
-              label: 'Todas',
+          label: AppLocalizations.of(context)!.all,
               isSelected: _filterNotebook == null,
               count: provider.notes.length,
               onTap: () => setState(() => _filterNotebook = null),
@@ -223,7 +230,7 @@ class _NotesScreenState extends State<NotesScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
           _FilterChip(
-            label: 'Todas',
+            label: AppLocalizations.of(context)!.all,
             isSelected: _filterType == null,
             onTap: () => setState(() => _filterType = null),
           ),
@@ -285,12 +292,12 @@ class _NotesScreenState extends State<NotesScreen> {
           return EmptyState(
             emoji: _searchQuery.isNotEmpty ? '🔍' : '📝',
             title: _searchQuery.isNotEmpty
-                ? 'Sin resultados'
-                : 'Sin notas',
+              ? AppLocalizations.of(context)!.noResults
+              : 'Sin notas',
             subtitle: _searchQuery.isNotEmpty
                 ? 'No hay notas que coincidan con "$_searchQuery"'
                 : 'Captura tus ideas, referencias y pensamientos',
-            actionLabel: _searchQuery.isNotEmpty ? null : 'Nueva Nota',
+            actionLabel: _searchQuery.isNotEmpty ? null : AppLocalizations.of(context)!.createNote,
             onAction: _searchQuery.isNotEmpty
                 ? null
                 : () => Navigator.pushNamed(context, '/note'),

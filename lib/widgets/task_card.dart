@@ -4,6 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 
 import '../config/theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/project.dart';
 import '../models/task.dart';
 import '../providers/projects_provider.dart';
@@ -46,11 +47,12 @@ class TaskCard extends StatelessWidget {
             ? Colors.transparent
             : priColor;
 
+    final l10n = AppLocalizations.of(context)!;
     final card = Semantics(
       label: '${task.title}, ${task.status.name}',
-      value: isDone ? 'Completada' : isCancelled ? 'Anulada' : 'Activa',
+      value: isDone ? l10n.statusCompleted : isCancelled ? l10n.statusCancelled : l10n.active,
       button: true,
-      onTapHint: onTap != null ? 'Abrir detalles' : null,
+      onTapHint: onTap != null ? l10n.details : null,
       child: Card(
         margin: const EdgeInsets.only(bottom: 10),
         elevation: 0,
@@ -166,7 +168,7 @@ class TaskCard extends StatelessWidget {
             backgroundColor: BrainTheme.accentRed.withValues(alpha: 0.2),
             foregroundColor: BrainTheme.accentRed,
             icon: Icons.delete_outline,
-            label: 'Eliminar',
+            label: AppLocalizations.of(context)!.delete,
             borderRadius: BorderRadius.circular(18),
           ),
         ],
@@ -210,7 +212,7 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = _statusData(status);
+    final data = _statusData(status, context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
@@ -235,18 +237,19 @@ class _StatusBadge extends StatelessWidget {
     );
   }
 
-  _StatusData _statusData(TaskStatus status) {
+  _StatusData _statusData(TaskStatus status, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case TaskStatus.pending:
-        return _StatusData(Icons.circle_outlined, BrainTheme.textTertiary, 'Pendiente');
+        return _StatusData(Icons.circle_outlined, BrainTheme.textTertiary, l10n.statusPending);
       case TaskStatus.inProgress:
-        return _StatusData(Icons.play_circle_outline, BrainTheme.accentBlue, 'Progreso');
+        return _StatusData(Icons.play_circle_outline, BrainTheme.accentBlue, l10n.statusInProgress);
       case TaskStatus.inReview:
-        return _StatusData(Icons.rate_review_outlined, BrainTheme.accentOrange, 'Revision');
+        return _StatusData(Icons.rate_review_outlined, BrainTheme.accentOrange, l10n.statusInReview);
       case TaskStatus.completed:
-        return _StatusData(Icons.check_circle, BrainTheme.accentGreen, 'Listo');
+        return _StatusData(Icons.check_circle, BrainTheme.accentGreen, l10n.statusCompleted);
       case TaskStatus.cancelled:
-        return _StatusData(Icons.cancel_outlined, BrainTheme.accentRed, 'Anulada');
+        return _StatusData(Icons.cancel_outlined, BrainTheme.accentRed, l10n.statusCancelled);
     }
   }
 }
@@ -258,13 +261,14 @@ class _PriorityBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = BrainTheme.priorityColor(priority.index);
     String label;
     switch (priority) {
-      case TaskPriority.low: label = 'Baja';
-      case TaskPriority.medium: label = 'Media';
-      case TaskPriority.high: label = 'Alta';
-      case TaskPriority.urgent: label = 'Urgente';
+      case TaskPriority.low: label = l10n.priorityLow;
+      case TaskPriority.medium: label = l10n.priorityMedium;
+      case TaskPriority.high: label = l10n.priorityHigh;
+      case TaskPriority.urgent: label = l10n.priorityUrgent;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
@@ -372,7 +376,7 @@ class _ProjectBadge extends StatelessWidget {
     );
     if (project == null) return const SizedBox.shrink();
     return Semantics(
-      label: 'Proyecto: ${project.title}',
+      label: '${AppLocalizations.of(context)!.project}: ${project.title}',
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
         decoration: BoxDecoration(

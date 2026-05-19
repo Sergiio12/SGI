@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/theme.dart';
@@ -16,14 +17,14 @@ class TrashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Papelera'),
+        title: Text(AppLocalizations.of(context)!.trash),
         actions: [
           Consumer<TrashProvider>(
             builder: (context, trash, _) {
               if (trash.totalItems == 0) return const SizedBox.shrink();
               return IconButton(
                 icon: const Icon(Icons.delete_sweep_outlined),
-                tooltip: 'Vaciar papelera',
+                tooltip: AppLocalizations.of(context)!.emptyTrash,
                 onPressed: () => _confirmEmptyTrash(context),
               );
             },
@@ -37,10 +38,10 @@ class TrashScreen extends StatelessWidget {
           }
 
           if (trash.totalItems == 0) {
-            return const EmptyState(
+            return EmptyState(
               emoji: '🗑️',
-              title: 'Papelera vacía',
-              subtitle: 'Los elementos eliminados aparecerán aquí.',
+              title: AppLocalizations.of(context)!.emptyState,
+              subtitle: AppLocalizations.of(context)!.emptyStateDescription,
             );
           }
 
@@ -70,17 +71,17 @@ class TrashScreen extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
         title: Text(
-          '¿Vaciar papelera?',
+          AppLocalizations.of(context)!.emptyTrash,
           style: TextStyle(color: BrainTheme.textPrimary),
         ),
         content: Text(
-          'Todos los elementos de la papelera serán eliminados permanentemente.',
+          AppLocalizations.of(context)!.permanentlyDelete,
           style: TextStyle(color: BrainTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
@@ -88,7 +89,7 @@ class TrashScreen extends StatelessWidget {
               backgroundColor: BrainTheme.accentRed,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Vaciar'),
+            child: Text(AppLocalizations.of(context)!.emptyTrash),
           ),
         ],
       ),
@@ -126,17 +127,17 @@ class TrashScreen extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
         title: Text(
-          '¿Eliminar permanentemente?',
+          AppLocalizations.of(context)!.permanentlyDelete,
           style: TextStyle(color: BrainTheme.textPrimary),
         ),
         content: Text(
-          'Se eliminará "${bundle.title}" de forma permanente.',
+          '${AppLocalizations.of(context)!.permanentlyDelete}: "${bundle.title}"',
           style: TextStyle(color: BrainTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
@@ -144,7 +145,7 @@ class TrashScreen extends StatelessWidget {
               backgroundColor: BrainTheme.accentRed,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Eliminar'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -185,7 +186,7 @@ class _TrashItemCard extends StatelessWidget {
   final VoidCallback onRestore;
   final VoidCallback onPermanentDelete;
 
-  const _TrashItemCard({
+  _TrashItemCard({
     required this.bundle,
     required this.onRestore,
     required this.onPermanentDelete,
@@ -225,7 +226,7 @@ class _TrashItemCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _typeLabel,
+                    _typeLabel(context),
                     style: TextStyle(
                       fontSize: 11,
                       color: BrainTheme.textTertiary,
@@ -236,13 +237,13 @@ class _TrashItemCard extends StatelessWidget {
             ),
             IconButton(
               icon: const Icon(Icons.restore_outlined, size: 20),
-              tooltip: 'Restaurar',
+              tooltip: AppLocalizations.of(context)!.restore,
               color: BrainTheme.accentGreen,
               onPressed: onRestore,
             ),
             IconButton(
               icon: const Icon(Icons.delete_forever_outlined, size: 20),
-              tooltip: 'Eliminar permanentemente',
+              tooltip: AppLocalizations.of(context)!.permanentlyDelete,
               color: BrainTheme.accentRed.withValues(alpha: 0.7),
               onPressed: onPermanentDelete,
             ),
@@ -252,16 +253,16 @@ class _TrashItemCard extends StatelessWidget {
     );
   }
 
-  String get _typeLabel {
+  String _typeLabel(BuildContext context) {
     switch (bundle.type) {
       case TrashItemType.task:
-        return 'Tarea';
+        return AppLocalizations.of(context)!.task;
       case TrashItemType.project:
-        return 'Proyecto';
+        return AppLocalizations.of(context)!.project;
       case TrashItemType.note:
-        return 'Nota';
+        return AppLocalizations.of(context)!.note;
       case TrashItemType.goal:
-        return 'Objetivo';
+        return AppLocalizations.of(context)!.goal;
     }
   }
 }

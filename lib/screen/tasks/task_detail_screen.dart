@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../config/theme.dart';
+import '../../l10n/app_localizations.dart';
 import '../../utils/notification_service_v2.dart';
 import '../../models/task.dart';
 import '../../providers/tags_provider.dart';
@@ -95,7 +96,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
 
   Future<void> _save() async {
     if (_titleController.text.trim().isEmpty) {
-      showWarningNotification('El titulo es obligatorio');
+      showWarningNotification(AppLocalizations.of(context)!.task);
       return;
     }
 
@@ -235,7 +236,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Editar tarea' : 'Nueva tarea'),
+        title: Text(isEditing ? AppLocalizations.of(context)!.editTask : AppLocalizations.of(context)!.createTask),
         actions: [
           if (isEditing)
             IconButton(
@@ -244,8 +245,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ),
           TextButton(
             onPressed: _save,
-            child: const Text(
-              'Guardar',
+            child: Text(
+              AppLocalizations.of(context)!.save,
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
@@ -263,8 +264,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 fontWeight: FontWeight.w600,
                 color: BrainTheme.textPrimary,
               ),
-              decoration: const InputDecoration(
-                hintText: 'Titulo de la tarea...',
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.sortTitle,
                 border: InputBorder.none,
                 filled: false,
               ),
@@ -277,8 +278,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 fontSize: 15,
                 color: BrainTheme.textSecondary,
               ),
-              decoration: const InputDecoration(
-                hintText: 'Descripcion opcional...',
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.description,
                 border: InputBorder.none,
                 filled: false,
               ),
@@ -286,12 +287,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ),
             const SizedBox(height: 16),
             _FormSection(
-              title: 'Detalles',
+              title: AppLocalizations.of(context)!.details,
               icon: Icons.tune,
               children: [
                 _FormRow(
                   icon: Icons.flag_outlined,
-                  label: 'Estado',
+                  label: AppLocalizations.of(context)!.filterStatus,
                   child: DropdownButton<TaskStatus>(
                     value: _status,
                     dropdownColor: BrainTheme.cardDark,
@@ -303,7 +304,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                         children: [
                           Icon(_statusIcon(s), size: 16, color: _statusColor(s)),
                           const SizedBox(width: 8),
-                          Text(_statusLabel(s)),
+                          Text(_statusLabel(s, context)),
                         ],
                       ),
                     )).toList(),
@@ -313,7 +314,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 const SizedBox(height: 10),
                 _FormRow(
                   icon: Icons.priority_high,
-                  label: 'Prioridad',
+                  label: AppLocalizations.of(context)!.sortPriority,
                   child: Row(
                     children: TaskPriority.values.map((priority) {
                       final isSelected = priority == _priority;
@@ -345,7 +346,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  _priorityLabel(priority),
+                                  _priorityLabel(priority, context),
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
@@ -365,7 +366,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 const SizedBox(height: 10),
                 _FormRow(
                   icon: Icons.calendar_today_outlined,
-                  label: 'Vence',
+                  label: AppLocalizations.of(context)!.dueDate,
                   child: GestureDetector(
                     onTap: () async {
                       final date = await showDatePicker(
@@ -399,7 +400,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           Text(
                             _dueDate != null
                                 ? DateFormat('dd MMM yyyy').format(_dueDate!)
-                                : 'Sin fecha',
+                                : AppLocalizations.of(context)!.noDueDate,
                             style: TextStyle(color: BrainTheme.textPrimary),
                           ),
                           if (_dueDate != null) ...[
@@ -417,17 +418,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 const SizedBox(height: 10),
                 _FormRow(
                   icon: Icons.folder_outlined,
-                  label: 'Proyecto',
+                  label: AppLocalizations.of(context)!.project,
                   child: Consumer<ProjectsProvider>(
                     builder: (context, projects, _) {
                       return DropdownButton<String?>(
                         value: _projectId,
                         dropdownColor: BrainTheme.cardDark,
                         underline: const SizedBox.shrink(),
-                        hint: const Text('Sin proyecto'),
+                        hint: Text(AppLocalizations.of(context)!.noDueDate),
                         isExpanded: true,
                         items: [
-                          const DropdownMenuItem(value: null, child: Text('Sin proyecto')),
+                          DropdownMenuItem(value: null, child: Text(AppLocalizations.of(context)!.noDueDate)),
                           ...projects.projects.map((project) => DropdownMenuItem(
                             value: project.id,
                             child: Text('${project.emoji} ${project.title}'),
@@ -442,7 +443,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ),
             const SizedBox(height: 14),
             _FormSection(
-              title: 'Tiempo y aviso',
+              title: AppLocalizations.of(context)!.notifications,
               icon: Icons.timer_outlined,
               children: [
                 Row(
@@ -451,8 +452,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       child: TextField(
                         controller: _estimatedHoursController,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(
-                          labelText: 'Estimado (h)',
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.task,
                           isDense: true,
                         ),
                       ),
@@ -462,8 +463,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       child: TextField(
                         controller: _actualHoursController,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(
-                          labelText: 'Real (h)',
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.note,
                           isDense: true,
                         ),
                       ),
@@ -472,8 +473,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       child: TextField(
                         controller: _reminderController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Aviso (min)',
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.notifications,
                           hintText: '60',
                           isDense: true,
                         ),
@@ -485,7 +486,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ),
             const SizedBox(height: 14),
             _FormSection(
-              title: 'Etiquetas',
+              title: AppLocalizations.of(context)!.tags,
               icon: Icons.label_outline,
               children: [
                 Consumer<TagsProvider>(builder: (context, tagsProv, _) {
@@ -530,7 +531,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                             child: OutlinedButton.icon(
                               onPressed: _showTagPicker,
                               icon: const Icon(Icons.playlist_add, size: 16),
-                              label: const Text('Seleccionar'),
+                              label: Text(AppLocalizations.of(context)!.filter),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: BrainTheme.accentPurple,
                                 side: BorderSide(color: BrainTheme.accentPurple.withValues(alpha: 0.3)),
@@ -541,7 +542,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           OutlinedButton.icon(
                             onPressed: _showManageTagsModal,
                             icon: const Icon(Icons.settings, size: 16),
-                            label: const Text('Gestionar'),
+                            label: Text(AppLocalizations.of(context)!.settings),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: BrainTheme.textSecondary,
                               side: BorderSide(color: BrainTheme.borderDark),
@@ -556,7 +557,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ),
             const SizedBox(height: 14),
             _FormSection(
-              title: 'Notas vinculadas',
+              title: AppLocalizations.of(context)!.notes,
               icon: Icons.link,
               children: [
                 Consumer<NotesProvider>(builder: (context, notesProv, _) {
@@ -601,7 +602,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       OutlinedButton.icon(
                         onPressed: _showLinkNotes,
                         icon: const Icon(Icons.add, size: 16),
-                        label: const Text('Vincular nota'),
+                        label: Text(AppLocalizations.of(context)!.note),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: BrainTheme.accentPurple,
                           side: BorderSide(color: BrainTheme.accentPurple.withValues(alpha: 0.3)),
@@ -614,7 +615,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ),
             const SizedBox(height: 14),
             _FormSection(
-              title: 'Subtareas',
+              title: AppLocalizations.of(context)!.subtasks,
               icon: Icons.checklist,
               trailing: Text(
                 '$subtaskDone/${_subtasks.length}',
@@ -687,8 +688,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     Expanded(
                       child: TextField(
                         controller: _subtaskController,
-                        decoration: const InputDecoration(
-                          hintText: 'Anadir subtarea...',
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.of(context)!.addSubtask,
                           border: InputBorder.none,
                           filled: false,
                           contentPadding: EdgeInsets.symmetric(vertical: 8),
@@ -716,20 +717,20 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
-        title: Text('Eliminar tarea',
+        title: Text(AppLocalizations.of(context)!.delete,
             style: TextStyle(color: BrainTheme.textPrimary)),
-        content: Text('Se movera a la papelera. Deseas continuar?',
+        content: Text(AppLocalizations.of(context)!.taskDeleted,
             style: TextStyle(color: BrainTheme.textSecondary)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
+              child: Text(AppLocalizations.of(context)!.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
                 backgroundColor: BrainTheme.accentRed,
                 foregroundColor: Colors.white),
-            child: const Text('Eliminar'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -770,7 +771,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   Row(
                     children: [
                       Expanded(
-                        child: Text('Seleccionar etiquetas',
+                        child: Text(AppLocalizations.of(context)!.tags,
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w700, color: BrainTheme.textPrimary)),
                       ),
@@ -814,7 +815,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     style: FilledButton.styleFrom(
                       backgroundColor: BrainTheme.accentPurple,
                     ),
-                    child: const Text('Listo'),
+                    child: Text(AppLocalizations.of(context)!.ok),
                   ),
                 ],
               );
@@ -853,7 +854,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     Row(
                       children: [
                         Expanded(
-                          child: Text('Vincular nota',
+                          child: Text(AppLocalizations.of(context)!.notes,
                               style: TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.w700, color: BrainTheme.textPrimary)),
                         ),
@@ -866,7 +867,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     const SizedBox(height: 12),
                     TextField(
                       decoration: InputDecoration(
-                        hintText: 'Buscar notas...',
+                        hintText: AppLocalizations.of(context)!.searchInNotes,
                         prefixIcon: const Icon(Icons.search, size: 20),
                         isDense: true,
                       ),
@@ -930,7 +931,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   Row(
                     children: [
                       Expanded(
-                        child: Text('Gestionar etiquetas',
+                        child: Text(AppLocalizations.of(context)!.tags,
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.w700, color: BrainTheme.textPrimary)),
                       ),
@@ -967,7 +968,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                                                   setDialogState) =>
                                                               AlertDialog(
                                                                 backgroundColor: BrainTheme.cardDark,
-                                                                title: const Text('Editar etiqueta'),
+                                                                title: Text(AppLocalizations.of(context)!.tags),
                                                                 content: SingleChildScrollView(
                                                                     child: Column(
                                                                         mainAxisSize:
@@ -977,7 +978,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                                                               controller:
                                                                                   editNameCtrl,
                                                                               decoration:
-                                                                                  const InputDecoration(hintText: 'Nombre')),
+                                                                                  InputDecoration(hintText: AppLocalizations.of(context)!.tagName)),
                                                                           const SizedBox(
                                                                               height: 16),
                                                                           TagColorPicker(
@@ -992,7 +993,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                                                   TextButton(
                                                                       onPressed: () =>
                                                                           Navigator.pop(dctx),
-                                                                      child: const Text('Cancelar')),
+                                                                      child: Text(AppLocalizations.of(context)!.cancel)),
                                                                   FilledButton(
                                                                       onPressed:
                                                                           () async {
@@ -1002,8 +1003,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                                                         Navigator.pop(dctx);
                                                                         Navigator.pop(ctx);
                                                                       },
-                                                                      child: const Text('Guardar'))
-                                                                ],
+                                                                      child: Text(AppLocalizations.of(context)!.save))
+                                                                  ],
                                                               )));
                                             }),
                                         IconButton(
@@ -1019,7 +1020,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   TextField(
                       controller: nameCtrl,
                       decoration:
-                          const InputDecoration(labelText: 'Nueva etiqueta')),
+                          InputDecoration(labelText: AppLocalizations.of(context)!.tag)),
                   const SizedBox(height: 12),
                   TagColorPicker(
                     selectedColorValue: newTagColorValue,
@@ -1041,7 +1042,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     style: FilledButton.styleFrom(
                       backgroundColor: BrainTheme.accentPurple,
                     ),
-                    child: const Text('Crear etiqueta'),
+                    child: Text(AppLocalizations.of(context)!.createTask),
                   ),
                 ],
               ),
@@ -1052,13 +1053,14 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     );
   }
 
-  String _statusLabel(TaskStatus status) {
+  String _statusLabel(TaskStatus status, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
-      case TaskStatus.pending: return 'Pendiente';
-      case TaskStatus.inProgress: return 'En progreso';
-      case TaskStatus.inReview: return 'En revision';
-      case TaskStatus.completed: return 'Finalizada';
-      case TaskStatus.cancelled: return 'Anulada';
+      case TaskStatus.pending: return l10n.statusPending;
+      case TaskStatus.inProgress: return l10n.statusInProgress;
+      case TaskStatus.inReview: return l10n.statusInReview;
+      case TaskStatus.completed: return l10n.statusCompleted;
+      case TaskStatus.cancelled: return l10n.statusCancelled;
     }
   }
 
@@ -1082,12 +1084,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     }
   }
 
-  String _priorityLabel(TaskPriority priority) {
+  String _priorityLabel(TaskPriority priority, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (priority) {
-      case TaskPriority.low: return 'Baja';
-      case TaskPriority.medium: return 'Media';
-      case TaskPriority.high: return 'Alta';
-      case TaskPriority.urgent: return 'Urgente';
+      case TaskPriority.low: return l10n.priorityLow;
+      case TaskPriority.medium: return l10n.priorityMedium;
+      case TaskPriority.high: return l10n.priorityHigh;
+      case TaskPriority.urgent: return l10n.priorityUrgent;
     }
   }
 
@@ -1264,13 +1267,13 @@ class _TaskHeaderSliver extends StatelessWidget {
                                 Row(
                                   children: [
                                     _TaskHeaderBadge(
-                                      label: _statusLabel(task.status),
+                                      label: _statusLabel(task.status, context),
                                       color: _statusColor(task.status),
                                       icon: _statusIcon(task.status),
                                     ).animate().fadeIn(delay: 300.ms).slideX(begin: 0.1, end: 0),
                                     const SizedBox(width: 6),
                                     _TaskHeaderBadge(
-                                      label: _priorityLabel(task.priority),
+                                      label: _priorityLabel(task.priority, context),
                                       color: priColor,
                                       icon: Icons.flag_outlined,
                                     ).animate().fadeIn(delay: 400.ms).slideX(begin: 0.1, end: 0),
@@ -1305,13 +1308,14 @@ class _TaskHeaderSliver extends StatelessWidget {
     );
   }
 
-  String _statusLabel(TaskStatus s) {
+  String _statusLabel(TaskStatus s, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (s) {
-      case TaskStatus.pending: return 'Pendiente';
-      case TaskStatus.inProgress: return 'En progreso';
-      case TaskStatus.inReview: return 'Revision';
-      case TaskStatus.completed: return 'Completada';
-      case TaskStatus.cancelled: return 'Anulada';
+      case TaskStatus.pending: return l10n.statusPending;
+      case TaskStatus.inProgress: return l10n.statusInProgress;
+      case TaskStatus.inReview: return l10n.statusInReview;
+      case TaskStatus.completed: return l10n.statusCompleted;
+      case TaskStatus.cancelled: return l10n.statusCancelled;
     }
   }
 
@@ -1335,12 +1339,13 @@ class _TaskHeaderSliver extends StatelessWidget {
     }
   }
 
-  String _priorityLabel(TaskPriority p) {
+  String _priorityLabel(TaskPriority p, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (p) {
-      case TaskPriority.low: return 'Baja';
-      case TaskPriority.medium: return 'Media';
-      case TaskPriority.high: return 'Alta';
-      case TaskPriority.urgent: return 'Urgente';
+      case TaskPriority.low: return l10n.priorityLow;
+      case TaskPriority.medium: return l10n.priorityMedium;
+      case TaskPriority.high: return l10n.priorityHigh;
+      case TaskPriority.urgent: return l10n.priorityUrgent;
     }
   }
 }
@@ -1392,7 +1397,7 @@ class _TaskQuickActions extends StatelessWidget {
         children: [
           _QuickBtn(
             icon: isDone ? Icons.undo : Icons.check_circle_outline,
-            label: isDone ? 'Reabrir' : 'Completar',
+            label: isDone ? AppLocalizations.of(context)!.restore : AppLocalizations.of(context)!.statusCompleted,
             color: isDone ? BrainTheme.accentOrange : BrainTheme.accentGreen,
             onTap: () {
               context.read<TasksProvider>().toggleTaskStatus(task.id);
@@ -1401,7 +1406,7 @@ class _TaskQuickActions extends StatelessWidget {
           const SizedBox(width: 8),
           _QuickBtn(
             icon: Icons.play_circle_outline,
-            label: 'En progreso',
+            label: AppLocalizations.of(context)!.statusInProgress,
             color: BrainTheme.accentBlue,
             onTap: () {
               context.read<TasksProvider>().moveTaskToStatus(
@@ -1415,7 +1420,7 @@ class _TaskQuickActions extends StatelessWidget {
           const SizedBox(width: 8),
           _QuickBtn(
             icon: Icons.rate_review_outlined,
-            label: 'Revision',
+            label: AppLocalizations.of(context)!.statusInReview,
             color: BrainTheme.accentOrange,
             onTap: () {
               context.read<TasksProvider>().moveTaskToStatus(
@@ -1494,14 +1499,14 @@ class _TaskMetaSection extends StatelessWidget {
               _MetaTile(
                 icon: Icons.checklist,
                 value: '${task.subtasks.length}',
-                label: 'Subtareas',
+                label: AppLocalizations.of(context)!.subtasks,
                 color: BrainTheme.accentPurple,
               ),
               const SizedBox(width: 8),
               _MetaTile(
                 icon: Icons.timer_outlined,
                 value: '${task.estimatedHours.toStringAsFixed(0)}h',
-                label: 'Estimadas',
+                label: AppLocalizations.of(context)!.task,
                 color: BrainTheme.accentBlue,
               ),
               const SizedBox(width: 8),
@@ -1510,7 +1515,7 @@ class _TaskMetaSection extends StatelessWidget {
                 value: task.actualHours != null
                     ? '${task.actualHours!.toStringAsFixed(0)}h'
                     : '—',
-                label: 'Reales',
+                label: AppLocalizations.of(context)!.note,
                 color: BrainTheme.accentOrange,
               ),
               const SizedBox(width: 8),
@@ -1521,7 +1526,7 @@ class _TaskMetaSection extends StatelessWidget {
                 value: task.dueDate != null
                     ? DateFormat('dd MMM').format(task.dueDate!)
                     : '—',
-                label: 'Vence',
+                label: AppLocalizations.of(context)!.dueDate,
                 color: task.isOverdue
                     ? BrainTheme.accentRed
                     : BrainTheme.textTertiary,
@@ -1543,7 +1548,7 @@ class _TaskMetaSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Progreso de subtareas',
+                        Text(AppLocalizations.of(context)!.subtasks,
                             style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: BrainTheme.textPrimary)),
                         const SizedBox(height: 6),
                         ClipRRect(
@@ -1651,15 +1656,15 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
         indicatorWeight: 3,
         labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         tabs: [
-          const Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.info_outline, size: 16),
+          Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(Icons.info_outline, size: 16),
             SizedBox(width: 6),
-            Text('Info'),
+            Text(AppLocalizations.of(context)!.details),
           ])),
           Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [
             const Icon(Icons.checklist, size: 16),
             const SizedBox(width: 6),
-            const Text('Subtareas'),
+            Text(AppLocalizations.of(context)!.subtasks),
             if (subtaskCount > 0) ...[
               const SizedBox(width: 4),
               _tabCount(subtaskCount),
@@ -1668,7 +1673,7 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
           Tab(child: Row(mainAxisSize: MainAxisSize.min, children: [
             const Icon(Icons.link, size: 16),
             const SizedBox(width: 6),
-            const Text('Notas'),
+            Text(AppLocalizations.of(context)!.notes),
             if (noteCount > 0) ...[
               const SizedBox(width: 4),
               _tabCount(noteCount),
@@ -1724,12 +1729,12 @@ class _TaskInfoTab extends StatelessWidget {
                   children: [
                     Icon(Icons.description_outlined, size: 18, color: BrainTheme.accentPurple),
                     const SizedBox(width: 8),
-                    Text('Descripcion', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: BrainTheme.textPrimary)),
+                    Text(AppLocalizations.of(context)!.description, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: BrainTheme.textPrimary)),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  task.description.isNotEmpty ? task.description : 'Sin descripcion',
+                  task.description.isNotEmpty ? task.description : AppLocalizations.of(context)!.noData,
                   style: TextStyle(
                     fontSize: 14,
                     color: task.description.isNotEmpty ? BrainTheme.textSecondary : BrainTheme.textTertiary,
@@ -1751,24 +1756,24 @@ class _TaskInfoTab extends StatelessWidget {
                   children: [
                     Icon(Icons.info_outline, size: 18, color: BrainTheme.accentBlue),
                     const SizedBox(width: 8),
-                    Text('Detalles', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: BrainTheme.textPrimary)),
+                    Text(AppLocalizations.of(context)!.details, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: BrainTheme.textPrimary)),
                   ],
                 ),
                 const SizedBox(height: 16),
-                _detailRow(Icons.flag_outlined, 'Estado', _statusLabel(task.status)),
+                _detailRow(Icons.flag_outlined, AppLocalizations.of(context)!.filterStatus, _statusLabel(task.status, context)),
                 const Divider(height: 20),
-                _detailRow(Icons.priority_high, 'Prioridad', _priorityLabel(task.priority)),
+                _detailRow(Icons.priority_high, AppLocalizations.of(context)!.sortPriority, _priorityLabel(task.priority, context)),
                 const Divider(height: 20),
                 _detailRow(
                   Icons.calendar_today_outlined,
-                  'Creada',
+                  AppLocalizations.of(context)!.itemCreated,
                   DateFormat('dd MMM yyyy, HH:mm').format(task.createdAt),
                 ),
                 if (task.dueDate != null) ...[
                   const Divider(height: 20),
                   _detailRow(
                     task.isOverdue ? Icons.error_outline : Icons.event,
-                    'Vence',
+                    AppLocalizations.of(context)!.dueDate,
                     DateFormat('dd MMM yyyy').format(task.dueDate!),
                     valueColor: task.isOverdue ? BrainTheme.accentRed : null,
                   ),
@@ -1779,16 +1784,16 @@ class _TaskInfoTab extends StatelessWidget {
                     final project = pp.getProjectById(task.projectId!);
                     return _detailRow(
                       Icons.folder_outlined,
-                      'Proyecto',
+                      AppLocalizations.of(context)!.project,
                       project != null ? '${project.emoji} ${project.title}' : '—',
                     );
                   }),
                 ],
                 const Divider(height: 20),
-                _detailRow(Icons.timer_outlined, 'Estimado', '${task.estimatedHours.toStringAsFixed(1)}h'),
+                _detailRow(Icons.timer_outlined, AppLocalizations.of(context)!.task, '${task.estimatedHours.toStringAsFixed(1)}h'),
                 if (task.actualHours != null) ...[
                   const Divider(height: 20),
-                  _detailRow(Icons.schedule, 'Real', '${task.actualHours!.toStringAsFixed(1)}h'),
+                  _detailRow(Icons.schedule, AppLocalizations.of(context)!.note, '${task.actualHours!.toStringAsFixed(1)}h'),
                 ],
               ],
             ),
@@ -1798,22 +1803,24 @@ class _TaskInfoTab extends StatelessWidget {
     );
   }
 
-  String _statusLabel(TaskStatus s) {
+  String _statusLabel(TaskStatus s, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (s) {
-      case TaskStatus.pending: return 'Pendiente';
-      case TaskStatus.inProgress: return 'En progreso';
-      case TaskStatus.inReview: return 'Revision';
-      case TaskStatus.completed: return 'Completada';
-      case TaskStatus.cancelled: return 'Anulada';
+      case TaskStatus.pending: return l10n.statusPending;
+      case TaskStatus.inProgress: return l10n.statusInProgress;
+      case TaskStatus.inReview: return l10n.statusInReview;
+      case TaskStatus.completed: return l10n.statusCompleted;
+      case TaskStatus.cancelled: return l10n.statusCancelled;
     }
   }
 
-  String _priorityLabel(TaskPriority p) {
+  String _priorityLabel(TaskPriority p, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (p) {
-      case TaskPriority.low: return 'Baja';
-      case TaskPriority.medium: return 'Media';
-      case TaskPriority.high: return 'Alta';
-      case TaskPriority.urgent: return 'Urgente';
+      case TaskPriority.low: return l10n.priorityLow;
+      case TaskPriority.medium: return l10n.priorityMedium;
+      case TaskPriority.high: return l10n.priorityHigh;
+      case TaskPriority.urgent: return l10n.priorityUrgent;
     }
   }
 
@@ -1863,9 +1870,9 @@ class _TaskSubtabsTab extends StatelessWidget {
           children: [
             Text('📋', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
-            Text('Sin subtareas', style: TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
+            Text(AppLocalizations.of(context)!.noTasks, style: TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
             const SizedBox(height: 8),
-            Text('Usa el formulario de edicion para anadir', style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
+            Text(AppLocalizations.of(context)!.emptyStateDescription, style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
           ],
         ),
       );
@@ -1935,9 +1942,9 @@ class _TaskNotesTab extends StatelessWidget {
           children: [
             Text('🔗', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
-            Text('Sin notas vinculadas', style: TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
+            Text(AppLocalizations.of(context)!.noData, style: TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
             const SizedBox(height: 8),
-            Text('Vincular notas desde el formulario de edicion', style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
+            Text(AppLocalizations.of(context)!.emptyStateDescription, style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
           ],
         ),
       );

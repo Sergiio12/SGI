@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/tasks_provider.dart';
 import '../providers/projects_provider.dart';
 import '../providers/notes_provider.dart';
@@ -45,7 +46,7 @@ class _LoadingScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'SGI',
+              AppLocalizations.of(context).appTitle,
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -73,25 +74,35 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final List<({String title, IconData icon, Widget screen})> _tabs = const [
-    (
-      title: 'Dashboard',
-      icon: Icons.dashboard_outlined,
-      screen: DashboardScreen()
-    ),
-    (title: 'Tareas', icon: Icons.checklist_rounded, screen: TasksScreen()),
-    (
-      title: 'Proyectos',
-      icon: Icons.folder_open_outlined,
-      screen: ProjectsScreen()
-    ),
-    (
-      title: 'Objetivos',
-      icon: Icons.track_changes_outlined,
-      screen: GoalsScreen()
-    ),
-    (title: 'Notas', icon: Icons.sticky_note_2_outlined, screen: NotesScreen()),
-  ];
+  late final List<({String title, IconData icon, Widget screen})> Function(
+    BuildContext,
+  ) _tabsBuilder = (context) => [
+        (
+          title: AppLocalizations.of(context).navDashboard,
+          icon: Icons.dashboard_outlined,
+          screen: const DashboardScreen()
+        ),
+        (
+          title: AppLocalizations.of(context).navTasks,
+          icon: Icons.checklist_rounded,
+          screen: const TasksScreen()
+        ),
+        (
+          title: AppLocalizations.of(context).navProjects,
+          icon: Icons.folder_open_outlined,
+          screen: const ProjectsScreen()
+        ),
+        (
+          title: AppLocalizations.of(context).navGoals,
+          icon: Icons.track_changes_outlined,
+          screen: const GoalsScreen()
+        ),
+        (
+          title: AppLocalizations.of(context).navNotes,
+          icon: Icons.sticky_note_2_outlined,
+          screen: const NotesScreen()
+        ),
+      ];
 
   void _onTabChanged(int index) {
     setState(() => _currentIndex = index);
@@ -138,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              'Captura rápida',
+              AppLocalizations.of(context).quickCapture,
               style: TextStyle(
                 color: BrainTheme.textPrimary,
                 fontWeight: FontWeight.w700,
@@ -180,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
-              'Cancelar',
+              AppLocalizations.of(context).cancel,
               style: TextStyle(
                 color: BrainTheme.textSecondary,
                 fontWeight: FontWeight.w500,
@@ -200,9 +211,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: const Text(
-              'Capturar',
-              style: TextStyle(fontWeight: FontWeight.w600),
+            child: Text(
+              AppLocalizations.of(context).save,
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -242,7 +253,8 @@ class _HomeScreenState extends State<HomeScreen> {
       return const _LoadingScreen();
     }
 
-    final currentTab = _tabs[_currentIndex];
+    final tabs = _tabsBuilder(context);
+    final currentTab = tabs[_currentIndex];
 
     return Scaffold(
       key: _scaffoldKey,
@@ -295,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: IconButton(
               icon: const Icon(Icons.search_rounded, size: 20),
               onPressed: () => Navigator.pushNamed(context, '/search'),
-              tooltip: 'Buscar',
+              tooltip: AppLocalizations.of(context).search,
             ),
           ),
         ],
@@ -326,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: KeyedSubtree(
         key: ValueKey(_currentIndex),
-        child: _tabs[_currentIndex].screen,
+        child: _tabsBuilder(context)[_currentIndex].screen,
       ),
     );
   }
@@ -357,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
           fontSize: 11,
           fontWeight: FontWeight.w500,
         ),
-        items: _tabs
+        items: _tabsBuilder(context)
             .map(
               (tab) => BottomNavigationBarItem(
                 icon: Icon(tab.icon, size: 22),

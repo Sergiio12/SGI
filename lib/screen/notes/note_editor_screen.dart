@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart' as fp;
 import 'package:uuid/uuid.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../../config/theme.dart';
 import '../../models/note.dart';
@@ -296,7 +297,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Seleccionar etiquetas',
+                        Text(AppLocalizations.of(context)!.tags,
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.w700)),
                         IconButton(
@@ -426,7 +427,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Seleccionar cuaderno',
+                    Text(AppLocalizations.of(context)!.notebook,
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w700)),
                     IconButton(
@@ -513,7 +514,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Gestionar etiquetas',
+                        Text('Gestionar etiquetas',
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.w700)),
                         IconButton(
@@ -597,8 +598,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                                                                     TextButton(
                                                                         onPressed: () =>
                                                                             Navigator.pop(dctx),
-                                                                        child: const Text(
-                                                                            'Cancelar')),
+                                                                        child: Text(
+                                                                            AppLocalizations.of(dState)!.cancel)),
                                                                     FilledButton(
                                                                         onPressed:
                                                                             () async {
@@ -610,8 +611,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                                                                           Navigator.pop(
                                                                               dctx);
                                                                         },
-                                                                        child: const Text(
-                                                                            'Guardar'))
+                                                                        child: Text(
+                                                                            AppLocalizations.of(dState)!.save))
                                                                   ],
                                                                 )));
                                               }),
@@ -679,28 +680,28 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Editar Nota' : 'Nueva Nota'),
+        title: Text(_isEditing ? AppLocalizations.of(context)!.editNote : AppLocalizations.of(context)!.createNote),
         actions: [
           if (_isEditing)
             IconButton(
               icon: Icon(Icons.delete_outline, color: BrainTheme.accentRed),
-              tooltip: 'Eliminar',
+              tooltip: AppLocalizations.of(context)!.delete,
               onPressed: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Eliminar nota'),
+                    title: Text('${AppLocalizations.of(ctx)!.delete} ${AppLocalizations.of(ctx)!.note}'),
                     content: const Text('Se moverá a la papelera.'),
                     actions: [
                       TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
-                          child: const Text('Cancelar')),
+                          child: Text(AppLocalizations.of(ctx)!.cancel)),
                       FilledButton(
                           onPressed: () => Navigator.pop(ctx, true),
                           style: FilledButton.styleFrom(
                               backgroundColor: BrainTheme.accentRed,
                               foregroundColor: Colors.white),
-                          child: const Text('Eliminar')),
+                          child: Text(AppLocalizations.of(ctx)!.delete)),
                     ],
                   ),
                 );
@@ -718,7 +719,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
-              child: const Text('Guardar',
+              child: Text(AppLocalizations.of(context)!.save,
                   style: TextStyle(fontWeight: FontWeight.w600))),
           const SizedBox(width: 8),
         ],
@@ -870,7 +871,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           children: [
             Row(
               children: [
-                Text('Etiquetas',
+                Text(AppLocalizations.of(context)!.tags,
                     style: TextStyle(
                         color: BrainTheme.textSecondary,
                         fontWeight: FontWeight.w600,
@@ -952,7 +953,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         children: [
           Row(
             children: [
-              Text('Adjuntos',
+              Text(AppLocalizations.of(context)!.attachments,
                   style: TextStyle(
                       color: BrainTheme.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -1051,7 +1052,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Elegir Emoji',
+                Text('Elegir Emoji',
                     style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                 IconButton(

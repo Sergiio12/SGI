@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/theme.dart';
@@ -13,17 +14,16 @@ class FocusScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Modo foco'),
+        title: Text(AppLocalizations.of(context)!.focusMode),
       ),
       body: Consumer<TasksProvider>(
         builder: (context, provider, _) {
           final tasks = provider.focusTasks;
           if (tasks.isEmpty) {
-            return const EmptyState(
+            return EmptyState(
               emoji: '✨',
-              title: 'Nada crítico ahora',
-              subtitle:
-                  'Tu lista de foco aparecerá cuando haya tareas urgentes, altas o en progreso.',
+              title: AppLocalizations.of(context)!.emptyState,
+              subtitle: AppLocalizations.of(context)!.emptyStateDescription,
             );
           }
 
@@ -48,7 +48,7 @@ class FocusScreen extends StatelessWidget {
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Solo lo esencial: urgente, alta prioridad cercana o trabajo ya iniciado.',
+                        AppLocalizations.of(context)!.focusMode,
                         style: TextStyle(color: BrainTheme.textSecondary),
                       ),
                     ),

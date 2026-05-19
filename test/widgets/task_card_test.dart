@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:second_brain/config/theme.dart';
 import 'package:second_brain/models/task.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 import 'package:second_brain/providers/projects_provider.dart';
 import 'package:second_brain/providers/settings_provider.dart';
 import 'package:second_brain/services/interfaces/storage_service_interface.dart';
@@ -12,6 +13,8 @@ import '../helpers/mock_storage_service.dart';
 Widget createTestWidget(Widget child) {
   return MaterialApp(
     theme: BrainTheme.darkTheme,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>(
@@ -56,7 +59,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Pendiente'), findsWidgets);
+      expect(find.textContaining('Pending'), findsWidgets);
     });
 
     testWidgets('shows priority badge', (tester) async {
@@ -65,7 +68,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Alta'), findsWidgets);
+      expect(find.textContaining('High'), findsWidgets);
     });
 
     testWidgets('shows strikethrough when completed', (tester) async {

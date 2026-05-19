@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../../config/theme.dart';
 import '../../providers/settings_provider.dart';
@@ -10,7 +11,7 @@ class AppearanceScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Apariencia')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.appearance)),
       body: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
           return ListView(
@@ -20,7 +21,7 @@ class AppearanceScreen extends StatelessWidget {
               const SizedBox(height: 8),
               _ThemeOption(
                 icon: Icons.brightness_5_outlined,
-                title: 'Claro',
+                title: AppLocalizations.of(context)!.themeLight,
                 subtitle: 'Fondo claro, texto oscuro',
                 selected: settings.themeMode == ThemeMode.light,
                 onTap: () => settings.setThemeMode(ThemeMode.light),
@@ -28,7 +29,7 @@ class AppearanceScreen extends StatelessWidget {
               const SizedBox(height: 4),
               _ThemeOption(
                 icon: Icons.nightlight_round,
-                title: 'Oscuro',
+                title: AppLocalizations.of(context)!.themeDark,
                 subtitle: 'Fondo oscuro, texto claro',
                 selected: settings.themeMode == ThemeMode.dark,
                 onTap: () => settings.setThemeMode(ThemeMode.dark),
@@ -36,7 +37,7 @@ class AppearanceScreen extends StatelessWidget {
               const SizedBox(height: 4),
               _ThemeOption(
                 icon: Icons.settings_brightness_outlined,
-                title: 'Sistema',
+                title: AppLocalizations.of(context)!.themeSystem,
                 subtitle: 'Sigue la configuración del dispositivo',
                 selected: settings.themeMode == ThemeMode.system,
                 onTap: () => settings.setThemeMode(ThemeMode.system),
@@ -80,7 +81,7 @@ class AppearanceScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'SGI',
+                          AppLocalizations.of(context)!.appTitle,
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,

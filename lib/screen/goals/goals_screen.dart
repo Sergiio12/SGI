@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../../config/theme.dart';
 import '../../models/goal.dart';
@@ -8,6 +9,7 @@ import '../../providers/goals_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/goal_card.dart';
+import '../../widgets/skeleton_card.dart';
 
 enum _GoalSortBy { updatedAt, title, progress, target }
 
@@ -35,14 +37,16 @@ class _GoalsScreenState extends State<GoalsScreen> {
   Widget build(BuildContext context) {
     return Consumer2<GoalsProvider, ProjectsProvider>(
       builder: (context, goalsProvider, projectsProvider, _) {
+        if (!goalsProvider.isLoaded) return const SkeletonList();
         final allGoals = goalsProvider.goals;
 
         if (allGoals.isEmpty) {
+          final l10n = AppLocalizations.of(context);
           return EmptyState(
             emoji: '🎯',
-            title: 'Sin objetivos aun',
-            subtitle: 'Define metas claras para guiar tu camino.',
-            actionLabel: 'Crear objetivo',
+            title: l10n.emptyState,
+            subtitle: l10n.emptyStateDescription,
+            actionLabel: l10n.createGoal,
             onAction: () => Navigator.pushNamed(context, '/goal'),
           );
         }
@@ -106,7 +110,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   onChanged: (v) => setState(() => _searchQuery = v),
                   style: const TextStyle(fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: 'Buscar objetivos...',
+                    hintText: AppLocalizations.of(context)!.searchInGoals,
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
@@ -142,11 +146,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
                       const SizedBox(height: 16),
                       Text(
                         _searchQuery.isNotEmpty
-                            ? 'Sin resultados para "$_searchQuery"'
-                            : _horizonFilter != null
-                                ? 'No hay objetivos '
-                                    '${_horizonLabel(_horizonFilter!).toLowerCase()}s'
-                                : 'Sin objetivos',
+                            ? '${AppLocalizations.of(context)!.noResults}: "$_searchQuery"'
+                            : AppLocalizations.of(context)!.noResults,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -166,7 +167,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     if (monthly.isNotEmpty)
                       _buildSection(
                         context,
-                        'Mensuales',
+                        AppLocalizations.of(context)!.goalMonthly,
                         monthly,
                         BrainTheme.accentGreen,
                         Icons.calendar_view_month,
@@ -175,7 +176,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     if (quarterly.isNotEmpty)
                       _buildSection(
                         context,
-                        'Trimestrales',
+                        AppLocalizations.of(context)!.goalQuarterly,
                         quarterly,
                         BrainTheme.accentPurple,
                         Icons.view_week_outlined,
@@ -184,7 +185,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                     if (yearly.isNotEmpty)
                       _buildSection(
                         context,
-                        'Anuales',
+                        AppLocalizations.of(context)!.goalYearly,
                         yearly,
                         BrainTheme.accentBlue,
                         Icons.event_available_outlined,
@@ -197,17 +198,6 @@ class _GoalsScreenState extends State<GoalsScreen> {
         );
       },
     );
-  }
-
-  String _horizonLabel(GoalHorizon horizon) {
-    switch (horizon) {
-      case GoalHorizon.monthly:
-        return 'Mensual';
-      case GoalHorizon.quarterly:
-        return 'Trimestral';
-      case GoalHorizon.yearly:
-        return 'Anual';
-    }
   }
 
   Widget _buildSection(
@@ -290,26 +280,27 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
   Future<void> _deleteGoal(
       BuildContext context, Goal goal) async {
+    final l10n = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
-        title: Text('Mover a papelera',
+        title: Text(l10n.moveToTrashTitle,
             style: TextStyle(color: BrainTheme.textPrimary)),
         content: Text(
-          '�?Deseas mover "${goal.title}" a la papelera?',
+          '${l10n.moveToTrashContent} "${goal.title}"?',
           style: TextStyle(color: BrainTheme.textSecondary),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
+              child: Text(l10n.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
                 backgroundColor: BrainTheme.accentRed,
                 foregroundColor: Colors.white),
-            child: const Text('Eliminar'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -359,25 +350,25 @@ class _StatsBar extends StatelessWidget {
           _StatItem(
             icon: Icons.track_changes_rounded,
             value: '$total',
-            label: 'Total',
+            label: AppLocalizations.of(context)!.totalTasks,
             color: BrainTheme.accentPurple,
           ),
           _StatItem(
             icon: Icons.calendar_view_month,
             value: '$monthly',
-            label: 'Mensual',
+            label: AppLocalizations.of(context)!.goalMonthly,
             color: BrainTheme.accentGreen,
           ),
           _StatItem(
             icon: Icons.view_week_outlined,
             value: '$quarterly',
-            label: 'Trim.',
+            label: AppLocalizations.of(context)!.goalQuarterly,
             color: BrainTheme.accentOrange,
           ),
           _StatItem(
             icon: Icons.event_available_outlined,
             value: '$yearly',
-            label: 'Anual',
+            label: AppLocalizations.of(context)!.goalYearly,
             color: BrainTheme.accentBlue,
           ),
         ],
@@ -463,7 +454,7 @@ class _FilterBar extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     children: [
                       _FilterChip(
-                        label: 'Todos',
+                        label: AppLocalizations.of(context)!.all,
                         selected: horizonFilter == null,
                         color: BrainTheme.accentPurple,
                         onTap: () =>
@@ -471,7 +462,7 @@ class _FilterBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       _FilterChip(
-                        label: 'Mensual',
+                        label: AppLocalizations.of(context)!.goalMonthly,
                         selected:
                             horizonFilter == GoalHorizon.monthly,
                         color: BrainTheme.accentGreen,
@@ -484,7 +475,7 @@ class _FilterBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       _FilterChip(
-                        label: 'Trimestral',
+                        label: AppLocalizations.of(context)!.goalQuarterly,
                         selected:
                             horizonFilter ==
                                 GoalHorizon.quarterly,
@@ -499,7 +490,7 @@ class _FilterBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       _FilterChip(
-                        label: 'Anual',
+                        label: AppLocalizations.of(context)!.goalYearly,
                         selected:
                             horizonFilter == GoalHorizon.yearly,
                         color: BrainTheme.accentBlue,
@@ -651,16 +642,17 @@ class _SortDropdown extends StatelessWidget {
           style: TextStyle(
               fontSize: 13, color: BrainTheme.textSecondary),
           items: _GoalSortBy.values.map((sort) {
+            final l10n = AppLocalizations.of(context);
             String label;
             switch (sort) {
               case _GoalSortBy.updatedAt:
-                label = 'Reciente';
+                label = l10n.sortRecent;
               case _GoalSortBy.title:
-                label = 'Nombre';
+                label = l10n.sortTitle;
               case _GoalSortBy.progress:
-                label = 'Progreso';
+                label = l10n.goalsProgress;
               case _GoalSortBy.target:
-                label = 'Meta';
+                label = l10n.objective;
             }
             return DropdownMenuItem(
               value: sort,

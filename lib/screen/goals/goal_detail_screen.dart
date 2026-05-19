@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../../config/theme.dart';
 import '../../models/goal.dart';
@@ -93,7 +94,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
 
   Future<void> _save() async {
     if (_titleController.text.trim().isEmpty) {
-      showWarningNotification('El objetivo necesita un nombre');
+      showWarningNotification(AppLocalizations.of(context)!.goalNeedsName);
       return;
     }
 
@@ -154,26 +155,27 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
   }
 
   Future<void> _delete() async {
+    final l10n = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
-        title: Text('Eliminar objetivo',
+        title: Text(l10n.editGoal,
             style: TextStyle(color: BrainTheme.textPrimary)),
         content: Text(
-          'Se moverá a la papelera. ¿Deseas continuar?',
+          l10n.moveToTrashContent,
           style: TextStyle(color: BrainTheme.textSecondary),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
+              child: Text(l10n.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
                 backgroundColor: BrainTheme.accentRed,
                 foregroundColor: Colors.white),
-            child: const Text('Eliminar'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -201,7 +203,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
       builder: (context, goalsProvider, projectsProvider, _) {
         final goal = goalsProvider.getGoalById(widget.goalId!);
         if (goal == null) {
-          return const Center(child: Text('Objetivo no encontrado'));
+          return Center(child: Text(AppLocalizations.of(context)!.noData));
         }
 
         final linkedProjects =
@@ -232,9 +234,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                       unselectedLabelColor:
                           BrainTheme.textTertiary,
                       indicatorColor: color,
-                      tabs: const [
-                        Tab(text: 'Información'),
-                        Tab(text: 'Proyectos'),
+                      tabs: [
+                        Tab(text: AppLocalizations.of(context)!.details),
+                        Tab(text: AppLocalizations.of(context)!.projects),
                       ],
                     ),
                   ],
@@ -352,14 +354,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
       children: [
         _ActionChip(
           icon: Icons.add,
-          label: 'Sumar progreso',
+          label: AppLocalizations.of(context)!.goalAddProgress,
           color: color,
           onTap: () => _showAddProgressDialog(goal, provider),
         ),
         const SizedBox(width: 8),
         _ActionChip(
           icon: Icons.edit_outlined,
-          label: 'Editar',
+          label: AppLocalizations.of(context)!.editGoal,
           color: BrainTheme.accentBlue,
           onTap: () =>
               setState(() => _isEditing = true),
@@ -371,11 +373,12 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
   void _showAddProgressDialog(
       Goal goal, GoalsProvider provider) {
     final controller = TextEditingController();
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
-        title: Text('Sumar progreso',
+        title: Text(l10n.goalAddProgress,
             style: TextStyle(color: BrainTheme.textPrimary)),
         content: TextField(
           controller: controller,
@@ -383,14 +386,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
               const TextInputType.numberWithOptions(
                   decimal: true),
           autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Cantidad a sumar',
+          decoration: InputDecoration(
+            labelText: l10n.goalAmountToAdd,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -407,7 +410,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
               }
               Navigator.pop(ctx);
             },
-            child: const Text('Añadir'),
+            child: Text(l10n.goalAdd),
           ),
         ],
       ),
@@ -433,7 +436,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
             onPressed: () => _saveProgress(),
             icon: const Icon(Icons.trending_up_rounded,
                 size: 18),
-            label: const Text('Actualizar progreso',
+            label: Text(AppLocalizations.of(context)!.goalUpdateProgress,
                 style: TextStyle(
                     fontWeight: FontWeight.w600)),
             style: FilledButton.styleFrom(
@@ -460,7 +463,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
   Widget _buildFormView(Color color) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isNew ? 'Nuevo objetivo' : 'Editar objetivo'),
+        title: Text(_isNew ? AppLocalizations.of(context)!.createGoal : AppLocalizations.of(context)!.editGoal),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
@@ -474,8 +477,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
         actions: [
           TextButton(
             onPressed: _save,
-            child: const Text(
-              'Guardar',
+            child: Text(
+              AppLocalizations.of(context)!.save,
               style:
                   TextStyle(fontWeight: FontWeight.w600),
             ),
@@ -514,8 +517,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
                     ),
-                    decoration: const InputDecoration(
-                      hintText: 'Nombre del objetivo',
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.goalNameHint,
                       border: InputBorder.none,
                       filled: false,
                     ),
@@ -531,32 +534,32 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                 fontSize: 14,
                 color: BrainTheme.textSecondary,
               ),
-              decoration: const InputDecoration(
-                hintText: 'Descripción...',
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.description,
                 border: InputBorder.none,
                 filled: false,
               ),
               maxLines: null,
             ),
             const SizedBox(height: 20),
-            _buildSectionLabel('Horizonte'),
+            _buildSectionLabel(AppLocalizations.of(context)!.horizon),
             const SizedBox(height: 10),
             SegmentedButton<GoalHorizon>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: GoalHorizon.monthly,
-                  icon: Icon(Icons.calendar_view_month),
-                  label: Text('Mes'),
+                  icon: const Icon(Icons.calendar_view_month),
+                  label: Text(AppLocalizations.of(context)!.goalMonthly),
                 ),
                 ButtonSegment(
                   value: GoalHorizon.quarterly,
-                  icon: Icon(Icons.view_week_outlined),
-                  label: Text('Trim.'),
+                  icon: const Icon(Icons.view_week_outlined),
+                  label: Text(AppLocalizations.of(context)!.goalQuarterly),
                 ),
                 ButtonSegment(
                   value: GoalHorizon.yearly,
-                  icon: Icon(Icons.event_available_outlined),
-                  label: Text('Año'),
+                  icon: const Icon(Icons.event_available_outlined),
+                  label: Text(AppLocalizations.of(context)!.goalYearly),
                 ),
               ],
               selected: {_horizon},
@@ -564,7 +567,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                   setState(() => _horizon = value.first),
             ),
             const SizedBox(height: 20),
-            _buildSectionLabel('Color'),
+            _buildSectionLabel(AppLocalizations.of(context)!.color),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
@@ -595,14 +598,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
               }).toList(),
             ),
             const SizedBox(height: 24),
-            _buildSectionLabel('Etiquetas'),
+            _buildSectionLabel(AppLocalizations.of(context)!.tags),
             const SizedBox(height: 10),
             Consumer<TagsProvider>(
               builder: (context, tagsProvider, _) {
                 final allTags = tagsProvider.tags;
                 if (allTags.isEmpty) {
                   return Text(
-                    'No hay etiquetas disponibles. Crea una desde Ajustes.',
+                    AppLocalizations.of(context)!.goalNoTagsAvailable,
                     style: TextStyle(
                         color: BrainTheme.textTertiary,
                         fontSize: 13),
@@ -644,7 +647,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                       CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Métrica de progreso',
+                      AppLocalizations.of(context)!.goalProgressMetric,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: BrainTheme.textPrimary,
@@ -653,8 +656,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                     const SizedBox(height: 12),
                     TextField(
                       controller: _metricController,
-                      decoration: const InputDecoration(
-                          labelText: 'Métrica'),
+                      decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!.metric),
                     ),
                     const SizedBox(height: 10),
                     Row(
@@ -667,8 +670,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                                 const TextInputType
                                     .numberWithOptions(
                                     decimal: true),
-                            decoration: const InputDecoration(
-                                labelText: 'Actual'),
+                            decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!.goalCurrent),
                             onChanged: (_) =>
                                 setState(() {}),
                           ),
@@ -682,8 +685,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                                 const TextInputType
                                     .numberWithOptions(
                                     decimal: true),
-                            decoration: const InputDecoration(
-                                labelText: 'Meta'),
+                            decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!.goalTarget),
                             onChanged: (_) =>
                                 setState(() {}),
                           ),
@@ -721,14 +724,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
               ),
             ),
             const SizedBox(height: 24),
-            _buildSectionLabel('Proyectos asociados'),
+            _buildSectionLabel(AppLocalizations.of(context)!.goalLinkedProjects),
             const SizedBox(height: 10),
             Consumer<ProjectsProvider>(
               builder: (context, projectsProvider, _) {
                 final projects = projectsProvider.projects;
                 if (projects.isEmpty) {
                   return Text(
-                    'No hay proyectos todavía.',
+                    AppLocalizations.of(context)!.emptyState,
                     style: TextStyle(
                         color: BrainTheme.textTertiary,
                         fontSize: 13),
@@ -803,7 +806,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
               ),
             ),
             Text(
-              'Elegir color',
+              AppLocalizations.of(context)!.goalChooseColor,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -980,7 +983,7 @@ class _HeaderSliver extends StatelessWidget {
                         child: Row(
                           children: [
                             _Badge(
-                              label: _horizonLabel(goal.horizon),
+                              label: _horizonLabel(context, goal.horizon),
                               color: color,
                             ),
                             const SizedBox(width: 8),
@@ -1019,14 +1022,15 @@ class _HeaderSliver extends StatelessWidget {
     );
   }
 
-  String _horizonLabel(GoalHorizon horizon) {
+  String _horizonLabel(BuildContext context, GoalHorizon horizon) {
+    final l10n = AppLocalizations.of(context);
     switch (horizon) {
       case GoalHorizon.monthly:
-        return 'Mensual';
+        return l10n.goalMonthly;
       case GoalHorizon.quarterly:
-        return 'Trimestral';
+        return l10n.goalQuarterly;
       case GoalHorizon.yearly:
-        return 'Anual';
+        return l10n.goalYearly;
     }
   }
 }
@@ -1072,7 +1076,7 @@ class _InfoTab extends StatelessWidget {
         if (goal.description.isNotEmpty) ...[
           _InfoCard(
             icon: Icons.description_outlined,
-            title: 'Descripción',
+            title: AppLocalizations.of(context)!.description,
             child: Text(
               goal.description,
               style: TextStyle(
@@ -1086,32 +1090,32 @@ class _InfoTab extends StatelessWidget {
         ],
         _InfoCard(
           icon: Icons.track_changes_rounded,
-          title: 'Detalles',
+          title: AppLocalizations.of(context)!.details,
           child: Column(
             children: [
               _InfoRow(
-                label: 'Métrica',
+                label: AppLocalizations.of(context)!.metric,
                 value: goal.metricLabel,
               ),
               Divider(
                   height: 1,
                   color: BrainTheme.borderDark),
               _InfoRow(
-                label: 'Actual',
+                label: AppLocalizations.of(context)!.goalCurrent,
                 value: _compact(goal.currentValue),
               ),
               Divider(
                   height: 1,
                   color: BrainTheme.borderDark),
               _InfoRow(
-                label: 'Meta',
+                label: AppLocalizations.of(context)!.goalTarget,
                 value: _compact(goal.targetValue),
               ),
               Divider(
                   height: 1,
                   color: BrainTheme.borderDark),
               _InfoRow(
-                label: 'Progreso',
+                label: AppLocalizations.of(context)!.goalsProgress,
                 value:
                     '${(goal.progress * 100).round()}%',
                 valueColor: color,
@@ -1120,14 +1124,14 @@ class _InfoTab extends StatelessWidget {
                   height: 1,
                   color: BrainTheme.borderDark),
               _InfoRow(
-                label: 'Creado',
+                label: AppLocalizations.of(context)!.itemCreated,
                 value: _formatDate(goal.createdAt),
               ),
               Divider(
                   height: 1,
                   color: BrainTheme.borderDark),
               _InfoRow(
-                label: 'Actualizado',
+                label: AppLocalizations.of(context)!.itemUpdated,
                 value: _formatDate(goal.updatedAt),
               ),
             ],
@@ -1173,7 +1177,7 @@ class _ProjectsTab extends StatelessWidget {
                     .withValues(alpha: 0.4)),
             const SizedBox(height: 12),
             Text(
-              'Sin proyectos asociados',
+              AppLocalizations.of(context)!.goalNoLinkedProjects,
               style: TextStyle(
                 fontSize: 15,
                 color: BrainTheme.textSecondary,
@@ -1188,6 +1192,7 @@ class _ProjectsTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       itemCount: projects.length,
       itemBuilder: (context, index) {
+        final l10n = AppLocalizations.of(context);
         final project = projects[index];
         final pColor = Color(project.colorValue);
         return Card(
@@ -1214,12 +1219,12 @@ class _ProjectsTab extends StatelessWidget {
             ),
             subtitle: Text(
               project.status == ProjectStatus.active
-                  ? 'Activo'
+                  ? l10n.active
                   : project.status == ProjectStatus.paused
-                      ? 'Pausado'
+                      ? l10n.goalPaused
                       : project.status == ProjectStatus.completed
-                          ? 'Completado'
-                          : 'Abandonado',
+                          ? l10n.statusCompleted
+                          : l10n.goalAbandoned,
               style: TextStyle(
                 fontSize: 12,
                 color: BrainTheme.textTertiary,

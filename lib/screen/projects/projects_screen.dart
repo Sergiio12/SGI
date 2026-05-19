@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
+import 'package:second_brain/l10n/app_localizations.dart';
+
 import '../../config/theme.dart';
 import '../../models/project.dart';
 import '../../providers/projects_provider.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/project_card.dart';
+import '../../widgets/skeleton_card.dart';
 
 enum _ProjectSortBy { updatedAt, title, deadline, progress }
 
@@ -34,14 +37,15 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   Widget build(BuildContext context) {
     return Consumer<ProjectsProvider>(
       builder: (context, provider, _) {
+        if (!provider.isLoaded) return const SkeletonGrid();
         final allProjects = provider.projects;
 
         if (allProjects.isEmpty) {
           return EmptyState(
             emoji: '🚀',
-            title: 'Sin proyectos aun',
-            subtitle: 'Crea un proyecto para agrupar tareas, notas y objetivos.',
-            actionLabel: 'Crear proyecto',
+            title: AppLocalizations.of(context)!.emptyState,
+            subtitle: AppLocalizations.of(context)!.emptyStateDescription,
+            actionLabel: AppLocalizations.of(context)!.createProject,
             onAction: () => Navigator.pushNamed(context, '/project'),
           );
         }
@@ -102,7 +106,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   onChanged: (v) => setState(() => _searchQuery = v),
                   style: const TextStyle(fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: 'Buscar proyectos...',
+                    hintText: AppLocalizations.of(context)!.searchInProjects,
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
@@ -135,10 +139,10 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                       const SizedBox(height: 16),
                       Text(
                         _searchQuery.isNotEmpty
-                            ? 'Sin resultados para "$_searchQuery"'
+                            ? '${AppLocalizations.of(context)!.noResults} "$_searchQuery"'
                             : _statusFilter != null
-                                ? 'No hay proyectos ${_statusLabel(_statusFilter!).toLowerCase()}'
-                                : 'Sin proyectos',
+                                ? '${AppLocalizations.of(context)!.no} ${AppLocalizations.of(context)!.projects.toLowerCase()} ${_statusLabel(_statusFilter!).toLowerCase()}'
+                                : '${AppLocalizations.of(context)!.no} ${AppLocalizations.of(context)!.projects}',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -175,7 +179,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                     if (completed.isNotEmpty)
                       _buildSection(
                         context,
-                        'Finalizados',
+                        AppLocalizations.of(context)!.statusCompleted,
                         completed,
                         BrainTheme.accentBlue,
                         Icons.check_rounded,
@@ -280,22 +284,22 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: BrainTheme.cardDark,
-        title: Text('Mover a papelera',
+        title: Text(AppLocalizations.of(context)!.itemDeleted,
             style: TextStyle(color: BrainTheme.textPrimary)),
         content: Text(
-          '¿Deseas mover "${project.title}" a la papelera?',
+          '${AppLocalizations.of(context)!.no} "${project.title}"?',
           style: TextStyle(color: BrainTheme.textSecondary),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
+              child: Text(AppLocalizations.of(context)!.cancel)),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
                 backgroundColor: BrainTheme.accentRed,
                 foregroundColor: Colors.white),
-            child: const Text('Eliminar'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -307,9 +311,9 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
   String _statusLabel(ProjectStatus status) {
     switch (status) {
-      case ProjectStatus.active: return 'Activos';
+      case ProjectStatus.active: return AppLocalizations.of(context)!.active;
       case ProjectStatus.paused: return 'Pausados';
-      case ProjectStatus.completed: return 'Finalizados';
+      case ProjectStatus.completed: return AppLocalizations.of(context)!.statusCompleted;
       case ProjectStatus.abandoned: return 'Abandonados';
     }
   }
@@ -319,7 +323,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 class _StatsBar extends StatelessWidget {
   final ProjectsProvider provider;
 
-  const _StatsBar({required this.provider});
+  _StatsBar({required this.provider});
 
   @override
   Widget build(BuildContext context) {
@@ -348,16 +352,16 @@ class _StatsBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _StatItem(
+            _StatItem(
             icon: Icons.folder_outlined,
             value: '$total',
-            label: 'Total',
+            label: AppLocalizations.of(context)!.all,
             color: BrainTheme.accentPurple,
           ),
           _StatItem(
             icon: Icons.play_arrow_rounded,
             value: '$active',
-            label: 'Activos',
+            label: AppLocalizations.of(context)!.active,
             color: BrainTheme.accentGreen,
           ),
           _StatItem(
@@ -369,7 +373,7 @@ class _StatsBar extends StatelessWidget {
           _StatItem(
             icon: Icons.check_rounded,
             value: '$completed',
-            label: 'Complet.',
+            label: AppLocalizations.of(context)!.completedTasks,
             color: BrainTheme.accentBlue,
           ),
         ],
@@ -429,7 +433,7 @@ class _FilterBar extends StatelessWidget {
   final ValueChanged<_ProjectSortBy> onSortChanged;
   final VoidCallback onToggleSearch;
 
-  const _FilterBar({
+  _FilterBar({
     required this.statusFilter,
     required this.searchQuery,
     required this.showSearch,
@@ -454,14 +458,14 @@ class _FilterBar extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     children: [
                       _FilterChip(
-                        label: 'Todos',
+                        label: AppLocalizations.of(context)!.all,
                         selected: statusFilter == null,
                         color: BrainTheme.accentPurple,
                         onTap: () => onStatusFilterChanged(null),
                       ),
                       const SizedBox(width: 8),
                       _FilterChip(
-                        label: 'Activos',
+                        label: AppLocalizations.of(context)!.active,
                         selected: statusFilter == ProjectStatus.active,
                         color: BrainTheme.accentGreen,
                         onTap: () => onStatusFilterChanged(
@@ -479,7 +483,7 @@ class _FilterBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       _FilterChip(
-                        label: 'Finalizados',
+                        label: AppLocalizations.of(context)!.statusCompleted,
                         selected: statusFilter == ProjectStatus.completed,
                         color: BrainTheme.accentBlue,
                         onTap: () => onStatusFilterChanged(
@@ -598,7 +602,7 @@ class _SortDropdown extends StatelessWidget {
   final _ProjectSortBy sortBy;
   final ValueChanged<_ProjectSortBy> onChanged;
 
-  const _SortDropdown({required this.sortBy, required this.onChanged});
+  _SortDropdown({required this.sortBy, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -619,9 +623,9 @@ class _SortDropdown extends StatelessWidget {
           items: _ProjectSortBy.values.map((sort) {
             String label;
             switch (sort) {
-              case _ProjectSortBy.updatedAt: label = 'Reciente';
-              case _ProjectSortBy.title: label = 'Nombre';
-              case _ProjectSortBy.deadline: label = 'Fecha limite';
+              case _ProjectSortBy.updatedAt: label = AppLocalizations.of(context)!.sortCreatedAt;
+              case _ProjectSortBy.title: label = AppLocalizations.of(context)!.sortTitle;
+              case _ProjectSortBy.deadline: label = AppLocalizations.of(context)!.sortDueDate;
               case _ProjectSortBy.progress: label = 'Progreso';
             }
             return DropdownMenuItem(

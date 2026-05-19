@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../../config/theme.dart';
 import '../../models/goal.dart';
@@ -53,27 +54,27 @@ class TaskMetricsScreen extends StatelessWidget {
                 color: BrainTheme.accentBlue,
               ),
               _MetricsCard(
-                label: 'Completadas',
+                label: AppLocalizations.of(context).completedTasks,
                 value: '$completedTasks',
                 color: BrainTheme.accentGreen,
               ),
               _MetricsCard(
-                label: 'Pendientes',
+                label: AppLocalizations.of(context).pendingTasks,
                 value: '$pendingTasks',
                 color: BrainTheme.accentOrange,
               ),
               _MetricsCard(
-                label: 'Urgentes',
+                label: AppLocalizations.of(context).priorityUrgent,
                 value: '$urgentTasks',
                 color: BrainTheme.accentRed,
               ),
               _MetricsCard(
-                label: 'Hoy',
+                label: AppLocalizations.of(context).today,
                 value: '$dueTodayTasks',
                 color: BrainTheme.accentPurple,
               ),
               _MetricsCard(
-                label: 'Vencidas',
+                label: AppLocalizations.of(context).overdueTasks,
                 value: '$overdueTasks',
                 color: BrainTheme.accentRed.withValues(alpha: 0.8),
               ),
@@ -159,22 +160,22 @@ class ProjectMetricsScreen extends StatelessWidget {
                 color: BrainTheme.accentGreen,
               ),
               _MetricsCard(
-                label: 'Activos',
+                label: AppLocalizations.of(context).active,
                 value: '$activeProjects',
                 color: BrainTheme.accentBlue,
               ),
               _MetricsCard(
-                label: 'Completados',
+                label: AppLocalizations.of(context).statusCompleted,
                 value: '$completedProjects',
                 color: BrainTheme.accentPurple,
               ),
               _MetricsCard(
-                label: 'Pausados',
+                label: AppLocalizations.of(context).goalPaused,
                 value: '$pausedProjects',
                 color: BrainTheme.accentOrange,
               ),
               _MetricsCard(
-                label: 'Abandonados',
+                label: AppLocalizations.of(context).goalAbandoned,
                 value: '$abandonedProjects',
                 color: BrainTheme.accentRed,
               ),
@@ -256,22 +257,22 @@ class GoalMetricsScreen extends StatelessWidget {
                 color: BrainTheme.accentPurple,
               ),
               _MetricsCard(
-                label: 'Completados',
+                label: AppLocalizations.of(context).statusCompleted,
                 value: '$completedGoals',
                 color: BrainTheme.accentGreen,
               ),
               _MetricsCard(
-                label: 'Mensuales',
+                label: AppLocalizations.of(context).goalMonthly,
                 value: '$monthlyGoals',
                 color: BrainTheme.accentBlue,
               ),
               _MetricsCard(
-                label: 'Trimestrales',
+                label: AppLocalizations.of(context).goalQuarterly,
                 value: '$quarterlyGoals',
                 color: BrainTheme.accentOrange,
               ),
               _MetricsCard(
-                label: 'Anuales',
+                label: AppLocalizations.of(context).goalYearly,
                 value: '$yearlyGoals',
                 color: BrainTheme.accentCyan,
               ),
@@ -348,12 +349,12 @@ class NoteMetricsScreen extends StatelessWidget {
                 color: BrainTheme.accentPurple,
               ),
               _MetricsCard(
-                label: 'Recientes',
+                label: AppLocalizations.of(context).sortRecent,
                 value: '$recentNotes',
                 color: BrainTheme.accentBlue,
               ),
               _MetricsCard(
-                label: 'Cuadernos',
+                label: AppLocalizations.of(context).notebook,
                 value: '$notebooks',
                 color: BrainTheme.accentGreen,
               ),
@@ -589,7 +590,7 @@ class _TaskSummaryRow extends StatelessWidget {
               Text(
                 task.dueDate != null
                     ? '${task.dueDate!.day}/${task.dueDate!.month}/${task.dueDate!.year}'
-                    : 'Sin fecha',
+                    : AppLocalizations.of(context).noDueDate,
                 style: TextStyle(
                   fontSize: 12,
                   color: BrainTheme.textSecondary,
@@ -604,8 +605,8 @@ class _TaskSummaryRow extends StatelessWidget {
                     color: BrainTheme.accentRed.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    'Vencida',
+                    child: Text(
+                      AppLocalizations.of(context).overdue,
                     style: TextStyle(
                       fontSize: 11,
                       color: BrainTheme.accentRed,
@@ -650,7 +651,7 @@ class _ProjectSummaryRow extends StatelessWidget {
           Text(
             project.deadline != null
                 ? 'Entrega: ${project.deadline!.day}/${project.deadline!.month}/${project.deadline!.year}'
-                : 'Sin fecha límite',
+                : AppLocalizations.of(context).noDueDate,
             style: TextStyle(
               fontSize: 12,
               color: BrainTheme.textSecondary,
@@ -703,7 +704,7 @@ class _GoalSummaryRow extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                goal.progress >= 1 ? 'Completado' : 'En progreso',
+                goal.progress >= 1 ? AppLocalizations.of(context).statusCompleted : AppLocalizations.of(context).statusInProgress,
                 style: TextStyle(
                   fontSize: 12,
                   color: goal.progress >= 1

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/theme.dart';
@@ -13,7 +14,7 @@ class TodayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Hoy')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.today)),
       body: Consumer<TasksProvider>(
         builder: (context, provider, _) {
           final overdue = provider.overdueTasks;
@@ -21,11 +22,10 @@ class TodayScreen extends StatelessWidget {
           final inProgress = provider.inProgressTasks;
 
           if (overdue.isEmpty && todayTasks.isEmpty && inProgress.isEmpty) {
-            return const EmptyState(
+            return EmptyState(
               emoji: '🎉',
-              title: 'Todo al dia',
-              subtitle:
-                  'No tienes tareas vencidas, pendientes para hoy ni en progreso.',
+              title: AppLocalizations.of(context)!.noTasks,
+              subtitle: AppLocalizations.of(context)!.emptyStateDescription,
             );
           }
 
@@ -33,7 +33,7 @@ class TodayScreen extends StatelessWidget {
 
           if (overdue.isNotEmpty) {
             sections.add(_Section(
-              title: 'Vencidas',
+              title: AppLocalizations.of(context)!.overdueTasks,
               icon: Icons.warning_amber_rounded,
               color: BrainTheme.accentRed,
               tasks: overdue,
@@ -42,7 +42,7 @@ class TodayScreen extends StatelessWidget {
 
           if (todayTasks.isNotEmpty) {
             sections.add(_Section(
-              title: 'Hoy',
+              title: AppLocalizations.of(context)!.todayView,
               icon: Icons.today_rounded,
               color: BrainTheme.accentOrange,
               tasks: todayTasks,
@@ -51,7 +51,7 @@ class TodayScreen extends StatelessWidget {
 
           if (inProgress.isNotEmpty) {
             sections.add(_Section(
-              title: 'En progreso',
+              title: AppLocalizations.of(context)!.statusInProgress,
               icon: Icons.play_circle_outline,
               color: BrainTheme.accentBlue,
               tasks: inProgress,
@@ -138,21 +138,21 @@ class _TodayHeader extends StatelessWidget {
             children: [
               _HeaderStat(
                 count: overdueCount,
-                label: 'Vencidas',
+                label: AppLocalizations.of(context)!.overdueTasks,
                 color: Colors.white.withValues(alpha: 0.9),
                 bgColor: Colors.white.withValues(alpha: 0.15),
               ),
               const SizedBox(width: 12),
               _HeaderStat(
                 count: todayCount,
-                label: 'Hoy',
+                label: AppLocalizations.of(context)!.todayView,
                 color: Colors.white,
                 bgColor: Colors.white.withValues(alpha: 0.15),
               ),
               const SizedBox(width: 12),
               _HeaderStat(
                 count: inProgressCount,
-                label: 'En curso',
+                label: AppLocalizations.of(context)!.statusInProgress,
                 color: Colors.white,
                 bgColor: Colors.white.withValues(alpha: 0.15),
               ),

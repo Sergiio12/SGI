@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../../config/theme.dart';
 import '../../providers/settings_provider.dart';
@@ -10,7 +11,7 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notificaciones')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.notifications)),
       body: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
           return ListView(
@@ -18,7 +19,7 @@ class NotificationsScreen extends StatelessWidget {
             children: [
               _SettingsSwitch(
                 icon: Icons.notifications_active_rounded,
-                title: 'Notificaciones',
+                title: AppLocalizations.of(context)!.notifications,
                 subtitle: 'Activar o desactivar todas las notificaciones',
                 value: settings.notificationsEnabled,
                 onChanged: (v) => settings.setNotificationsEnabled(v),
@@ -115,7 +116,7 @@ class NotificationsScreen extends StatelessWidget {
                   children: [
                     _SettingsSwitch(
                       icon: Icons.check_circle_outline,
-                      title: 'Tarea completada',
+                      title: AppLocalizations.of(context)!.taskCompleted,
                       subtitle: 'Notificar al marcar una tarea como finalizada',
                       value: settings.notifyOnComplete,
                       onChanged: (v) => settings.setNotifyOnComplete(v),

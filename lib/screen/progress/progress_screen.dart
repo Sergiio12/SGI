@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:second_brain/l10n/app_localizations.dart';
 import '../../config/theme.dart';
 import '../../providers/goals_provider.dart';
 import '../../providers/notes_provider.dart';
@@ -42,21 +43,21 @@ class ProgressScreen extends StatelessWidget {
                 childAspectRatio: 1.1,
                 children: [
                   StatsCard(
-                    title: 'Activas',
+                    title: AppLocalizations.of(context)!.active,
                     value: '$activeTasks',
                     icon: Icons.task_alt_outlined,
                     color: BrainTheme.accentBlue,
                     subtitle: '$completed finalizadas',
                   ),
                   StatsCard(
-                    title: 'Proyectos',
+                    title: AppLocalizations.of(context)!.projects,
                     value: '${projects.activeProjects.length}',
                     icon: Icons.folder_open_outlined,
                     color: BrainTheme.accentGreen,
                     subtitle: '${projects.completedProjects.length} cerrados',
                   ),
                   StatsCard(
-                    title: 'Notas',
+                    title: AppLocalizations.of(context)!.notes,
                     value: '${notes.notes.length}',
                     icon: Icons.sticky_note_2_outlined,
                     color: BrainTheme.accentCyan,
@@ -73,7 +74,7 @@ class ProgressScreen extends StatelessWidget {
               ),
               const SizedBox(height: 22),
               Text(
-                'Objetivos',
+                AppLocalizations.of(context)!.goals,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../config/theme.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/trash_provider.dart';
 
 class BrainDrawer extends StatelessWidget {
@@ -37,7 +38,7 @@ class BrainDrawer extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'SGI',
+                        AppLocalizations.of(context).appTitle,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -60,7 +61,7 @@ class BrainDrawer extends StatelessWidget {
             Divider(color: BrainTheme.borderDark),
             _DrawerItem(
               icon: Icons.delete_outline_rounded,
-              label: 'Papelera',
+              label: AppLocalizations.of(context).trash,
               badge: Consumer<TrashProvider>(
                 builder: (_, trash, __) {
                   return trash.totalItems > 0
@@ -75,7 +76,7 @@ class BrainDrawer extends StatelessWidget {
             ),
             _DrawerItem(
               icon: Icons.settings_outlined,
-              label: 'Ajustes',
+              label: AppLocalizations.of(context).settings,
               onTap: () => _open(context, '/settings'),
             ),
             const SizedBox(height: 16),

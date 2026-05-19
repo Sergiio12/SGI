@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/tasks_provider.dart';
@@ -48,8 +49,8 @@ class _SearchScreenState extends State<SearchScreen> {
           autofocus: true,
           onChanged: _onSearch,
           style: const TextStyle(fontSize: 17),
-          decoration: const InputDecoration(
-            hintText: 'Buscar en tu segundo cerebro...',
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.searchTasks,
             border: InputBorder.none,
             filled: false,
           ),
@@ -75,7 +76,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   Text('🔍', style: TextStyle(fontSize: 48)),
                   SizedBox(height: 16),
                   Text(
-                    'Busca tareas, proyectos y notas',
+                    AppLocalizations.of(context)!.search,
                     style: TextStyle(
                       color: BrainTheme.textSecondary,
                       fontSize: 15,
@@ -83,7 +84,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Escribe para buscar en todo tu segundo cerebro',
+                    AppLocalizations.of(context)!.searchInTasks,
                     style: TextStyle(
                       color: BrainTheme.textTertiary,
                       fontSize: 13,
@@ -102,7 +103,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   const Text('😕', style: TextStyle(fontSize: 48)),
                   const SizedBox(height: 16),
                   Text(
-                    'Sin resultados para "${search.query}"',
+                    '${AppLocalizations.of(context)!.noResults} para "${search.query}"',
                     style: TextStyle(
                       color: BrainTheme.textSecondary,
                       fontSize: 15,

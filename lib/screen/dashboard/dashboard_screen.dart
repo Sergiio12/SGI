@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../../config/theme.dart';
 import '../../models/task.dart';
@@ -9,6 +10,7 @@ import '../../providers/notes_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../utils/responsive_helper.dart';
+import '../../widgets/skeleton_card.dart';
 import '../../widgets/task_card.dart';
 
 import '../../providers/dashboard_provider.dart';
@@ -105,6 +107,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Consumer5<TasksProvider, ProjectsProvider, NotesProvider,
         GoalsProvider, DashboardProvider>(
       builder: (context, tasks, projects, notes, goals, dashboard, _) {
+        if (!tasks.isLoaded || !projects.isLoaded || !notes.isLoaded || !goals.isLoaded) {
+          return SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              children: [
+                SkeletonCard(height: 160),
+                SizedBox(height: 16),
+                SkeletonCard(height: 80),
+                SizedBox(height: 16),
+                SkeletonGrid(itemCount: 4, crossAxisCount: 2, itemHeight: 130),
+              ],
+            ),
+          );
+        }
         final today = DateTime.now();
 
         // Calculo de productividad real: tareas con fecha de finalización hoy o adelante.
@@ -193,7 +209,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (tasks.focusTasks.isNotEmpty) ...[
                 const SizedBox(height: 32),
                 _SectionHeader(
-                  title: 'Modo foco',
+                  title: AppLocalizations.of(context).focusMode,
                   icon: Icons.center_focus_strong,
                   color: BrainTheme.accentOrange,
                   count: tasks.focusTasks.length,
@@ -218,7 +234,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (tasks.overdueTasks.isNotEmpty) ...[
                 const SizedBox(height: 32),
                 _SectionHeader(
-                  title: 'Vencidas',
+                  title: AppLocalizations.of(context).overdueTasks,
                   icon: Icons.warning_amber_rounded,
                   count: tasks.overdueTasks.length,
                   color: BrainTheme.accentRed,
@@ -422,7 +438,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           size: 12, color: BrainTheme.accentPurple),
                       SizedBox(width: 4),
                       Text(
-                        'Hoy',
+                        AppLocalizations.of(context).today,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -570,7 +586,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: BrainTheme.accentGreen, size: 18),
             SizedBox(width: 8),
             Text(
-              'Métricas Generales',
+              AppLocalizations.of(context).statistics,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -590,11 +606,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           childAspectRatio: 0.85,
           children: [
             _PremiumStatsCard(
-              title: 'Tareas',
+              title: AppLocalizations.of(context).tasks,
               value: '$activeTasksCount',
               icon: Icons.checklist_rounded,
               color: BrainTheme.accentBlue,
-              subtitle: 'pendientes',
+              subtitle: AppLocalizations.of(context).pendingTasks,
               progress: tasksProgressVal,
               progressLabel: 'Completado: ${(tasksProgressVal * 100).toInt()}%',
               onTap: () => Navigator.push(
@@ -605,11 +621,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             _PremiumStatsCard(
-              title: 'Proyectos',
+              title: AppLocalizations.of(context).projects,
               value: '$activeProjectsCount',
               icon: Icons.folder_open_outlined,
               color: BrainTheme.accentGreen,
-              subtitle: 'activos',
+              subtitle: AppLocalizations.of(context).active,
               progress: projectsProgressVal,
               progressLabel:
                   'Finalizados: ${projects.completedProjects.length}/${projects.projects.length}',
@@ -621,11 +637,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             _PremiumStatsCard(
-              title: 'Objetivos',
+              title: AppLocalizations.of(context).goals,
               value: '$activeGoalsCount',
               icon: Icons.track_changes_outlined,
               color: BrainTheme.accentPurple,
-              subtitle: 'vigentes',
+              subtitle: AppLocalizations.of(context).active,
               progress: averageGoalProgress,
               progressLabel:
                   'Progreso medio: ${(averageGoalProgress * 100).toInt()}%',
@@ -637,11 +653,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             _PremiumStatsCard(
-              title: 'Notas',
+              title: AppLocalizations.of(context).notes,
               value: '$totalNotesCount',
               icon: Icons.sticky_note_2_outlined,
               color: BrainTheme.accentCyan,
-              subtitle: 'recientes',
+              subtitle: AppLocalizations.of(context).sortRecent,
               progress: notes.notes.isEmpty ? 0.0 : 1.0,
               progressLabel: 'En $notesNotebooksCount cuadernos',
               onTap: () => Navigator.push(
@@ -667,7 +683,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     BuildContext context,
   ) {
     final dateString = _isSameDay(_selectedDate, DateTime.now())
-        ? 'Hoy'
+        ? AppLocalizations.of(context).today
         : '${_getDayNameAbbr(_selectedDate)} ${_selectedDate.day}';
 
     final pendingTasks = selectedDateTasks.where((t) => t.isActive).toList();
@@ -803,7 +819,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Navigator.pushNamed(context, '/task');
                   },
                   icon: const Icon(Icons.add, size: 14),
-                  label: const Text('Programar Tarea'),
+                  label: Text(AppLocalizations.of(context).createTask),
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
                         BrainTheme.accentBlue.withValues(alpha: 0.15),

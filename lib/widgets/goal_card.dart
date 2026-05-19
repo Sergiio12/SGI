@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../config/theme.dart';
 import '../models/goal.dart';
@@ -36,13 +37,15 @@ class GoalCard extends StatelessWidget {
                   backgroundColor: BrainTheme.accentRed,
                   foregroundColor: Colors.white,
                   icon: Icons.delete_outline_rounded,
-                  label: 'Eliminar',
+                  label: AppLocalizations.of(context)!.delete,
                   borderRadius: BorderRadius.circular(20),
                 ),
               ],
             )
           : null,
-      child: Card(
+      child: Semantics(
+        label: '${goal.title}, ${(goal.progress * 100).toInt()}% ${AppLocalizations.of(context)!.goal}',
+        child: Card(
         margin: const EdgeInsets.only(bottom: 12),
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -101,14 +104,14 @@ class GoalCard extends StatelessWidget {
                           Row(
                             children: [
                               _buildBadge(
-                                _horizonLabel(goal.horizon),
+                                _horizonLabel(context, goal.horizon),
                                 BrainTheme.surfaceDark,
                                 BrainTheme.textTertiary,
                               ),
                               if (goal.progress >= 1) ...[
                                 const SizedBox(width: 6),
                                 _buildBadge(
-                                  'Completado',
+                                  AppLocalizations.of(context)!.statusCompleted,
                                   BrainTheme.accentGreen
                                       .withValues(alpha: 0.15),
                                   BrainTheme.accentGreen,
@@ -143,7 +146,7 @@ class GoalCard extends StatelessWidget {
                                   size: 18,
                                   color: BrainTheme.textSecondary),
                               const SizedBox(width: 10),
-                              Text('Editar',
+                              Text(AppLocalizations.of(context)!.editGoal,
                                   style: TextStyle(
                                       color:
                                           BrainTheme.textPrimary)),
@@ -158,7 +161,7 @@ class GoalCard extends StatelessWidget {
                                   size: 18,
                                   color: BrainTheme.accentRed),
                               const SizedBox(width: 10),
-                              Text('Eliminar',
+                              Text(AppLocalizations.of(context)!.delete,
                                   style: TextStyle(
                                       color:
                                           BrainTheme.accentRed)),
@@ -274,7 +277,7 @@ class GoalCard extends StatelessWidget {
                     const SizedBox(width: 3),
                     Flexible(
                       child: Text(
-                        _timeAgo(goal.updatedAt),
+                        _timeAgo(context, goal.updatedAt),
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
@@ -289,6 +292,7 @@ class GoalCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     ).animate().fadeIn(duration: 400.ms).slideY(
         begin: 0.1, end: 0, curve: Curves.easeOut);
@@ -349,7 +353,7 @@ class GoalCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '${(goal.progress * 100).round()}% completado',
+                '${(goal.progress * 100).round()}% ${AppLocalizations.of(context)!.goalProgressCompleted}',
                 style: TextStyle(
                   fontSize: 14,
                   color: Color(goal.colorValue),
@@ -367,7 +371,7 @@ class GoalCard extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.edit_outlined,
                     color: BrainTheme.textSecondary),
-                title: Text('Editar objetivo',
+                title: Text(AppLocalizations.of(context)!.editGoal,
                     style: TextStyle(
                         color: BrainTheme.textPrimary)),
                 onTap: () {
@@ -379,7 +383,7 @@ class GoalCard extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.delete_outline,
                     color: BrainTheme.accentRed),
-                title: Text('Eliminar',
+                title: Text(AppLocalizations.of(context)!.delete,
                     style:
                         TextStyle(color: BrainTheme.accentRed)),
                 onTap: () {
@@ -394,14 +398,15 @@ class GoalCard extends StatelessWidget {
     );
   }
 
-  String _horizonLabel(GoalHorizon horizon) {
+  String _horizonLabel(BuildContext context, GoalHorizon horizon) {
+    final l10n = AppLocalizations.of(context);
     switch (horizon) {
       case GoalHorizon.monthly:
-        return 'Mensual';
+        return l10n.goalMonthly;
       case GoalHorizon.quarterly:
-        return 'Trimestral';
+        return l10n.goalQuarterly;
       case GoalHorizon.yearly:
-        return 'Anual';
+        return l10n.goalYearly;
     }
   }
 
@@ -412,7 +417,8 @@ class GoalCard extends StatelessWidget {
     return value.toStringAsFixed(1);
   }
 
-  String _timeAgo(DateTime date) {
+  String _timeAgo(BuildContext context, DateTime date) {
+    final l10n = AppLocalizations.of(context);
     final diff = DateTime.now().difference(date);
     if (diff.inDays > 7) {
       return '${diff.inDays ~/ 7}sem';
@@ -420,6 +426,6 @@ class GoalCard extends StatelessWidget {
     if (diff.inDays > 0) return '${diff.inDays}d';
     if (diff.inHours > 0) return '${diff.inHours}h';
     if (diff.inMinutes > 0) return '${diff.inMinutes}m';
-    return 'ahora';
+    return l10n.justNow;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:second_brain/l10n/app_localizations.dart';
 import '../../config/theme.dart';
 import '../../services/notification_service.dart';
 import '../../utils/notification_service_v2.dart';
@@ -10,7 +11,7 @@ class DebugScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Debug'),
+        title: Text(AppLocalizations.of(context)!.debug),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

@@ -509,4 +509,74 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get customThemes => 'Temas personalizados';
+
+  @override
+  String get goalMonthly => 'Mensual';
+
+  @override
+  String get goalQuarterly => 'Trimestral';
+
+  @override
+  String get goalYearly => 'Anual';
+
+  @override
+  String get moveToTrashTitle => 'Mover a papelera';
+
+  @override
+  String get moveToTrashContent => '¿Mover el objetivo a la papelera?';
+
+  @override
+  String get sortRecent => 'Reciente';
+
+  @override
+  String get goalAddProgress => 'Sumar progreso';
+
+  @override
+  String get goalAmountToAdd => 'Cantidad a sumar';
+
+  @override
+  String get goalAdd => 'Añadir';
+
+  @override
+  String get goalUpdateProgress => 'Actualizar progreso';
+
+  @override
+  String get goalNameHint => 'Nombre del objetivo';
+
+  @override
+  String get goalProgressMetric => 'Métrica de progreso';
+
+  @override
+  String get goalCurrent => 'Actual';
+
+  @override
+  String get goalTarget => 'Meta';
+
+  @override
+  String get goalChooseColor => 'Elegir color';
+
+  @override
+  String get goalLinkedProjects => 'Proyectos asociados';
+
+  @override
+  String get goalNoLinkedProjects => 'Sin proyectos asociados';
+
+  @override
+  String get goalNoTagsAvailable =>
+      'No hay etiquetas disponibles. Crea una desde Ajustes.';
+
+  @override
+  String get goalPaused => 'Pausado';
+
+  @override
+  String get goalAbandoned => 'Abandonado';
+
+  @override
+  String get goalNeedsName => 'El objetivo necesita un nombre';
+
+  @override
+  String get goalProgressCompleted => 'completado';
+
+  @override
+  String get justNow => 'ahora';
 }

@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:second_brain/l10n/app_localizations.dart';
 import '../../config/theme.dart';
 import '../../models/task.dart';
 import '../../providers/goals_provider.dart';
@@ -21,7 +22,7 @@ class StatsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF09090B),
       appBar: AppBar(
-        title: const Text('Estadísticas'),
+        title: Text(AppLocalizations.of(context)!.statistics),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -54,7 +55,7 @@ class StatsScreen extends StatelessWidget {
           children: [
             Expanded(
               child: StatsCard(
-                title: 'Tareas',
+                title: AppLocalizations.of(context)!.tasks,
                 value: '${tasks.totalTasks}',
                 icon: Icons.checklist_rounded,
                 color: BrainTheme.accentBlue,
@@ -63,7 +64,7 @@ class StatsScreen extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: StatsCard(
-                title: 'Completadas',
+                title: AppLocalizations.of(context)!.completedTasks,
                 value: '${tasks.doneTasks.length}',
                 icon: Icons.check_circle_rounded,
                 color: BrainTheme.accentGreen,
@@ -76,7 +77,7 @@ class StatsScreen extends StatelessWidget {
           children: [
             Expanded(
               child: StatsCard(
-                title: 'Proyectos',
+                title: AppLocalizations.of(context)!.projects,
                 value: '${projects.projects.length}',
                 icon: Icons.folder_rounded,
                 color: BrainTheme.accentOrange,
@@ -85,7 +86,7 @@ class StatsScreen extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: StatsCard(
-                title: 'Objetivos',
+                title: AppLocalizations.of(context)!.goals,
                 value: '${goals.goals.length}',
                 icon: Icons.track_changes_rounded,
                 color: BrainTheme.accentPurple,
@@ -110,7 +111,7 @@ class StatsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Tasa de finalización',
+              AppLocalizations.of(context)!.taskCompletionRate,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -150,8 +151,8 @@ class StatsScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _legendItem(BrainTheme.accentGreen, 'Completadas'),
-                _legendItem(BrainTheme.surfaceDark, 'Pendientes'),
+                _legendItem(BrainTheme.accentGreen, AppLocalizations.of(context)!.completedTasks),
+                _legendItem(BrainTheme.surfaceDark, AppLocalizations.of(context)!.pendingTasks),
               ],
             ),
           ],
@@ -161,11 +162,12 @@ class StatsScreen extends StatelessWidget {
   }
 
   Widget _buildTaskDistribution(BuildContext context, TasksProvider tasks) {
+    final l10n = AppLocalizations.of(context)!;
     final statuses = {
-      'Pendiente': tasks.todoTasks.length.toDouble(),
-      'Progreso': tasks.inProgressTasks.length.toDouble(),
-      'Revisión': tasks.inReviewTasks.length.toDouble(),
-      'Completado': tasks.doneTasks.length.toDouble(),
+      l10n.statusPending: tasks.todoTasks.length.toDouble(),
+      l10n.statusInProgress: tasks.inProgressTasks.length.toDouble(),
+      l10n.statusInReview: tasks.inReviewTasks.length.toDouble(),
+      l10n.statusCompleted: tasks.doneTasks.length.toDouble(),
     };
 
     return Card(
@@ -177,7 +179,7 @@ class StatsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Tareas por estado',
+              AppLocalizations.of(context)!.tasksByStatus,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -199,7 +201,7 @@ class StatsScreen extends StatelessWidget {
                       barRods: [
                         BarChartRodData(
                           toY: e.value,
-                          color: _statusColor(e.key),
+                          color: _statusColor(e.key, context),
                           width: 20,
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(6),
@@ -269,7 +271,7 @@ class StatsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Prioridades',
+              AppLocalizations.of(context)!.sortPriority,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -337,7 +339,7 @@ class StatsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Progreso de objetivos',
+              AppLocalizations.of(context)!.goalsProgress,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -394,19 +396,13 @@ class StatsScreen extends StatelessWidget {
     );
   }
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'Pendiente':
-        return BrainTheme.textTertiary;
-      case 'Progreso':
-        return BrainTheme.accentBlue;
-      case 'Revisión':
-        return BrainTheme.accentOrange;
-      case 'Completado':
-        return BrainTheme.accentGreen;
-      default:
-        return BrainTheme.textTertiary;
-    }
+  Color _statusColor(String status, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (status == l10n.statusPending) return BrainTheme.textTertiary;
+    if (status == l10n.statusInProgress) return BrainTheme.accentBlue;
+    if (status == l10n.statusInReview) return BrainTheme.accentOrange;
+    if (status == l10n.statusCompleted) return BrainTheme.accentGreen;
+    return BrainTheme.textTertiary;
   }
 
   Widget _legendItem(Color color, String label) {
