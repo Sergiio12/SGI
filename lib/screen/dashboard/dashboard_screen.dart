@@ -8,16 +8,11 @@ import '../../providers/goals_provider.dart';
 import '../../providers/notes_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
-import '../../services/smart_alerts_service.dart';
 import '../../utils/responsive_helper.dart';
-import '../../utils/notification_service_v2.dart';
 import '../../widgets/task_card.dart';
 
 import '../../providers/dashboard_provider.dart';
-import '../tasks/tasks_screen.dart';
-import '../projects/projects_screen.dart';
-import '../goals/goals_screen.dart';
-import '../notes/notes_screen.dart';
+import 'metrics_screens.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -105,171 +100,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
         (t) => t.isActive && t.dueDate != null && _isSameDay(t.dueDate!, date));
   }
 
-  void _showQuickTaskDialog(BuildContext context) {
-    final controller = TextEditingController();
-    final notificationController = context.read<NotificationController>();
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: BrainTheme.cardDark,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: BrainTheme.accentPurple.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.flash_on,
-                size: 22,
-                color: BrainTheme.accentPurple,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'Captura rápida',
-              style: TextStyle(
-                color: BrainTheme.textPrimary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: TextStyle(color: BrainTheme.textPrimary),
-          decoration: InputDecoration(
-            hintText: '¿Qué tienes en mente?',
-            hintStyle: TextStyle(color: BrainTheme.textTertiary),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: BrainTheme.borderDark),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: BrainTheme.borderDark),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: BrainTheme.accentPurple,
-                width: 2,
-              ),
-            ),
-            filled: true,
-            fillColor: BrainTheme.surfaceDark,
-          ),
-          onSubmitted: (value) {
-            _submitTask(
-                value, dialogContext, controller, notificationController);
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Cancelar',
-              style: TextStyle(
-                color: BrainTheme.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          FilledButton(
-            onPressed: () {
-              _submitTask(controller.text, dialogContext, controller,
-                  notificationController);
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: BrainTheme.accentPurple,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: const Text(
-              'Capturar',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _submitTask(
-    String text,
-    BuildContext dialogContext,
-    TextEditingController controller,
-    NotificationController notificationController,
-  ) async {
-    if (text.trim().isEmpty) {
-      notificationController.showWarning('Por favor, escribe una tarea');
-      return;
-    }
-
-    try {
-      await context.read<TasksProvider>().addTask(title: text.trim());
-      if (dialogContext.mounted) {
-        Navigator.pop(dialogContext);
-      }
-    } catch (e) {
-      notificationController.showError('Error: ${e.toString()}');
-    }
-  }
-
-  String _generateAdvisorText({
-    required TasksProvider tasks,
-    required ProjectsProvider projects,
-    required GoalsProvider goals,
-    required NotesProvider notes,
-  }) {
-    final activeTasks = tasks.tasks.where((t) => t.isActive).length;
-    final overdue = tasks.overdueTasks.length;
-    final urgent = tasks.urgentTasks.length;
-    final focusTask =
-        tasks.focusTasks.isNotEmpty ? tasks.focusTasks.first : null;
-    final activeProjects = projects.activeProjects.length;
-
-    if (overdue > 0) {
-      return 'Atención: Tienes $overdue ${overdue == 1 ? "tarea vencida" : "tareas vencidas"}. Te recomendamos reprogramar sus fechas límites hoy para mantener tu claridad mental. ⚠️';
-    } else if (urgent > 0) {
-      return '¡Hoy tienes $urgent ${urgent == 1 ? "tarea urgente" : "tareas urgentes"}! Te sugerimos enfocar tu energía a primera hora en completarlas. Puedes iniciar el Modo Foco para concentrarte. ⚡';
-    } else if (focusTask != null) {
-      return 'Tu mente está lista. Tu tarea de enfoque actual es "${focusTask.title}". Inicia una sesión de Modo Foco de 25 minutos para lograr tu máximo rendimiento. ⏱️';
-    } else if (activeTasks == 0) {
-      return '¡Increíble! No tienes tareas pendientes. Tu mente está completamente despejada. Excelente momento para capturar nuevas notas creativas o planificar un gran proyecto. ✨';
-    } else {
-      return 'Todo fluye según lo planeado. Tienes $activeTasks tareas activas y $activeProjects proyectos en marcha. Recuerda tomar descansos regulares para mantener tu rendimiento. 💡';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer5<TasksProvider, ProjectsProvider, NotesProvider,
         GoalsProvider, DashboardProvider>(
       builder: (context, tasks, projects, notes, goals, dashboard, _) {
         final today = DateTime.now();
-        final alerts = dashboard.alerts;
 
-        // Calculo de productividad del dia (hoy)
-        final todayTasks = tasks.tasks.where((t) {
+        // Calculo de productividad real: tareas con fecha de finalización hoy o adelante.
+        final todayStart = DateTime(today.year, today.month, today.day);
+        final upcomingTasks = tasks.tasks.where((t) {
           final d = t.dueDate;
-          return d != null &&
-              d.year == today.year &&
-              d.month == today.month &&
-              d.day == today.day;
+          return d != null && !d.isBefore(todayStart);
         }).toList();
 
-        final completedToday =
-            todayTasks.where((t) => t.status == TaskStatus.completed).length;
-        final totalToday = todayTasks.length;
-        final todayProgress =
-            totalToday == 0 ? 0.0 : (completedToday / totalToday);
+        final completedUpcomingTasks =
+            upcomingTasks.where((t) => t.status == TaskStatus.completed).length;
+        final totalUpcomingTasks = upcomingTasks.length;
+        final todayProgress = totalUpcomingTasks == 0
+            ? 0.0
+            : (completedUpcomingTasks / totalUpcomingTasks);
 
         // Filtrar tareas del dia seleccionado en el calendario
         final selectedDateTasks = tasks.tasks.where((t) {
@@ -305,8 +155,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. HEADER: INTELLIGENT GREETING & RADIAL PROGRESS RING
-              _buildMindGreetingHeader(
-                  context, todayProgress, completedToday, totalToday),
+              _buildMindGreetingHeader(context, todayProgress,
+                  completedUpcomingTasks, totalUpcomingTasks),
 
               const SizedBox(height: 24),
 
@@ -315,17 +165,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               const SizedBox(height: 24),
 
-              // 3. SMART ATASCOS / QUICK HUB CAROUSEL
-              _buildQuickActionsHub(context),
+              // 3. DAILY AGENDA / CHECKLIST UNDER CALENDAR
+              _buildDailyAgendaChecklist(selectedDateTasks, tasks, context),
 
               const SizedBox(height: 24),
 
-              // 4. INTELLIGENT SGI ADVISOR
-              _buildSgiAdvisorCard(tasks, projects, goals, notes, alerts),
-
-              const SizedBox(height: 32),
-
-              // 5. PREMIUM REDESIGNED STATS GRID
+              // 4. PREMIUM REDESIGNED STATS GRID
               _buildPremiumStatsGrid(
                 context,
                 tasks,
@@ -343,9 +188,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
 
               const SizedBox(height: 32),
-
-              // 6. DAILY AGENDA / CHECKLIST FOR SELECTED DATE
-              _buildDailyAgendaChecklist(selectedDateTasks, tasks, context),
 
               // Focus tasks section if any
               if (tasks.focusTasks.isNotEmpty) ...[
@@ -407,8 +249,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildMindGreetingHeader(
     BuildContext context,
     double todayProgress,
-    int completedToday,
-    int totalToday,
+    int completedUpcomingTasks,
+    int totalUpcomingTasks,
   ) {
     final hour = DateTime.now().hour;
     final greeting = hour < 12
@@ -516,7 +358,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                     Text(
-                      '$completedToday/$totalToday',
+                      '$completedUpcomingTasks/$totalUpcomingTasks',
                       style: TextStyle(
                         fontSize: 9,
                         color: BrainTheme.textTertiary,
@@ -703,239 +545,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .slideY(begin: 0.05, end: 0, curve: Curves.easeOut);
   }
 
-  // WIDGET: Quick Actions Hub
-  Widget _buildQuickActionsHub(BuildContext context) {
-    final actions = [
-      (
-        title: 'Capturar',
-        icon: Icons.flash_on,
-        color: BrainTheme.accentPurple,
-        onTap: () => _showQuickTaskDialog(context)
-      ),
-      (
-        title: 'Nueva Nota',
-        icon: Icons.sticky_note_2_outlined,
-        color: BrainTheme.accentCyan,
-        onTap: () => Navigator.pushNamed(context, '/note')
-      ),
-      (
-        title: 'Nuevo Proyecto',
-        icon: Icons.folder_open_outlined,
-        color: BrainTheme.accentGreen,
-        onTap: () => Navigator.pushNamed(context, '/project')
-      ),
-      (
-        title: 'Modo Foco',
-        icon: Icons.center_focus_strong,
-        color: BrainTheme.accentOrange,
-        onTap: () => Navigator.pushNamed(context, '/focus')
-      ),
-      (
-        title: 'Objetivo',
-        icon: Icons.track_changes_outlined,
-        color: BrainTheme.accentPink,
-        onTap: () => Navigator.pushNamed(context, '/goal')
-      ),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.bolt_outlined, color: BrainTheme.accentOrange, size: 18),
-            SizedBox(width: 8),
-            Text(
-              'Atajos Rápidos',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: BrainTheme.textPrimary,
-                letterSpacing: -0.3,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 52,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: actions.length,
-            physics: const BouncingScrollPhysics(),
-            itemBuilder: (context, index) {
-              final action = actions[index];
-              return Container(
-                margin: const EdgeInsets.only(right: 12),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: action.onTap,
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: BrainTheme.cardDark,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: action.color.withValues(alpha: 0.15),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: action.color.withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(action.icon,
-                                size: 14, color: action.color),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            action.title,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: BrainTheme.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    )
-        .animate()
-        .fadeIn(duration: 500.ms)
-        .slideY(begin: 0.05, end: 0, curve: Curves.easeOut);
-  }
-
-  // WIDGET: Sgi Advisor Card
-  Widget _buildSgiAdvisorCard(
-    TasksProvider tasks,
-    ProjectsProvider projects,
-    GoalsProvider goals,
-    NotesProvider notes,
-    List<SmartAlert> alerts,
-  ) {
-    final alertWidget = alerts.isNotEmpty
-        ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ...alerts.take(2).map((alert) {
-                final severityColor = switch (alert.severity) {
-                  SmartAlertSeverity.info => BrainTheme.accentBlue,
-                  SmartAlertSeverity.warning => BrainTheme.accentOrange,
-                  SmartAlertSeverity.danger => BrainTheme.accentRed,
-                };
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: severityColor.withValues(alpha: 0.07),
-                    borderRadius: BorderRadius.circular(10),
-                    border:
-                        Border.all(color: severityColor.withValues(alpha: 0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.circle, size: 8, color: severityColor),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          alert.title + ': ' + alert.message,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: BrainTheme.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ],
-          )
-        : null;
-
-    final advisorText = _generateAdvisorText(
-      tasks: tasks,
-      projects: projects,
-      goals: goals,
-      notes: notes,
-    );
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: BrainTheme.cardDark,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.05),
-          width: 1,
-        ),
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: BrainTheme.accentPurple.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.psychology,
-                    size: 20, color: BrainTheme.accentPurple),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Inteligencia SGI',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.3,
-                  color: BrainTheme.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            advisorText,
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.5,
-              color: BrainTheme.textSecondary,
-            ),
-          ),
-          if (alertWidget != null) ...[
-            const SizedBox(height: 12),
-            Divider(color: BrainTheme.borderDark),
-            const SizedBox(height: 8),
-            alertWidget,
-          ],
-        ],
-      ),
-    )
-        .animate()
-        .fadeIn(duration: 550.ms)
-        .slideY(begin: 0.05, end: 0, curve: Curves.easeOut);
-  }
-
   // WIDGET: Premium Stats Grid
   Widget _buildPremiumStatsGrid(
     BuildContext context,
@@ -991,15 +600,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => Scaffold(
-                    appBar: AppBar(
-                      elevation: 0,
-                      backgroundColor:
-                          BrainTheme.primaryDark.withValues(alpha: 0.95),
-                      title: const Text('Tareas'),
-                    ),
-                    body: const TasksScreen(),
-                  ),
+                  builder: (_) => const TaskMetricsScreen(),
                 ),
               ),
             ),
@@ -1015,15 +616,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => Scaffold(
-                    appBar: AppBar(
-                      elevation: 0,
-                      backgroundColor:
-                          BrainTheme.primaryDark.withValues(alpha: 0.95),
-                      title: const Text('Proyectos'),
-                    ),
-                    body: const ProjectsScreen(),
-                  ),
+                  builder: (_) => const ProjectMetricsScreen(),
                 ),
               ),
             ),
@@ -1039,15 +632,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => Scaffold(
-                    appBar: AppBar(
-                      elevation: 0,
-                      backgroundColor:
-                          BrainTheme.primaryDark.withValues(alpha: 0.95),
-                      title: const Text('Objetivos'),
-                    ),
-                    body: const GoalsScreen(),
-                  ),
+                  builder: (_) => const GoalMetricsScreen(),
                 ),
               ),
             ),
@@ -1062,15 +647,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => Scaffold(
-                    appBar: AppBar(
-                      elevation: 0,
-                      backgroundColor:
-                          BrainTheme.primaryDark.withValues(alpha: 0.95),
-                      title: const Text('Notas'),
-                    ),
-                    body: const NotesScreen(),
-                  ),
+                  builder: (_) => const NoteMetricsScreen(),
                 ),
               ),
             ),
@@ -1093,6 +670,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ? 'Hoy'
         : '${_getDayNameAbbr(_selectedDate)} ${_selectedDate.day}';
 
+    final pendingTasks = selectedDateTasks.where((t) => t.isActive).toList();
+    final completedTasks = selectedDateTasks
+        .where((t) => t.status == TaskStatus.completed)
+        .toList();
+    final orderedAgendaTasks = [
+      ...pendingTasks,
+      ...completedTasks,
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1112,7 +698,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const Spacer(),
             Text(
-              '${selectedDateTasks.where((t) => t.status == TaskStatus.completed).length}/${selectedDateTasks.length}',
+              '${completedTasks.length}/${selectedDateTasks.length}',
               style: TextStyle(
                 fontSize: 12,
                 color: BrainTheme.textSecondary,
@@ -1121,7 +707,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: BrainTheme.accentOrange.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                '${pendingTasks.length} pendientes',
+                style: TextStyle(
+                  color: BrainTheme.accentOrange,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: BrainTheme.accentGreen.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                '${completedTasks.length} completadas',
+                style: TextStyle(
+                  color: BrainTheme.accentGreen,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: BrainTheme.cardDark.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                '${selectedDateTasks.length} en total',
+                style: TextStyle(
+                  color: BrainTheme.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
         if (selectedDateTasks.isEmpty)
           Container(
             width: double.infinity,
@@ -1188,7 +826,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               .scaleXY(begin: 0.95, end: 1.0, curve: Curves.easeOut)
         else
           Column(
-            children: selectedDateTasks.map((task) {
+            children: orderedAgendaTasks.map((task) {
               return TaskCard(
                 task: task,
                 onTap: () => Navigator.pushNamed(

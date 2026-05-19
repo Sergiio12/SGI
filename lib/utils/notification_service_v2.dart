@@ -311,7 +311,7 @@ class _NotificationWidgetState extends State<NotificationWidget>
                     color: Colors.transparent,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: surfaceColor.withOpacity(0.9),
+                        color: surfaceColor.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: notificationColor.withValues(alpha: 0.3),

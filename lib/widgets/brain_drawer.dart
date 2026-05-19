@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../config/theme.dart';
-import '../providers/goals_provider.dart';
-import '../providers/notes_provider.dart';
-import '../providers/projects_provider.dart';
-import '../providers/tasks_provider.dart';
 import '../providers/trash_provider.dart';
 
 class BrainDrawer extends StatelessWidget {
@@ -60,91 +56,6 @@ class BrainDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            Divider(color: BrainTheme.borderDark),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Consumer4<TasksProvider, ProjectsProvider, NotesProvider,
-                  GoalsProvider>(
-                builder: (context, tasks, projects, notes, goals, _) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _StatBadge(
-                        count: tasks.totalTasks,
-                        label: 'Tareas',
-                        color: BrainTheme.accentOrange,
-                      ),
-                      _StatBadge(
-                        count: projects.projects.length,
-                        label: 'Proyectos',
-                        color: BrainTheme.accentBlue,
-                      ),
-                      _StatBadge(
-                        count: goals.goals.length,
-                        label: 'Objetivos',
-                        color: BrainTheme.accentPurple,
-                      ),
-                      _StatBadge(
-                        count: notes.notes.length,
-                        label: 'Notas',
-                        color: BrainTheme.accentGreen,
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            Divider(color: BrainTheme.borderDark),
-            _DrawerItem(
-              icon: Icons.search_rounded,
-              label: 'Busqueda global',
-              onTap: () => _open(context, '/search'),
-            ),
-            Divider(
-                color: BrainTheme.borderDark, indent: 16, endIndent: 16),
-            const _DrawerSectionLabel('VISTAS'),
-            _DrawerItem(
-              icon: Icons.today_rounded,
-              label: 'Hoy',
-              badge: Consumer<TasksProvider>(
-                builder: (_, tasks, __) {
-                  final count =
-                      tasks.overdueTasks.length + tasks.todayTasks.length;
-                  return count > 0
-                      ? _CountBadge(
-                          count: count,
-                          color: tasks.overdueTasks.isNotEmpty
-                              ? BrainTheme.accentRed
-                              : BrainTheme.accentOrange,
-                        )
-                      : const SizedBox.shrink();
-                },
-              ),
-              onTap: () => _open(context, '/today'),
-            ),
-            _DrawerItem(
-              icon: Icons.center_focus_strong,
-              label: 'En foco',
-              badge: Consumer<TasksProvider>(
-                builder: (_, tasks, __) {
-                  return tasks.focusTasks.isNotEmpty
-                      ? _CountBadge(count: tasks.focusTasks.length)
-                      : const SizedBox.shrink();
-                },
-              ),
-              onTap: () => _open(context, '/focus'),
-            ),
-            _DrawerItem(
-              icon: Icons.calendar_month_outlined,
-              label: 'Calendario',
-              onTap: () => _open(context, '/calendar'),
-            ),
-            _DrawerItem(
-              icon: Icons.analytics_outlined,
-              label: 'Progreso',
-              onTap: () => _open(context, '/progress'),
-            ),
             const Spacer(),
             Divider(color: BrainTheme.borderDark),
             _DrawerItem(
@@ -180,31 +91,6 @@ class BrainDrawer extends StatelessWidget {
   }
 }
 
-class _DrawerSectionLabel extends StatelessWidget {
-  final String text;
-
-  const _DrawerSectionLabel(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, top: 8, bottom: 4),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: BrainTheme.textTertiary,
-            letterSpacing: 1.2,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _DrawerItem extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -231,38 +117,6 @@ class _DrawerItem extends StatelessWidget {
       dense: true,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-    );
-  }
-}
-
-class _StatBadge extends StatelessWidget {
-  final int count;
-  final String label;
-  final Color color;
-
-  const _StatBadge({
-    required this.count,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          '$count',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(fontSize: 10, color: BrainTheme.textTertiary),
-        ),
-      ],
     );
   }
 }
