@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+
+import '../core/result.dart';
 import '../services/smart_alerts_service.dart';
-import 'tasks_provider.dart';
 import 'projects_provider.dart';
+import 'tasks_provider.dart';
 
 class DashboardProvider extends ChangeNotifier {
   TasksProvider _tasksProvider;
@@ -60,8 +62,12 @@ class DashboardProvider extends ChangeNotifier {
       );
       
       _alerts = newAlerts;
-    } catch (e) {
-      debugPrint('Error calculating dashboard alerts: $e');
+    } catch (e, s) {
+      AppException(
+        message: 'Error al calcular alertas del dashboard',
+        code: 'DASHBOARD_ALERTS',
+        stackTrace: s,
+      ).log();
     } finally {
       _isLoadingAlerts = false;
       notifyListeners();

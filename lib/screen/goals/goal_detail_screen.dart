@@ -104,7 +104,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
 
     late final String savedGoalId;
     if (_isNew) {
-      final goal = await goalsProvider.addGoal(
+      final result = await goalsProvider.addGoal(
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         horizon: _horizon,
@@ -117,6 +117,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
         colorValue: _colorValue,
         tags: _tagIds,
       );
+      if (result.isFailure) return;
+      final goal = result.unwrap();
       savedGoalId = goal.id;
     } else {
       final goal = goalsProvider.getGoalById(widget.goalId!);

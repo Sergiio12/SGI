@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
+import '../core/result.dart';
 import '../models/goal.dart';
 import '../services/interfaces/storage_service_interface.dart';
 import '../utils/debouncer.dart';
@@ -33,6 +34,17 @@ class GoalsProvider extends ChangeNotifier {
     }
   }
 
+  Result<Goal> getGoalByIdResult(String id) {
+    try {
+      return Result.success(_goals.firstWhere((g) => g.id == id));
+    } catch (_) {
+      return Result.failure(AppException(
+        message: 'Objetivo no encontrado: $id',
+        code: 'GOAL_NOT_FOUND',
+      ));
+    }
+  }
+
   Future<void> loadGoals() async {
     _goals = await _storage.loadGoals();
     _isLoaded = true;
@@ -44,7 +56,7 @@ class GoalsProvider extends ChangeNotifier {
     _saveDebouncer.call(() => _storage.saveGoals(_goals));
   }
 
-  Future<Goal> addGoal({
+  Future<Result<Goal>> addGoal({
     required String title,
     String description = '',
     GoalHorizon horizon = GoalHorizon.quarterly,
@@ -74,10 +86,16 @@ class GoalsProvider extends ChangeNotifier {
       _goals.add(goal);
       _notifyAndScheduleSave();
       showSuccessNotification('Objetivo creado: ${goal.title}');
-      return goal;
-    } catch (e) {
-      showErrorNotification('Error al crear objetivo');
-      rethrow;
+      return Result.success(goal);
+    } catch (e, s) {
+      final error = AppException(
+        message: 'Error al crear objetivo',
+        code: 'ADD_GOAL',
+        stackTrace: s,
+      );
+      error.log();
+      showErrorNotification(error.message);
+      return Result.failure(error);
     }
   }
 
@@ -89,9 +107,9 @@ class GoalsProvider extends ChangeNotifier {
         _notifyAndScheduleSave();
         showSuccessNotification('Objetivo actualizado');
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al actualizar objetivo', code: 'UPDATE_GOAL', stackTrace: s).log();
       showErrorNotification('Error al actualizar objetivo');
-      rethrow;
     }
   }
 
@@ -105,9 +123,9 @@ class GoalsProvider extends ChangeNotifier {
       await _storage.saveTrashGoals(trash);
       _notifyAndScheduleSave();
       showSuccessNotification('Objetivo movido a la papelera');
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al eliminar objetivo', code: 'DELETE_GOAL', stackTrace: s).log();
       showErrorNotification('Error al eliminar objetivo');
-      rethrow;
     }
   }
 
@@ -122,9 +140,9 @@ class GoalsProvider extends ChangeNotifier {
         _notifyAndScheduleSave();
         showSuccessNotification('Objetivo restaurado');
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al restaurar objetivo', code: 'RESTORE_GOAL', stackTrace: s).log();
       showErrorNotification('Error al restaurar objetivo');
-      rethrow;
     }
   }
 
@@ -134,9 +152,9 @@ class GoalsProvider extends ChangeNotifier {
       trash.removeWhere((g) => g.id == goalId);
       await _storage.saveTrashGoals(trash);
       showSuccessNotification('Objetivo eliminado permanentemente');
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al eliminar objetivo permanentemente', code: 'PERM_DELETE_GOAL', stackTrace: s).log();
       showErrorNotification('Error al eliminar objetivo');
-      rethrow;
     }
   }
 

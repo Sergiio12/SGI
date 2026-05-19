@@ -22,13 +22,15 @@ void main() {
     });
 
     test('addNote creates a note', () async {
-      final note = await provider.addNote(title: 'Test Note');
+      final result = await provider.addNote(title: 'Test Note');
+      expect(result.isSuccess, isTrue);
+      final note = result.unwrap();
       expect(note.title, 'Test Note');
       expect(provider.notes.length, 1);
     });
 
     test('addNote with all fields', () async {
-      final note = await provider.addNote(
+      final result = await provider.addNote(
         title: 'Full Note',
         content: 'Some content',
         type: NoteType.journal,
@@ -37,6 +39,8 @@ void main() {
         isPinned: true,
         tags: ['important'],
       );
+      expect(result.isSuccess, isTrue);
+      final note = result.unwrap();
       expect(note.content, 'Some content');
       expect(note.type, NoteType.journal);
       expect(note.notebook, 'Work');
@@ -46,7 +50,8 @@ void main() {
     });
 
     test('updateNote modifies note', () async {
-      final note = await provider.addNote(title: 'Original');
+      final result = await provider.addNote(title: 'Original');
+      final note = result.unwrap();
       final updated = note.copyWith(title: 'Updated');
       await provider.updateNote(updated);
       expect(provider.getNoteById(note.id)?.title, 'Updated');
@@ -57,7 +62,8 @@ void main() {
     });
 
     test('togglePin flips pinned status', () async {
-      final note = await provider.addNote(title: 'Pin me');
+      final result = await provider.addNote(title: 'Pin me');
+      final note = result.unwrap();
       expect(note.isPinned, isFalse);
 
       await provider.togglePin(note.id);
@@ -149,20 +155,23 @@ void main() {
 
   group('NotesProvider - Trash Lifecycle', () {
     test('deleteNote moves to trash', () async {
-      final note = await provider.addNote(title: 'Delete me');
+      final result = await provider.addNote(title: 'Delete me');
+      final note = result.unwrap();
       await provider.deleteNote(note.id);
       expect(provider.notes, isEmpty);
     });
 
     test('restoreNote retrieves from trash', () async {
-      final note = await provider.addNote(title: 'Restore me');
+      final result = await provider.addNote(title: 'Restore me');
+      final note = result.unwrap();
       await provider.deleteNote(note.id);
       await provider.restoreNote(note.id);
       expect(provider.notes.length, 1);
     });
 
     test('permanentDeleteNote removes from trash', () async {
-      final note = await provider.addNote(title: 'Forever');
+      final result = await provider.addNote(title: 'Forever');
+      final note = result.unwrap();
       await provider.deleteNote(note.id);
       await provider.permanentDeleteNote(note.id);
     });

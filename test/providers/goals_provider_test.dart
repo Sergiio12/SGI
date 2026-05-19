@@ -21,13 +21,15 @@ void main() {
     });
 
     test('addGoal creates a goal', () async {
-      final goal = await provider.addGoal(title: 'Test Goal');
+      final result = await provider.addGoal(title: 'Test Goal');
+      expect(result.isSuccess, isTrue);
+      final goal = result.unwrap();
       expect(goal.title, 'Test Goal');
       expect(provider.goals.length, 1);
     });
 
     test('addGoal with all fields', () async {
-      final goal = await provider.addGoal(
+      final result = await provider.addGoal(
         title: 'Full Goal',
         description: 'A measurable goal',
         horizon: GoalHorizon.yearly,
@@ -37,6 +39,8 @@ void main() {
         colorValue: 0xFF00FF00,
         tags: ['business'],
       );
+      expect(result.isSuccess, isTrue);
+      final goal = result.unwrap();
       expect(goal.description, 'A measurable goal');
       expect(goal.horizon, GoalHorizon.yearly);
       expect(goal.metricLabel, 'Sales');
@@ -46,7 +50,8 @@ void main() {
     });
 
     test('updateGoal modifies goal', () async {
-      final goal = await provider.addGoal(title: 'Original');
+      final result = await provider.addGoal(title: 'Original');
+      final goal = result.unwrap();
       final updated = goal.copyWith(title: 'Updated');
       await provider.updateGoal(updated);
       expect(provider.getGoalById(goal.id)?.title, 'Updated');
@@ -74,20 +79,23 @@ void main() {
 
   group('GoalsProvider - Trash Lifecycle', () {
     test('deleteGoal moves to trash', () async {
-      final goal = await provider.addGoal(title: 'Delete me');
+      final result = await provider.addGoal(title: 'Delete me');
+      final goal = result.unwrap();
       await provider.deleteGoal(goal.id);
       expect(provider.goals, isEmpty);
     });
 
     test('restoreGoal retrieves from trash', () async {
-      final goal = await provider.addGoal(title: 'Restore me');
+      final result = await provider.addGoal(title: 'Restore me');
+      final goal = result.unwrap();
       await provider.deleteGoal(goal.id);
       await provider.restoreGoal(goal.id);
       expect(provider.goals.length, 1);
     });
 
     test('permanentDeleteGoal removes from trash', () async {
-      final goal = await provider.addGoal(title: 'Forever');
+      final result = await provider.addGoal(title: 'Forever');
+      final goal = result.unwrap();
       await provider.deleteGoal(goal.id);
       await provider.permanentDeleteGoal(goal.id);
     });

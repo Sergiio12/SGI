@@ -21,7 +21,9 @@ void main() {
     });
 
     test('addTask creates and returns a task', () async {
-      final task = await provider.addTask(title: 'Test task');
+      final result = await provider.addTask(title: 'Test task');
+      expect(result.isSuccess, isTrue);
+      final task = result.unwrap();
       expect(task.title, 'Test task');
       expect(provider.tasks.length, 1);
       expect(provider.todoTasks.length, 1);
@@ -30,7 +32,7 @@ void main() {
     test('addTask with all fields', () async {
       final now = DateTime.now();
       final dueDate = now.add(const Duration(days: 1));
-      final task = await provider.addTask(
+      final result = await provider.addTask(
         title: 'Full task',
         description: 'Description',
         priority: TaskPriority.high,
@@ -39,6 +41,8 @@ void main() {
         projectId: 'proj-1',
         tags: ['urgent'],
       );
+      expect(result.isSuccess, isTrue);
+      final task = result.unwrap();
       expect(task.title, 'Full task');
       expect(task.description, 'Description');
       expect(task.priority, TaskPriority.high);
@@ -48,7 +52,8 @@ void main() {
     });
 
     test('updateTask modifies task in list', () async {
-      final task = await provider.addTask(title: 'Original');
+      final result = await provider.addTask(title: 'Original');
+      final task = result.unwrap();
       final updated = task.copyWith(title: 'Updated');
       await provider.updateTask(updated);
       expect(provider.getTaskById(task.id)?.title, 'Updated');
@@ -73,7 +78,8 @@ void main() {
 
   group('TasksProvider - Status Management', () {
     test('toggleTaskStatus toggles between pending and completed', () async {
-      final task = await provider.addTask(title: 'Toggle me');
+      final result = await provider.addTask(title: 'Toggle me');
+      final task = result.unwrap();
       expect(task.status, TaskStatus.pending);
 
       await provider.toggleTaskStatus(task.id);
@@ -84,13 +90,15 @@ void main() {
     });
 
     test('moveTaskToStatus changes status', () async {
-      final task = await provider.addTask(title: 'Move me');
+      final result = await provider.addTask(title: 'Move me');
+      final task = result.unwrap();
       await provider.moveTaskToStatus(task.id, TaskStatus.inProgress);
       expect(provider.getTaskById(task.id)?.status, TaskStatus.inProgress);
     });
 
     test('moveTaskToStatus same status does nothing', () async {
-      final task = await provider.addTask(title: 'Stay');
+      final result = await provider.addTask(title: 'Stay');
+      final task = result.unwrap();
       await provider.moveTaskToStatus(task.id, TaskStatus.pending);
       expect(provider.getTaskById(task.id)?.status, TaskStatus.pending);
     });
@@ -98,7 +106,8 @@ void main() {
 
   group('TasksProvider - Subtasks', () {
     test('addSubtask adds a subtask to a task', () async {
-      final task = await provider.addTask(title: 'With subtasks');
+      final result = await provider.addTask(title: 'With subtasks');
+      final task = result.unwrap();
       await provider.addSubtask(task.id, 'Step 1');
       final updated = provider.getTaskById(task.id)!;
       expect(updated.subtasks.length, 1);
@@ -107,7 +116,8 @@ void main() {
     });
 
     test('toggleSubtask toggles subtask completion', () async {
-      final task = await provider.addTask(title: 'Subtasks');
+      final result = await provider.addTask(title: 'Subtasks');
+      final task = result.unwrap();
       await provider.addSubtask(task.id, 'Step 1');
       final subtaskId = provider.getTaskById(task.id)!.subtasks.first.id;
 
@@ -129,7 +139,8 @@ void main() {
     test('todoTasks returns pending tasks only', () async {
       await provider.addTask(title: 'Pending 1');
       await provider.addTask(title: 'Pending 2');
-      final inProgress = await provider.addTask(title: 'In Progress');
+      final result = await provider.addTask(title: 'In Progress');
+      final inProgress = result.unwrap();
       await provider.moveTaskToStatus(inProgress.id, TaskStatus.inProgress);
 
       expect(provider.todoTasks.length, 2);
@@ -137,7 +148,8 @@ void main() {
     });
 
     test('doneTasks returns completed tasks', () async {
-      final task = await provider.addTask(title: 'Will complete');
+      final result = await provider.addTask(title: 'Will complete');
+      final task = result.unwrap();
       await provider.toggleTaskStatus(task.id);
       expect(provider.doneTasks.length, 1);
     });
@@ -164,7 +176,8 @@ void main() {
 
   group('TasksProvider - Trash Lifecycle', () {
     test('deleteTask moves task to trash', () async {
-      final task = await provider.addTask(title: 'Delete me');
+      final result = await provider.addTask(title: 'Delete me');
+      final task = result.unwrap();
       await provider.deleteTask(task.id);
       expect(provider.tasks, isEmpty);
       expect(storage.trashTasks.length, 1);
@@ -172,7 +185,8 @@ void main() {
     });
 
     test('restoreTask retrieves task from trash', () async {
-      final task = await provider.addTask(title: 'Restore me');
+      final result = await provider.addTask(title: 'Restore me');
+      final task = result.unwrap();
       await provider.deleteTask(task.id);
       await provider.restoreTask(task.id);
       expect(provider.tasks.length, 1);
@@ -180,7 +194,8 @@ void main() {
     });
 
     test('permanentDeleteTask removes from trash', () async {
-      final task = await provider.addTask(title: 'Delete forever');
+      final result = await provider.addTask(title: 'Delete forever');
+      final task = result.unwrap();
       await provider.deleteTask(task.id);
       await provider.permanentDeleteTask(task.id);
       expect(storage.trashTasks, isEmpty);

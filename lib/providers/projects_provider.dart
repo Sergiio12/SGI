@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
+import '../core/result.dart';
 import '../models/project.dart';
 import '../models/task.dart';
 import '../services/interfaces/storage_service_interface.dart';
@@ -64,7 +65,7 @@ class ProjectsProvider extends ChangeNotifier {
     _saveDebouncer.call(() => _storage.saveProjects(_projects));
   }
 
-  Future<Project> addProject({
+  Future<Result<Project>> addProject({
     required String title,
     String description = '',
     String emoji = '📁',
@@ -98,10 +99,16 @@ class ProjectsProvider extends ChangeNotifier {
       _projects.add(project);
       _notifyAndScheduleSave();
       showSuccessNotification('Proyecto creado: ${project.title}');
-      return project;
-    } catch (e) {
-      showErrorNotification('Error al crear proyecto');
-      rethrow;
+      return Result.success(project);
+    } catch (e, s) {
+      final error = AppException(
+        message: 'Error al crear proyecto',
+        code: 'ADD_PROJECT',
+        stackTrace: s,
+      );
+      error.log();
+      showErrorNotification(error.message);
+      return Result.failure(error);
     }
   }
 
@@ -113,9 +120,9 @@ class ProjectsProvider extends ChangeNotifier {
         _notifyAndScheduleSave();
         showSuccessNotification('Proyecto actualizado');
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al actualizar proyecto', code: 'UPDATE_PROJECT', stackTrace: s).log();
       showErrorNotification('Error al actualizar proyecto');
-      rethrow;
     }
   }
 
@@ -131,7 +138,8 @@ class ProjectsProvider extends ChangeNotifier {
           _notifyAndScheduleSave();
         }
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al agregar tarea al proyecto', code: 'ADD_TASK_TO_PROJECT', stackTrace: s).log();
       showErrorNotification('Error al agregar tarea al proyecto');
     }
   }
@@ -148,7 +156,8 @@ class ProjectsProvider extends ChangeNotifier {
           _notifyAndScheduleSave();
         }
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al agregar nota al proyecto', code: 'ADD_NOTE_TO_PROJECT', stackTrace: s).log();
       showErrorNotification('Error al agregar nota al proyecto');
     }
   }
@@ -163,9 +172,9 @@ class ProjectsProvider extends ChangeNotifier {
       await _storage.saveTrashProjects(trash);
       _notifyAndScheduleSave();
       showSuccessNotification('Proyecto movido a la papelera');
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al eliminar proyecto', code: 'DELETE_PROJECT', stackTrace: s).log();
       showErrorNotification('Error al eliminar proyecto');
-      rethrow;
     }
   }
 
@@ -180,9 +189,9 @@ class ProjectsProvider extends ChangeNotifier {
         _notifyAndScheduleSave();
         showSuccessNotification('Proyecto restaurado');
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al restaurar proyecto', code: 'RESTORE_PROJECT', stackTrace: s).log();
       showErrorNotification('Error al restaurar proyecto');
-      rethrow;
     }
   }
 
@@ -192,9 +201,9 @@ class ProjectsProvider extends ChangeNotifier {
       trash.removeWhere((p) => p.id == projectId);
       await _storage.saveTrashProjects(trash);
       showSuccessNotification('Proyecto eliminado permanentemente');
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al eliminar proyecto permanentemente', code: 'PERM_DELETE_PROJECT', stackTrace: s).log();
       showErrorNotification('Error al eliminar proyecto');
-      rethrow;
     }
   }
 

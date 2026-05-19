@@ -8,6 +8,7 @@ import '../../config/theme.dart';
 import '../../models/task.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
+import '../../widgets/paginated_list.dart';
 import '../../widgets/task_card.dart';
 
 enum _TaskSortOption { priority, dueDate, createdAt, title }
@@ -1222,10 +1223,12 @@ class _TaskBoardColumn extends StatelessWidget {
                           ],
                         ),
                       )
-                    : ListView.builder(
-                        itemCount: tasks.length,
-                        itemBuilder: (context, index) {
-                          final task = tasks[index];
+                    : PaginatedList<Task>(
+                        items: tasks,
+                        pageSize: 20,
+                        initialPageSize: 30,
+                        padding: EdgeInsets.zero,
+                        itemBuilder: (context, task, index) {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 8),
                             child: LongPressDraggable<Task>(

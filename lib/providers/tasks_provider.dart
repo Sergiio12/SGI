@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
+import '../core/result.dart';
 import '../models/task.dart';
 import '../services/notification_service.dart';
 import '../services/interfaces/storage_service_interface.dart';
@@ -13,6 +14,24 @@ class TasksProvider extends ChangeNotifier {
   final _uuid = const Uuid();
   bool _isLoaded = false;
   final _saveDebouncer = Debouncer(delay: const Duration(milliseconds: 500));
+
+  static const int pageSize = 50;
+  int _page = 1;
+
+  bool get hasMore => _page * pageSize < _tasks.length;
+  int get page => _page;
+  List<Task> get pagedTasks => _tasks.take(_page * pageSize).toList();
+
+  void loadNextPage() {
+    if (!hasMore) return;
+    _page++;
+    notifyListeners();
+  }
+
+  void resetPage() {
+    _page = 1;
+    notifyListeners();
+  }
 
   TasksProvider({required IStorageService storage}) : _storage = storage;
 
@@ -39,6 +58,7 @@ class TasksProvider extends ChangeNotifier {
 
   Future<void> loadTasks() async {
     _tasks = await _storage.loadTasks();
+    _page = 1;
     _updateComputedLists();
     _isLoaded = true;
     notifyListeners();
@@ -105,7 +125,18 @@ class TasksProvider extends ChangeNotifier {
     }
   }
 
-  Future<Task> addTask({
+  Result<Task> getTaskByIdResult(String id) {
+    try {
+      return Result.success(_tasks.firstWhere((t) => t.id == id));
+    } catch (_) {
+      return Result.failure(AppException(
+        message: 'Tarea no encontrada: $id',
+        code: 'TASK_NOT_FOUND',
+      ));
+    }
+  }
+
+  Future<Result<Task>> addTask({
     required String title,
     String description = '',
     TaskPriority priority = TaskPriority.medium,
@@ -139,10 +170,16 @@ class TasksProvider extends ChangeNotifier {
       _notifyAndScheduleSave();
       await NotificationService.scheduleTaskReminders(task);
       showSuccessNotification('Tarea creada: ${task.title}');
-      return task;
-    } catch (e) {
-      showErrorNotification('Error al crear tarea');
-      rethrow;
+      return Result.success(task);
+    } catch (e, s) {
+      final error = AppException(
+        message: 'Error al crear tarea',
+        code: 'ADD_TASK',
+        stackTrace: s,
+      );
+      error.log();
+      showErrorNotification(error.message);
+      return Result.failure(error);
     }
   }
 
@@ -155,9 +192,9 @@ class TasksProvider extends ChangeNotifier {
         await NotificationService.scheduleTaskReminders(task);
         showSuccessNotification('Tarea actualizada');
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al actualizar tarea', code: 'UPDATE_TASK', stackTrace: s).log();
       showErrorNotification('Error al actualizar tarea');
-      rethrow;
     }
   }
 
@@ -183,9 +220,9 @@ class TasksProvider extends ChangeNotifier {
           showSuccessNotification('Tarea reabierta');
         }
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al cambiar estado de tarea', code: 'TOGGLE_TASK', stackTrace: s).log();
       showErrorNotification('Error al cambiar estado de tarea');
-      rethrow;
     }
   }
 
@@ -212,41 +249,49 @@ class TasksProvider extends ChangeNotifier {
               ? 'Tarea anulada'
               : 'Tarea actualizada';
       showSuccessNotification(message);
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al mover tarea', code: 'MOVE_TASK', stackTrace: s).log();
       showErrorNotification('Error al mover tarea');
-      rethrow;
     }
   }
 
   Future<void> toggleSubtask(String taskId, String subtaskId) async {
-    final index = _tasks.indexWhere((t) => t.id == taskId);
-    if (index != -1) {
-      final task = _tasks[index];
-      final newSubtasks = task.subtasks.map((s) {
-        if (s.id == subtaskId) return s.copyWith(isDone: !s.isDone);
-        return s;
-      }).toList();
-      _tasks[index] = task.copyWith(
-        subtasks: newSubtasks,
-        lastActivityAt: DateTime.now(),
-      );
-      _notifyAndScheduleSave();
+    try {
+      final index = _tasks.indexWhere((t) => t.id == taskId);
+      if (index != -1) {
+        final task = _tasks[index];
+        final newSubtasks = task.subtasks.map((s) {
+          if (s.id == subtaskId) return s.copyWith(isDone: !s.isDone);
+          return s;
+        }).toList();
+        _tasks[index] = task.copyWith(
+          subtasks: newSubtasks,
+          lastActivityAt: DateTime.now(),
+        );
+        _notifyAndScheduleSave();
+      }
+    } catch (e, s) {
+      AppException(message: 'Error al cambiar subtarea', code: 'TOGGLE_SUBTASK', stackTrace: s).log();
     }
   }
 
   Future<void> addSubtask(String taskId, String subtaskTitle) async {
-    final index = _tasks.indexWhere((t) => t.id == taskId);
-    if (index != -1) {
-      final task = _tasks[index];
-      final newSubtasks = [
-        ...task.subtasks,
-        SubTask(id: _uuid.v4(), title: subtaskTitle),
-      ];
-      _tasks[index] = task.copyWith(
-        subtasks: newSubtasks,
-        lastActivityAt: DateTime.now(),
-      );
-      _notifyAndScheduleSave();
+    try {
+      final index = _tasks.indexWhere((t) => t.id == taskId);
+      if (index != -1) {
+        final task = _tasks[index];
+        final newSubtasks = [
+          ...task.subtasks,
+          SubTask(id: _uuid.v4(), title: subtaskTitle),
+        ];
+        _tasks[index] = task.copyWith(
+          subtasks: newSubtasks,
+          lastActivityAt: DateTime.now(),
+        );
+        _notifyAndScheduleSave();
+      }
+    } catch (e, s) {
+      AppException(message: 'Error al añadir subtarea', code: 'ADD_SUBTASK', stackTrace: s).log();
     }
   }
 
@@ -266,9 +311,9 @@ class TasksProvider extends ChangeNotifier {
       _notifyAndScheduleSave();
       await NotificationService.cancelTaskReminders(taskId);
       showSuccessNotification('Tarea movida a la papelera');
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al eliminar tarea', code: 'DELETE_TASK', stackTrace: s).log();
       showErrorNotification('Error al eliminar tarea');
-      rethrow;
     }
   }
 
@@ -283,9 +328,9 @@ class TasksProvider extends ChangeNotifier {
         _notifyAndScheduleSave();
         showSuccessNotification('Tarea restaurada');
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al restaurar tarea', code: 'RESTORE_TASK', stackTrace: s).log();
       showErrorNotification('Error al restaurar tarea');
-      rethrow;
     }
   }
 
@@ -295,9 +340,9 @@ class TasksProvider extends ChangeNotifier {
       trash.removeWhere((t) => t.id == taskId);
       await _storage.saveTrashTasks(trash);
       showSuccessNotification('Tarea eliminada permanentemente');
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al eliminar tarea permanentemente', code: 'PERM_DELETE_TASK', stackTrace: s).log();
       showErrorNotification('Error al eliminar tarea');
-      rethrow;
     }
   }
 

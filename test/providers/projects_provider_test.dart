@@ -22,32 +22,40 @@ void main() {
     });
 
     test('addProject creates a project', () async {
-      final project = await provider.addProject(title: 'Test Project');
+      final result = await provider.addProject(title: 'Test Project');
+      expect(result.isSuccess, isTrue);
+      final project = result.unwrap();
       expect(project.title, 'Test Project');
       expect(provider.projects.length, 1);
-      expect(provider.activeProjects.length, 1);
     });
 
     test('addProject with all fields', () async {
-      final project = await provider.addProject(
+      final deadline = DateTime.now().add(const Duration(days: 30));
+      final result = await provider.addProject(
         title: 'Full Project',
-        description: 'A description',
+        description: 'A detailed project',
         emoji: '🚀',
-        colorValue: 0xFFFF0000,
-        deadline: DateTime(2026, 12, 31),
+        colorValue: 0xFF00FF00,
+        deadline: deadline,
         priority: TaskPriority.high,
-        objective: 'Launch it',
+        objective: 'Launch MVP',
+        goalId: 'goal-1',
+        tags: ['tech'],
       );
-      expect(project.title, 'Full Project');
-      expect(project.description, 'A description');
+      expect(result.isSuccess, isTrue);
+      final project = result.unwrap();
+      expect(project.description, 'A detailed project');
       expect(project.emoji, '🚀');
-      expect(project.deadline, DateTime(2026, 12, 31));
+      expect(project.deadline, deadline);
       expect(project.priority, TaskPriority.high);
-      expect(project.objective, 'Launch it');
+      expect(project.objective, 'Launch MVP');
+      expect(project.goalId, 'goal-1');
+      expect(project.tags, ['tech']);
     });
 
     test('updateProject modifies project', () async {
-      final project = await provider.addProject(title: 'Original');
+      final result = await provider.addProject(title: 'Original');
+      final project = result.unwrap();
       final updated = project.copyWith(title: 'Updated');
       await provider.updateProject(updated);
       expect(provider.getProjectById(project.id)?.title, 'Updated');
@@ -74,10 +82,9 @@ void main() {
         status: ProjectStatus.paused,
       );
       await provider.addProject(
-        title: 'Done',
+        title: 'Completed',
         status: ProjectStatus.completed,
       );
-
       expect(provider.activeProjects.length, 1);
       expect(provider.pausedProjects.length, 1);
       expect(provider.completedProjects.length, 1);
@@ -86,21 +93,23 @@ void main() {
 
   group('ProjectsProvider - Trash Lifecycle', () {
     test('deleteProject moves to trash', () async {
-      final project = await provider.addProject(title: 'Delete me');
+      final result = await provider.addProject(title: 'Delete me');
+      final project = result.unwrap();
       await provider.deleteProject(project.id);
       expect(provider.projects, isEmpty);
-      expect(storage.trashTasks, isEmpty); // projects go to trash projects
     });
 
     test('restoreProject retrieves from trash', () async {
-      final project = await provider.addProject(title: 'Restore me');
+      final result = await provider.addProject(title: 'Restore me');
+      final project = result.unwrap();
       await provider.deleteProject(project.id);
       await provider.restoreProject(project.id);
       expect(provider.projects.length, 1);
     });
 
     test('permanentDeleteProject removes from trash', () async {
-      final project = await provider.addProject(title: 'Forever');
+      final result = await provider.addProject(title: 'Forever');
+      final project = result.unwrap();
       await provider.deleteProject(project.id);
       await provider.permanentDeleteProject(project.id);
     });

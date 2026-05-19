@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
+import '../core/result.dart';
 import '../models/note.dart';
 import '../services/interfaces/storage_service_interface.dart';
 import '../utils/debouncer.dart';
@@ -95,7 +96,7 @@ class NotesProvider extends ChangeNotifier {
     }
   }
 
-  Future<Note> addNote({
+  Future<Result<Note>> addNote({
     required String title,
     String content = '',
     NoteType type = NoteType.freeform,
@@ -125,10 +126,16 @@ class NotesProvider extends ChangeNotifier {
       _notes.add(note);
       _notifyAndScheduleSave();
       showSuccessNotification('Nota creada: ${note.title}');
-      return note;
-    } catch (e) {
-      showErrorNotification('Error al crear nota');
-      rethrow;
+      return Result.success(note);
+    } catch (e, s) {
+      final error = AppException(
+        message: 'Error al crear nota',
+        code: 'ADD_NOTE',
+        stackTrace: s,
+      );
+      error.log();
+      showErrorNotification(error.message);
+      return Result.failure(error);
     }
   }
 
@@ -139,9 +146,9 @@ class NotesProvider extends ChangeNotifier {
         _notes[index] = note;
         _notifyAndScheduleSave();
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al actualizar nota', code: 'UPDATE_NOTE', stackTrace: s).log();
       showErrorNotification('Error al actualizar nota');
-      rethrow;
     }
   }
 
@@ -155,9 +162,9 @@ class NotesProvider extends ChangeNotifier {
         showSuccessNotification(
             note.isPinned ? 'Nota desanclada' : 'Nota anclada');
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al cambiar anclaje de nota', code: 'TOGGLE_PIN', stackTrace: s).log();
       showErrorNotification('Error al cambiar anclaje de nota');
-      rethrow;
     }
   }
 
@@ -171,9 +178,9 @@ class NotesProvider extends ChangeNotifier {
       await _storage.saveTrashNotes(trash);
       _notifyAndScheduleSave();
       showSuccessNotification('Nota movida a la papelera');
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al eliminar nota', code: 'DELETE_NOTE', stackTrace: s).log();
       showErrorNotification('Error al eliminar nota');
-      rethrow;
     }
   }
 
@@ -188,9 +195,9 @@ class NotesProvider extends ChangeNotifier {
         _notifyAndScheduleSave();
         showSuccessNotification('Nota restaurada');
       }
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al restaurar nota', code: 'RESTORE_NOTE', stackTrace: s).log();
       showErrorNotification('Error al restaurar nota');
-      rethrow;
     }
   }
 
@@ -200,31 +207,39 @@ class NotesProvider extends ChangeNotifier {
       trash.removeWhere((n) => n.id == noteId);
       await _storage.saveTrashNotes(trash);
       showSuccessNotification('Nota eliminada permanentemente');
-    } catch (e) {
+    } catch (e, s) {
+      AppException(message: 'Error al eliminar nota permanentemente', code: 'PERM_DELETE_NOTE', stackTrace: s).log();
       showErrorNotification('Error al eliminar nota');
-      rethrow;
     }
   }
 
   Future<void> renameNotebook(String oldName, String newName) async {
     if (oldName == newName || newName.trim().isEmpty) return;
-    for (var i = 0; i < _notes.length; i++) {
-      if (_notes[i].notebook == oldName) {
-        _notes[i] = _notes[i].copyWith(notebook: newName.trim());
+    try {
+      for (var i = 0; i < _notes.length; i++) {
+        if (_notes[i].notebook == oldName) {
+          _notes[i] = _notes[i].copyWith(notebook: newName.trim());
+        }
       }
+      _notifyAndScheduleSave();
+      showSuccessNotification('Cuaderno renombrado');
+    } catch (e, s) {
+      AppException(message: 'Error al renombrar cuaderno', code: 'RENAME_NOTEBOOK', stackTrace: s).log();
     }
-    _notifyAndScheduleSave();
-    showSuccessNotification('Cuaderno renombrado');
   }
 
   Future<void> deleteNotebook(String name) async {
-    for (var i = 0; i < _notes.length; i++) {
-      if (_notes[i].notebook == name) {
-        _notes[i] = _notes[i].copyWith(notebook: 'General');
+    try {
+      for (var i = 0; i < _notes.length; i++) {
+        if (_notes[i].notebook == name) {
+          _notes[i] = _notes[i].copyWith(notebook: 'General');
+        }
       }
+      _notifyAndScheduleSave();
+      showSuccessNotification('Cuaderno eliminado, notas movidas a General');
+    } catch (e, s) {
+      AppException(message: 'Error al eliminar cuaderno', code: 'DELETE_NOTEBOOK', stackTrace: s).log();
     }
-    _notifyAndScheduleSave();
-    showSuccessNotification('Cuaderno eliminado, notas movidas a General');
   }
 
   Future<void> replaceAll(List<Note> notes) async {

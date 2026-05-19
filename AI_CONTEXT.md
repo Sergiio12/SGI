@@ -5,7 +5,7 @@
 App Flutter multiplataforma (Android, iOS, Web, Windows, Linux, macOS) de productividad personal y gestión de conocimiento. Inspirada en metodologías GTD y PARA. Permite gestionar tareas, proyectos, notas y objetivos con persistencia local vía Hive, backup/restore JSON y notificaciones programadas.
 
 - **Nombre:** second_brain (título: SGI - Sistema de Gestión Integral)
-- **Versión:** 1.0.1+2
+- **Versión:** 1.1.5+2
 - **Creador:** Sergio Asensio
 - **SDK mínimo:** Flutter 3.29.0 (Dart 3.7.0)
 
