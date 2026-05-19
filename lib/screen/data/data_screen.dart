@@ -11,7 +11,7 @@ import '../../providers/search_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../services/backup_service.dart';
 import '../../services/notification_service.dart';
-import '../../services/storage_service.dart';
+import '../../services/interfaces/storage_service_interface.dart';
 
 class DataScreen extends StatefulWidget {
   const DataScreen({super.key});
@@ -114,15 +114,16 @@ class _DataScreenState extends State<DataScreen> {
   Future<void> _export() async {
     setState(() => _isBusy = true);
     try {
+      final storage = context.read<IStorageService>();
       final file = await BackupService.exportToJson(
         tasks: context.read<TasksProvider>().tasks,
         projects: context.read<ProjectsProvider>().projects,
         notes: context.read<NotesProvider>().notes,
         goals: context.read<GoalsProvider>().goals,
-        trashTasks: await StorageService.loadTrashTasks(),
-        trashProjects: await StorageService.loadTrashProjects(),
-        trashNotes: await StorageService.loadTrashNotes(),
-        trashGoals: await StorageService.loadTrashGoals(),
+        trashTasks: await storage.loadTrashTasks(),
+        trashProjects: await storage.loadTrashProjects(),
+        trashNotes: await storage.loadTrashNotes(),
+        trashGoals: await storage.loadTrashGoals(),
       );
       if (!mounted) return;
       showSuccessNotification('Exportado en ${file.path}');
@@ -166,15 +167,16 @@ class _DataScreenState extends State<DataScreen> {
       final backup = await BackupService.pickAndReadImport();
       if (backup == null) return;
 
+      final storage = context.read<IStorageService>();
       await Future.wait([
         tasksProvider.replaceAll(backup.tasks),
         projectsProvider.replaceAll(backup.projects),
         notesProvider.replaceAll(backup.notes),
         goalsProvider.replaceAll(backup.goals),
-        StorageService.saveTrashTasks(backup.trashTasks),
-        StorageService.saveTrashProjects(backup.trashProjects),
-        StorageService.saveTrashNotes(backup.trashNotes),
-        StorageService.saveTrashGoals(backup.trashGoals),
+        storage.saveTrashTasks(backup.trashTasks),
+        storage.saveTrashProjects(backup.trashProjects),
+        storage.saveTrashNotes(backup.trashNotes),
+        storage.saveTrashGoals(backup.trashGoals),
       ]);
 
       await trashProvider.reload();
@@ -219,7 +221,7 @@ class _DataScreenState extends State<DataScreen> {
     setState(() => _isBusy = true);
     try {
       // 1. Clear storage (Hive and SharedPreferences)
-      await StorageService.clearAll();
+      await context.read<IStorageService>().clearAll();
 
       // 2. Clear notifications
       await NotificationService.cancelAll();

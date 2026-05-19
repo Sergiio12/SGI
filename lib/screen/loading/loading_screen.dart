@@ -18,7 +18,7 @@ import '../../providers/tasks_provider.dart';
 import '../../providers/trash_provider.dart';
 
 import '../../services/notification_service.dart';
-import '../../services/storage_service.dart';
+import '../../services/interfaces/storage_service_interface.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -115,7 +115,7 @@ class _LoadingScreenState extends State<LoadingScreen>
           progress: 0.12,
           label: 'Inicializando almacenamiento seguro',
           action: () async {
-            await StorageService.init();
+            await context.read<IStorageService>().init();
           },
         ),
         _InitStep(

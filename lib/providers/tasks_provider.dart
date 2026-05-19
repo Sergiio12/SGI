@@ -3,15 +3,18 @@ import 'package:uuid/uuid.dart';
 
 import '../models/task.dart';
 import '../services/notification_service.dart';
-import '../services/storage_service.dart';
+import '../services/interfaces/storage_service_interface.dart';
 import '../utils/debouncer.dart';
 import '../utils/notification_service_v2.dart';
 
 class TasksProvider extends ChangeNotifier {
+  final IStorageService _storage;
   List<Task> _tasks = [];
   final _uuid = const Uuid();
   bool _isLoaded = false;
   final _saveDebouncer = Debouncer(delay: const Duration(milliseconds: 500));
+
+  TasksProvider({required IStorageService storage}) : _storage = storage;
 
   List<Task> _todoTasks = [];
   List<Task> _inProgressTasks = [];
@@ -35,7 +38,7 @@ class TasksProvider extends ChangeNotifier {
   List<Task> get focusTasks => _focusTasks;
 
   Future<void> loadTasks() async {
-    _tasks = await StorageService.loadTasks();
+    _tasks = await _storage.loadTasks();
     _updateComputedLists();
     _isLoaded = true;
     notifyListeners();
@@ -85,7 +88,7 @@ class TasksProvider extends ChangeNotifier {
   void _notifyAndScheduleSave() {
     _updateComputedLists();
     notifyListeners();
-    _saveDebouncer.call(() => StorageService.saveTasks(_tasks));
+    _saveDebouncer.call(() => _storage.saveTasks(_tasks));
   }
 
   List<Task> getTasksByProject(String projectId) =>
@@ -257,9 +260,9 @@ class TasksProvider extends ChangeNotifier {
       final index = _tasks.indexWhere((t) => t.id == taskId);
       if (index == -1) return;
       final task = _tasks.removeAt(index);
-      final trash = await StorageService.loadTrashTasks();
+      final trash = await _storage.loadTrashTasks();
       trash.add(task);
-      await StorageService.saveTrashTasks(trash);
+      await _storage.saveTrashTasks(trash);
       _notifyAndScheduleSave();
       await NotificationService.cancelTaskReminders(taskId);
       showSuccessNotification('Tarea movida a la papelera');
@@ -271,12 +274,12 @@ class TasksProvider extends ChangeNotifier {
 
   Future<void> restoreTask(String taskId) async {
     try {
-      final trash = await StorageService.loadTrashTasks();
+      final trash = await _storage.loadTrashTasks();
       final index = trash.indexWhere((t) => t.id == taskId);
       if (index != -1) {
         final task = trash.removeAt(index);
         _tasks.add(task);
-        await StorageService.saveTrashTasks(trash);
+        await _storage.saveTrashTasks(trash);
         _notifyAndScheduleSave();
         showSuccessNotification('Tarea restaurada');
       }
@@ -288,9 +291,9 @@ class TasksProvider extends ChangeNotifier {
 
   Future<void> permanentDeleteTask(String taskId) async {
     try {
-      final trash = await StorageService.loadTrashTasks();
+      final trash = await _storage.loadTrashTasks();
       trash.removeWhere((t) => t.id == taskId);
-      await StorageService.saveTrashTasks(trash);
+      await _storage.saveTrashTasks(trash);
       showSuccessNotification('Tarea eliminada permanentemente');
     } catch (e) {
       showErrorNotification('Error al eliminar tarea');

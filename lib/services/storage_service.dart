@@ -11,8 +11,9 @@ import '../models/note.dart';
 import '../models/project.dart';
 import '../models/task.dart';
 import '../models/tag.dart';
+import 'interfaces/storage_service_interface.dart';
 
-class StorageService {
+class HiveStorageService implements IStorageService {
   static const String _boxName = 'second_brain_store';
   static const String _tasksKey = 'brain_tasks';
   static const String _projectsKey = 'brain_projects';
@@ -24,35 +25,36 @@ class StorageService {
   static const String _trashGoalsKey = 'brain_trash_goals';
   static const String _tagsKey = 'brain_tags';
 
-  static Box<String>? _box;
+  Box<String>? _box;
 
-  static List<Task>? _cachedTasks;
-  static List<Project>? _cachedProjects;
-  static List<Note>? _cachedNotes;
-  static List<Goal>? _cachedGoals;
-  static List<Task>? _cachedTrashTasks;
-  static List<Project>? _cachedTrashProjects;
-  static List<Note>? _cachedTrashNotes;
-  static List<Goal>? _cachedTrashGoals;
-  static List<Tag>? _cachedTags;
+  List<Task>? _cachedTasks;
+  List<Project>? _cachedProjects;
+  List<Note>? _cachedNotes;
+  List<Goal>? _cachedGoals;
+  List<Task>? _cachedTrashTasks;
+  List<Project>? _cachedTrashProjects;
+  List<Note>? _cachedTrashNotes;
+  List<Goal>? _cachedTrashGoals;
+  List<Tag>? _cachedTags;
 
-  static VoidCallback? onTrashChanged;
+  VoidCallback? onTrashChanged;
 
-  static Future<void> init() async {
+  @override
+  Future<void> init() async {
     await Hive.initFlutter();
     _box = await Hive.openBox<String>(_boxName);
     await _migrateSharedPreferences();
   }
 
-  static Box<String> get _store {
+  Box<String> get _store {
     final box = _box;
     if (box == null || !box.isOpen) {
-      throw StateError('StorageService.init() must be called before use.');
+      throw StateError('HiveStorageService.init() must be called before use.');
     }
     return box;
   }
 
-  static Future<void> _migrateSharedPreferences() async {
+  Future<void> _migrateSharedPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     for (final key in [_tasksKey, _projectsKey, _notesKey, _goalsKey]) {
       if (!_store.containsKey(key)) {
@@ -62,7 +64,7 @@ class StorageService {
     }
   }
 
-  static Future<List<T>> _loadList<T>(
+  Future<List<T>> _loadList<T>(
     String key,
     T Function(Map<String, dynamic> json) fromJson,
   ) async {
@@ -85,7 +87,7 @@ class StorageService {
     }
   }
 
-  static Future<void> _saveList(
+  Future<void> _saveList(
     String key,
     List<Map<String, dynamic>> items,
   ) async {
@@ -93,7 +95,8 @@ class StorageService {
     await _store.put(key, encoded);
   }
 
-  static Future<List<Task>> loadTasks() async {
+  @override
+  Future<List<Task>> loadTasks() async {
     final cached = _cachedTasks;
     if (cached != null) return List<Task>.from(cached);
     final loaded = await _loadList(_tasksKey, Task.fromJson);
@@ -101,12 +104,14 @@ class StorageService {
     return List<Task>.from(loaded);
   }
 
-  static Future<void> saveTasks(List<Task> tasks) async {
+  @override
+  Future<void> saveTasks(List<Task> tasks) async {
     _cachedTasks = List<Task>.from(tasks);
     await _saveList(_tasksKey, tasks.map((t) => t.toJson()).toList());
   }
 
-  static Future<List<Project>> loadProjects() async {
+  @override
+  Future<List<Project>> loadProjects() async {
     final cached = _cachedProjects;
     if (cached != null) return List<Project>.from(cached);
     final loaded = await _loadList(_projectsKey, Project.fromJson);
@@ -114,12 +119,14 @@ class StorageService {
     return List<Project>.from(loaded);
   }
 
-  static Future<void> saveProjects(List<Project> projects) async {
+  @override
+  Future<void> saveProjects(List<Project> projects) async {
     _cachedProjects = List<Project>.from(projects);
     await _saveList(_projectsKey, projects.map((p) => p.toJson()).toList());
   }
 
-  static Future<List<Note>> loadNotes() async {
+  @override
+  Future<List<Note>> loadNotes() async {
     final cached = _cachedNotes;
     if (cached != null) return List<Note>.from(cached);
     final loaded = await _loadList(_notesKey, Note.fromJson);
@@ -127,12 +134,14 @@ class StorageService {
     return List<Note>.from(loaded);
   }
 
-  static Future<void> saveNotes(List<Note> notes) async {
+  @override
+  Future<void> saveNotes(List<Note> notes) async {
     _cachedNotes = List<Note>.from(notes);
     await _saveList(_notesKey, notes.map((n) => n.toJson()).toList());
   }
 
-  static Future<List<Goal>> loadGoals() async {
+  @override
+  Future<List<Goal>> loadGoals() async {
     final cached = _cachedGoals;
     if (cached != null) return List<Goal>.from(cached);
     final loaded = await _loadList(_goalsKey, Goal.fromJson);
@@ -140,7 +149,8 @@ class StorageService {
     return List<Goal>.from(loaded);
   }
 
-  static Future<List<Tag>> loadTags() async {
+  @override
+  Future<List<Tag>> loadTags() async {
     final cached = _cachedTags;
     if (cached != null) return List<Tag>.from(cached);
     final loaded = await _loadList(_tagsKey, Tag.fromJson);
@@ -148,19 +158,20 @@ class StorageService {
     return List<Tag>.from(loaded);
   }
 
-  static Future<void> saveTags(List<Tag> tags) async {
+  @override
+  Future<void> saveTags(List<Tag> tags) async {
     _cachedTags = List<Tag>.from(tags);
     await _saveList(_tagsKey, tags.map((t) => t.toJson()).toList());
   }
 
-  static Future<void> saveGoals(List<Goal> goals) async {
+  @override
+  Future<void> saveGoals(List<Goal> goals) async {
     _cachedGoals = List<Goal>.from(goals);
     await _saveList(_goalsKey, goals.map((g) => g.toJson()).toList());
   }
 
-  // ─── Trash ──────────────────────────────────────────────────────────────────
-
-  static Future<List<Task>> loadTrashTasks() async {
+  @override
+  Future<List<Task>> loadTrashTasks() async {
     final cached = _cachedTrashTasks;
     if (cached != null) return List<Task>.from(cached);
     final loaded = await _loadList(_trashTasksKey, Task.fromJson);
@@ -168,13 +179,15 @@ class StorageService {
     return List<Task>.from(loaded);
   }
 
-  static Future<void> saveTrashTasks(List<Task> tasks) async {
+  @override
+  Future<void> saveTrashTasks(List<Task> tasks) async {
     _cachedTrashTasks = List<Task>.from(tasks);
     await _saveList(_trashTasksKey, tasks.map((t) => t.toJson()).toList());
     onTrashChanged?.call();
   }
 
-  static Future<List<Project>> loadTrashProjects() async {
+  @override
+  Future<List<Project>> loadTrashProjects() async {
     final cached = _cachedTrashProjects;
     if (cached != null) return List<Project>.from(cached);
     final loaded = await _loadList(_trashProjectsKey, Project.fromJson);
@@ -182,14 +195,16 @@ class StorageService {
     return List<Project>.from(loaded);
   }
 
-  static Future<void> saveTrashProjects(List<Project> projects) async {
+  @override
+  Future<void> saveTrashProjects(List<Project> projects) async {
     _cachedTrashProjects = List<Project>.from(projects);
     await _saveList(
         _trashProjectsKey, projects.map((p) => p.toJson()).toList());
     onTrashChanged?.call();
   }
 
-  static Future<List<Note>> loadTrashNotes() async {
+  @override
+  Future<List<Note>> loadTrashNotes() async {
     final cached = _cachedTrashNotes;
     if (cached != null) return List<Note>.from(cached);
     final loaded = await _loadList(_trashNotesKey, Note.fromJson);
@@ -197,13 +212,15 @@ class StorageService {
     return List<Note>.from(loaded);
   }
 
-  static Future<void> saveTrashNotes(List<Note> notes) async {
+  @override
+  Future<void> saveTrashNotes(List<Note> notes) async {
     _cachedTrashNotes = List<Note>.from(notes);
     await _saveList(_trashNotesKey, notes.map((n) => n.toJson()).toList());
     onTrashChanged?.call();
   }
 
-  static Future<List<Goal>> loadTrashGoals() async {
+  @override
+  Future<List<Goal>> loadTrashGoals() async {
     final cached = _cachedTrashGoals;
     if (cached != null) return List<Goal>.from(cached);
     final loaded = await _loadList(_trashGoalsKey, Goal.fromJson);
@@ -211,13 +228,15 @@ class StorageService {
     return List<Goal>.from(loaded);
   }
 
-  static Future<void> saveTrashGoals(List<Goal> goals) async {
+  @override
+  Future<void> saveTrashGoals(List<Goal> goals) async {
     _cachedTrashGoals = List<Goal>.from(goals);
     await _saveList(_trashGoalsKey, goals.map((g) => g.toJson()).toList());
     onTrashChanged?.call();
   }
 
-  static Future<void> clearAll() async {
+  @override
+  Future<void> clearAll() async {
     _cachedTasks = null;
     _cachedProjects = null;
     _cachedNotes = null;

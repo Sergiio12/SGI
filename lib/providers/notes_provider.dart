@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/note.dart';
-import '../services/storage_service.dart';
+import '../services/interfaces/storage_service_interface.dart';
 import '../utils/debouncer.dart';
 import '../utils/notification_service_v2.dart';
 
 class NotesProvider extends ChangeNotifier {
+  final IStorageService _storage;
   List<Note> _notes = [];
   final _uuid = const Uuid();
   bool _isLoaded = false;
   final _saveDebouncer = Debouncer(delay: const Duration(milliseconds: 500));
+
+  NotesProvider({required IStorageService storage}) : _storage = storage;
 
   List<Note> _pinnedNotes = [];
   List<Note> _unpinnedNotes = [];
@@ -44,7 +47,7 @@ class NotesProvider extends ChangeNotifier {
   }
 
   Future<void> loadNotes() async {
-    _notes = await StorageService.loadNotes();
+    _notes = await _storage.loadNotes();
     _updateComputedLists();
     _isLoaded = true;
     notifyListeners();
@@ -65,7 +68,7 @@ class NotesProvider extends ChangeNotifier {
   void _notifyAndScheduleSave() {
     _updateComputedLists();
     notifyListeners();
-    _saveDebouncer.call(() => StorageService.saveNotes(_notes));
+    _saveDebouncer.call(() => _storage.saveNotes(_notes));
   }
 
   List<Note> getNotesByProject(String projectId) =>
@@ -163,9 +166,9 @@ class NotesProvider extends ChangeNotifier {
       final index = _notes.indexWhere((n) => n.id == noteId);
       if (index == -1) return;
       final note = _notes.removeAt(index);
-      final trash = await StorageService.loadTrashNotes();
+      final trash = await _storage.loadTrashNotes();
       trash.add(note);
-      await StorageService.saveTrashNotes(trash);
+      await _storage.saveTrashNotes(trash);
       _notifyAndScheduleSave();
       showSuccessNotification('Nota movida a la papelera');
     } catch (e) {
@@ -176,12 +179,12 @@ class NotesProvider extends ChangeNotifier {
 
   Future<void> restoreNote(String noteId) async {
     try {
-      final trash = await StorageService.loadTrashNotes();
+      final trash = await _storage.loadTrashNotes();
       final index = trash.indexWhere((n) => n.id == noteId);
       if (index != -1) {
         final note = trash.removeAt(index);
         _notes.add(note);
-        await StorageService.saveTrashNotes(trash);
+        await _storage.saveTrashNotes(trash);
         _notifyAndScheduleSave();
         showSuccessNotification('Nota restaurada');
       }
@@ -193,9 +196,9 @@ class NotesProvider extends ChangeNotifier {
 
   Future<void> permanentDeleteNote(String noteId) async {
     try {
-      final trash = await StorageService.loadTrashNotes();
+      final trash = await _storage.loadTrashNotes();
       trash.removeWhere((n) => n.id == noteId);
-      await StorageService.saveTrashNotes(trash);
+      await _storage.saveTrashNotes(trash);
       showSuccessNotification('Nota eliminada permanentemente');
     } catch (e) {
       showErrorNotification('Error al eliminar nota');

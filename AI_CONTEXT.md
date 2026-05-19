@@ -184,6 +184,7 @@ Funciones clave:
 ### TagsProvider
 - CRUD + getTagsByType, getTagsByIds
 - Tags por defecto para cada tipo
+- NOTA: `tags_provider_new.dart` ha sido eliminado (era duplicado no usado)
 
 ### TrashProvider
 - Maneja 4 listas de papeleras (tasks, projects, notes, goals)
@@ -237,8 +238,10 @@ HomeScreen tiene BottomNavigationBar con 5 tabs: Dashboard, Tasks, Calendar/Toda
 
 ## 7. SERVICIOS
 
-### StorageService (services/storage_service.dart)
-- Singleton estático (todos los métodos static)
+### StorageService (services/)
+- **Arquitectura limpia:** `IStorageService` (interfaz en `services/interfaces/`) + `HiveStorageService` (implementación en `services/storage_service.dart`)
+- Los providers reciben `IStorageService` por constructor (inyección de dependencias)
+- `MockStorageService` en `test/helpers/` para tests
 - Hive box: `second_brain_store`
 - Cache en memoria: `_cachedTasks`, `_cachedProjects`, etc.
 - Métodos: `init()`, load/save para cada tipo, load/save trash, `clearAll()`
@@ -479,8 +482,9 @@ Import: file_picker -> leer JSON -> validar schemaVersion -> sobreescribir todo 
 
 ## 20. TODO / MEJORAS DETECTADAS
 
-- `tags_provider_new.dart` existe pero parece no usarse. Probablemente eliminable.
-- No hay tests de providers, widgets ni integración.
-- No hay manejo de errores centralizado.
-- `tags_provider.dart` exporta `tagsProvider` (minúscula) como instancia global además del provider. Posible bad practice.
-- Algunos providers (tags_provider_new) pueden tener código duplicado.
+- ~~`tags_provider_new.dart`~~ **ELIMINADO** (era duplicado no usado)
+- Tests de providers implementados (62 tests nuevos, total: 97)
+- No hay tests de widgets ni integración aún
+- No hay manejo de errores centralizado
+- Queda pendiente: migrar variables globales de `notification_service_v2.dart` a Provider DI
+- Plan de Fase 2 detallado en `.opencode/plans/fase2_escalabilidad_ux.md`

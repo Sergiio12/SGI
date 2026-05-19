@@ -4,7 +4,7 @@ import '../models/goal.dart';
 import '../models/note.dart';
 import '../models/project.dart';
 import '../models/task.dart';
-import '../services/storage_service.dart';
+import '../services/interfaces/storage_service_interface.dart';
 import '../utils/notification_service_v2.dart';
 
 enum TrashItemType { task, project, note, goal }
@@ -80,8 +80,11 @@ class TrashBundle {
 }
 
 class TrashProvider extends ChangeNotifier {
+  final IStorageService _storage;
   List<TrashBundle> _items = [];
   bool _isLoaded = false;
+
+  TrashProvider({required IStorageService storage}) : _storage = storage;
 
   List<TrashBundle> get items => _items;
   bool get isLoaded => _isLoaded;
@@ -94,10 +97,10 @@ class TrashProvider extends ChangeNotifier {
   }
 
   Future<void> loadTrash() async {
-    final tasks = await StorageService.loadTrashTasks();
-    final projects = await StorageService.loadTrashProjects();
-    final notes = await StorageService.loadTrashNotes();
-    final goals = await StorageService.loadTrashGoals();
+    final tasks = await _storage.loadTrashTasks();
+    final projects = await _storage.loadTrashProjects();
+    final notes = await _storage.loadTrashNotes();
+    final goals = await _storage.loadTrashGoals();
 
     _items = [
       ...tasks.map((t) => TrashBundle(
@@ -131,12 +134,12 @@ class TrashProvider extends ChangeNotifier {
   }
 
   void register() {
-    StorageService.onTrashChanged = _onTrashChanged;
+    _storage.onTrashChanged = _onTrashChanged;
   }
 
   void unregister() {
-    if (StorageService.onTrashChanged == _onTrashChanged) {
-      StorageService.onTrashChanged = null;
+    if (_storage.onTrashChanged == _onTrashChanged) {
+      _storage.onTrashChanged = null;
     }
   }
 
@@ -145,10 +148,10 @@ class TrashProvider extends ChangeNotifier {
   }
 
   Future<void> emptyAll() async {
-    await StorageService.saveTrashTasks([]);
-    await StorageService.saveTrashProjects([]);
-    await StorageService.saveTrashNotes([]);
-    await StorageService.saveTrashGoals([]);
+    await _storage.saveTrashTasks([]);
+    await _storage.saveTrashProjects([]);
+    await _storage.saveTrashNotes([]);
+    await _storage.saveTrashGoals([]);
     _items = [];
     notifyListeners();
     showSuccessNotification('Papelera vaciada');
