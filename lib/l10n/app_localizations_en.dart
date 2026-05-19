@@ -578,4 +578,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get justNow => 'just now';
+
+  @override
+  String get allNotebooks => 'All notebooks';
+
+  @override
+  String get listView => 'List view';
+
+  @override
+  String get gridView => 'Grid view';
+
+  @override
+  String get emptyNotes => 'No notes';
+
+  @override
+  String get emptyNotesSubtitle =>
+      'Capture your ideas, references and thoughts';
+
+  @override
+  String get titleRequired => 'Title is required';
+
+  @override
+  String get notePinned => 'Note pinned';
+
+  @override
+  String get noteUnpinned => 'Note unpinned';
+
+  @override
+  String get pinned => 'pinned';
+
+  @override
+  String get notebooksLabel => 'notebooks';
+
+  @override
+  String get discardTitle => 'Discard changes?';
+
+  @override
+  String get discardContent =>
+      'You have unsaved changes. Are you sure you want to leave?';
+
+  @override
+  String get discard => 'Discard';
+
+  @override
+  String get notesDeleted => 'note(s) deleted';
+
+  @override
+  String get noteDeleted => 'Note deleted';
+
+  @override
+  String notesUndoDeleted(Object title) {
+    return 'Note \"$title\" deleted';
+  }
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get selectNotebook => 'Select notebook';
+
+  @override
+  String get moveToNotebook => 'Move to notebook';
+
+  @override
+  String get chooseEmoji => 'Choose Emoji';
+
+  @override
+  String get tapToAssignTags => 'Tap to assign tags to this note';
+
+  @override
+  String get noTags => 'No tags';
+
+  @override
+  String get createTags => 'Create tags';
+
+  @override
+  String get manageTags => 'Manage tags';
+
+  @override
+  String get createNewTag => 'Create new tag';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get searchNotebook => 'Search notebook...';
+
+  @override
+  String get newNotebook => 'New notebook...';
 }

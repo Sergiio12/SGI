@@ -13,7 +13,24 @@ class NotesProvider extends ChangeNotifier {
   List<Note> _notes = [];
   final _uuid = const Uuid();
   bool _isLoaded = false;
+  int _displayCount = 50;
+  static const int _pageSize = 50;
   final _saveDebouncer = Debouncer(delay: const Duration(milliseconds: 500));
+
+  int _lastFilteredCount = 0;
+
+  bool get hasMore => _displayCount < _lastFilteredCount;
+
+  void loadMore() {
+    if (!hasMore) return;
+    _displayCount = (_displayCount + _pageSize).clamp(0, _notes.length);
+    notifyListeners();
+  }
+
+  void resetPagination() {
+    _displayCount = _pageSize;
+    _lastFilteredCount = 0;
+  }
 
   NotesProvider({required IStorageService storage}) : _storage = storage;
 
@@ -21,6 +38,8 @@ class NotesProvider extends ChangeNotifier {
   List<Note> _unpinnedNotes = [];
   List<Note> _recentNotes = [];
   List<String> _notebooks = ['General'];
+  Map<String, int> _cachedNotebookCounts = {};
+  Map<String, int> _cachedTagCounts = {};
 
   List<Note> get notes => _notes;
   bool get isLoaded => _isLoaded;
@@ -29,24 +48,8 @@ class NotesProvider extends ChangeNotifier {
   List<Note> get unpinnedNotes => _unpinnedNotes;
   List<Note> get recentNotes => _recentNotes;
   List<String> get notebooks => _notebooks;
-
-  Map<String, int> get notebookCounts {
-    final counts = <String, int>{};
-    for (final n in _notes) {
-      counts[n.notebook] = (counts[n.notebook] ?? 0) + 1;
-    }
-    return counts;
-  }
-
-  Map<String, int> get tagCounts {
-    final counts = <String, int>{};
-    for (final n in _notes) {
-      for (final tag in n.tags) {
-        counts[tag] = (counts[tag] ?? 0) + 1;
-      }
-    }
-    return counts;
-  }
+  Map<String, int> get notebookCounts => _cachedNotebookCounts;
+  Map<String, int> get tagCounts => _cachedTagCounts;
 
   Future<void> loadNotes() async {
     _notes = await _storage.loadNotes();
@@ -65,6 +68,19 @@ class NotesProvider extends ChangeNotifier {
 
     final values = _notes.map((n) => n.notebook).toSet().toList()..sort();
     _notebooks = values.isEmpty ? ['General'] : values;
+
+    _cachedNotebookCounts = {};
+    for (final n in _notes) {
+      _cachedNotebookCounts[n.notebook] =
+          (_cachedNotebookCounts[n.notebook] ?? 0) + 1;
+    }
+
+    _cachedTagCounts = {};
+    for (final n in _notes) {
+      for (final tag in n.tags) {
+        _cachedTagCounts[tag] = (_cachedTagCounts[tag] ?? 0) + 1;
+      }
+    }
   }
 
   void _notifyAndScheduleSave() {
@@ -159,11 +175,11 @@ class NotesProvider extends ChangeNotifier {
       final index = _notes.indexWhere((n) => n.id == noteId);
       if (index != -1) {
         final note = _notes[index];
-        _notes[index] = note.copyWith(isPinned: !note.isPinned);
+        final newPinned = !note.isPinned;
+        _notes[index] = note.copyWith(isPinned: newPinned);
         _notifyAndScheduleSave();
         HapticHelper.selection();
-        showSuccessNotification(
-            note.isPinned ? 'Nota desanclada' : 'Nota anclada');
+        showSuccessNotification(newPinned ? 'Nota anclada' : 'Nota desanclada');
       }
     } catch (e, s) {
       AppException(message: 'Error al cambiar anclaje de nota', code: 'TOGGLE_PIN', stackTrace: s).log();
@@ -252,15 +268,17 @@ class NotesProvider extends ChangeNotifier {
     _notifyAndScheduleSave();
   }
 
+  bool _matchesQuery(Note note, String query) {
+    final lower = query.toLowerCase();
+    return note.title.toLowerCase().contains(lower) ||
+        note.content.toLowerCase().contains(lower) ||
+        note.notebook.toLowerCase().contains(lower) ||
+        note.tags.any((t) => t.toLowerCase().contains(lower));
+  }
+
   List<Note> search(String query) {
     if (query.isEmpty) return [];
-    final lower = query.toLowerCase();
-    return _notes.where((n) {
-      return n.title.toLowerCase().contains(lower) ||
-          n.content.toLowerCase().contains(lower) ||
-          n.notebook.toLowerCase().contains(lower) ||
-          n.tags.any((t) => t.toLowerCase().contains(lower));
-    }).toList();
+    return _notes.where((n) => _matchesQuery(n, query)).toList();
   }
 
   List<Note> filteredNotes({
@@ -269,6 +287,7 @@ class NotesProvider extends ChangeNotifier {
     List<String>? tags,
     String? searchQuery,
     String? projectId,
+    SortOption sortBy = SortOption.updatedAt,
   }) {
     var result = _notes;
 
@@ -285,16 +304,21 @@ class NotesProvider extends ChangeNotifier {
       result = result.where((n) => tags.any((t) => n.tags.contains(t))).toList();
     }
     if (searchQuery != null && searchQuery.isNotEmpty) {
-      final lower = searchQuery.toLowerCase();
-      result = result.where((n) {
-        return n.title.toLowerCase().contains(lower) ||
-            n.content.toLowerCase().contains(lower) ||
-            n.notebook.toLowerCase().contains(lower) ||
-            n.tags.any((t) => t.toLowerCase().contains(lower));
-      }).toList();
+      result = result.where((n) => _matchesQuery(n, searchQuery)).toList();
     }
 
-    return result;
+    _lastFilteredCount = result.length;
+
+    switch (sortBy) {
+      case SortOption.updatedAt:
+        result.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      case SortOption.createdAt:
+        result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      case SortOption.title:
+        result.sort((a, b) => a.title.compareTo(b.title));
+    }
+
+    return result.take(_displayCount).toList();
   }
 
   @override

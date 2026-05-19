@@ -2,6 +2,8 @@ import 'brain_item.dart';
 
 enum NoteType { freeform, checklist, journal, reference, meetingNotes }
 
+enum SortOption { updatedAt, createdAt, title }
+
 class Note extends BrainItem {
   final String title;
   final String content;

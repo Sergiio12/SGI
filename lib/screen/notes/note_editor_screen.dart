@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -13,7 +14,8 @@ import '../../models/tag.dart';
 import '../../utils/notification_service_v2.dart';
 import '../../providers/notes_provider.dart';
 import '../../providers/tags_provider.dart';
-import '../../widgets/tag_color_picker.dart';
+import '../../widgets/note_editor/modals/emoji_picker_modal.dart';
+import '../../widgets/note_editor/modals/tag_picker_modal.dart';
 
 class NoteEditorScreen extends StatefulWidget {
   final String? noteId;
@@ -28,7 +30,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
 
-  NoteType _type = NoteType.freeform;
   String _emoji = '📝';
   String? _projectId;
   List<String> _selectedTagIds = [];
@@ -38,20 +39,65 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   bool _isUploading = false;
   String? _uploadError;
 
+  String _initialTitle = '';
+  String _initialContent = '';
+  String _initialEmoji = '📝';
+  List<String> _initialTagIds = [];
+  bool _initialPinned = false;
+  List<NoteAttachment> _initialAttachments = [];
+  String _initialNotebook = 'General';
+
+  Timer? _autosaveTimer;
+
   bool get _isEditing => widget.noteId != null;
+
+  bool get _hasUnsavedChanges {
+    if (_isEditing) {
+      return _titleController.text != _initialTitle ||
+          _contentController.text != _initialContent ||
+          _emoji != _initialEmoji ||
+          _notebook != _initialNotebook ||
+          _isPinned != _initialPinned ||
+          _notebook != _initialNotebook ||
+          !_listEquals(_selectedTagIds, _initialTagIds) ||
+          !_listEquals(_attachments, _initialAttachments);
+    }
+    return _titleController.text.isNotEmpty ||
+        _contentController.text.isNotEmpty ||
+        _emoji != '📝' ||
+        _selectedTagIds.isNotEmpty ||
+        _isPinned ||
+        _attachments.isNotEmpty ||
+        _notebook != 'General';
+  }
+
+  bool _listEquals<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 
   @override
   void initState() {
     super.initState();
+    _autosaveTimer = Timer.periodic(const Duration(seconds: 30), (_) => _autosave());
     if (_isEditing) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final note = context.read<NotesProvider>().getNoteById(widget.noteId!);
         if (note != null) {
+          _initialTitle = note.title;
+          _initialContent = note.content;
+          _initialEmoji = note.emoji;
+          _initialTagIds = List.from(note.tags);
+          _initialPinned = note.isPinned;
+          _initialAttachments = List.from(note.attachments);
+          _initialNotebook = note.notebook;
           setState(() {
             _titleController.text = note.title;
             _contentController.text = note.content;
             _notebook = note.notebook;
-            _type = note.type;
             _emoji = note.emoji;
             _projectId = note.projectId;
             _selectedTagIds = List.from(note.tags);
@@ -67,8 +113,38 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     }
   }
 
+  Future<bool> _onWillPop() async {
+    if (!_hasUnsavedChanges) return true;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: BrainTheme.cardDark,
+        title: Text(AppLocalizations.of(ctx).discardTitle),
+        content: Text(AppLocalizations.of(ctx).discardContent),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(AppLocalizations.of(ctx).cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: BrainTheme.accentRed),
+            child: Text(AppLocalizations.of(ctx).discard),
+          ),
+        ],
+      ),
+    );
+    return result ?? true;
+  }
+
+  void _autosave() {
+    if (!_hasUnsavedChanges || !mounted) return;
+    _performSave(silent: true);
+  }
+
   @override
   void dispose() {
+    _autosaveTimer?.cancel();
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
@@ -76,10 +152,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   Future<void> _save() async {
     if (_titleController.text.trim().isEmpty) {
-      showWarningNotification('El título es obligatorio');
+      showWarningNotification(AppLocalizations.of(context).titleRequired);
       return;
     }
+    await _performSave(silent: false);
+    if (mounted) Navigator.pop(context);
+  }
 
+  Future<void> _performSave({bool silent = false}) async {
     final provider = context.read<NotesProvider>();
     final notebook = _notebook.trim().isEmpty ? 'General' : _notebook.trim();
 
@@ -90,7 +170,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           title: _titleController.text.trim(),
           content: _contentController.text,
           attachments: _attachments,
-          type: _type,
           notebook: notebook,
           emoji: _emoji,
           projectId: _projectId,
@@ -103,7 +182,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         title: _titleController.text.trim(),
         content: _contentController.text,
         attachments: _attachments,
-        type: _type,
         notebook: notebook,
         emoji: _emoji,
         projectId: _projectId,
@@ -112,7 +190,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       );
     }
 
-    if (mounted) Navigator.pop(context);
+    if (!silent && mounted) {
+      showSuccessNotification('Nota guardada');
+    }
   }
 
   Future<void> _pickFiles() async {
@@ -273,402 +353,174 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
-  void _showTagPicker() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (ctx) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          maxChildSize: 0.85,
-          minChildSize: 0.4,
-          expand: false,
-          builder: (context, scrollController) {
-            return Padding(
-              padding:
-                  EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(AppLocalizations.of(context).tags,
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700)),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.pop(ctx),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text('Toca para asignar etiquetas a esta nota',
-                        style: TextStyle(
-                            color: BrainTheme.textTertiary, fontSize: 13)),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: Consumer<TagsProvider>(
-                          builder: (context, tagsProv, _) {
-                        final noteTags = tagsProv.getTags(TagType.note);
-                        if (noteTags.isEmpty) {
-                          return Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text('Sin etiquetas',
-                                    style: TextStyle(
-                                        color: BrainTheme.textTertiary)),
-                                const SizedBox(height: 8),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    _showManageTagsModal();
-                                  },
-                                  child: const Text('Crear etiquetas'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                        return ListView(
-                          controller: scrollController,
-                          children: noteTags.map((t) {
-                            final isSelected = _selectedTagIds.contains(t.id);
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 6),
-                              color: isSelected
-                                  ? t.color.withValues(alpha: 0.1)
-                                  : BrainTheme.surfaceDark,
-                              child: ListTile(
-                                leading: Container(
-                                  width: 12,
-                                  height: 12,
-                                  decoration: BoxDecoration(
-                                    color: t.color,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                title: Text(t.name,
-                                    style: TextStyle(
-                                        fontWeight: isSelected
-                                            ? FontWeight.w600
-                                            : FontWeight.normal)),
-                                trailing: isSelected
-                                    ? Icon(Icons.check_circle,
-                                        color: t.color, size: 22)
-                                    : Icon(Icons.circle_outlined,
-                                        color: BrainTheme.textTertiary,
-                                        size: 22),
-                                onTap: () {
-                                  setState(() {
-                                    if (isSelected) {
-                                      _selectedTagIds.remove(t.id);
-                                    } else {
-                                      _selectedTagIds.add(t.id);
-                                    }
-                                  });
-                                },
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          _showManageTagsModal();
-                        },
-                        icon: const Icon(Icons.edit, size: 18),
-                        label: const Text('Gestionar etiquetas'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+  Future<void> _showTagPicker() async {
+    final selected = await showTagPickerModal(
+      context,
+      _selectedTagIds.toSet(),
     );
+    setState(() => _selectedTagIds = selected.toList());
   }
 
   void _showNotebookPicker() {
     final provider = context.read<NotesProvider>();
     final notebooks = provider.notebooks;
-    final controller = TextEditingController();
+    final searchController = TextEditingController();
+    final newController = TextEditingController();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       builder: (ctx) {
-        return Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(AppLocalizations.of(context).notebook,
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w700)),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    hintText: 'Nuevo cuaderno...',
-                    prefixIcon: const Icon(Icons.add, size: 20),
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+        return StatefulBuilder(builder: (context, setSheetState) {
+          final query = searchController.text.toLowerCase();
+          final filtered = query.isEmpty
+              ? notebooks
+              : notebooks.where((nb) => nb.toLowerCase().contains(query)).toList();
+
+          return Padding(
+            padding:
+                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(ctx).size.height * 0.6,
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(AppLocalizations.of(context).notebook,
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w700)),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
                   ),
-                  onSubmitted: (value) {
-                    if (value.trim().isNotEmpty) {
-                      setState(() => _notebook = value.trim());
-                      Navigator.pop(ctx);
-                    }
-                  },
-                ),
-                const SizedBox(height: 12),
-                if (notebooks.isNotEmpty)
-                  SizedBox(
-                    height: notebooks.length * 56.0,
-                    child: ListView(
-                      children: notebooks
-                          .map((nb) => ListTile(
-                                leading: Icon(
-                                  _notebook == nb
-                                      ? Icons.folder
-                                      : Icons.folder_outlined,
-                                  color: _notebook == nb
-                                      ? BrainTheme.accentPurple
-                                      : BrainTheme.textSecondary,
-                                ),
-                                title: Text(nb,
-                                    style: TextStyle(
-                                        fontWeight: _notebook == nb
-                                            ? FontWeight.w600
-                                            : FontWeight.normal)),
-                                trailing: _notebook == nb
-                                    ? Icon(Icons.check,
-                                        color: BrainTheme.accentPurple)
-                                    : null,
-                                onTap: () {
-                                  setState(() => _notebook = nb);
-                                  Navigator.pop(ctx);
-                                },
-                              ))
-                          .toList(),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: searchController,
+                    onChanged: (_) => setSheetState(() {}),
+                    decoration: InputDecoration(
+                      hintText: 'Buscar cuaderno...',
+                      prefixIcon: Icon(Icons.search, size: 20,
+                          color: BrainTheme.textTertiary),
+                      suffixIcon: searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(Icons.clear, size: 18,
+                                  color: BrainTheme.textSecondary),
+                              onPressed: () {
+                                searchController.clear();
+                                setSheetState(() {});
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: BrainTheme.surfaceDark,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                     ),
                   ),
-              ],
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: newController,
+                    decoration: InputDecoration(
+                      hintText: 'Nuevo cuaderno...',
+                      prefixIcon: Icon(Icons.add, size: 20,
+                          color: BrainTheme.accentPurple),
+                      filled: true,
+                      fillColor: BrainTheme.surfaceDark,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                    ),
+                    onSubmitted: (value) {
+                      if (value.trim().isNotEmpty) {
+                        setState(() => _notebook = value.trim());
+                        Navigator.pop(ctx);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  if (filtered.isNotEmpty)
+                    Flexible(
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: filtered
+                            .map((nb) => ListTile(
+                                  dense: true,
+                                  leading: Icon(
+                                    _notebook == nb
+                                        ? Icons.folder
+                                        : Icons.folder_outlined,
+                                    color: _notebook == nb
+                                        ? BrainTheme.accentPurple
+                                        : BrainTheme.textSecondary,
+                                    size: 20,
+                                  ),
+                                  title: Text(nb,
+                                      style: TextStyle(
+                                          fontWeight: _notebook == nb
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                          fontSize: 14)),
+                                  trailing: _notebook == nb
+                                      ? Icon(Icons.check,
+                                          color: BrainTheme.accentPurple,
+                                          size: 20)
+                                      : null,
+                                  onTap: () {
+                                    setState(() => _notebook = nb);
+                                    Navigator.pop(ctx);
+                                  },
+                                ))
+                            .toList(),
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: Text(
+                          'Sin resultados',
+                          style: TextStyle(
+                              color: BrainTheme.textTertiary, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        );
+          );
+        });
       },
     );
   }
 
-  void _showManageTagsModal() {
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        builder: (ctx) {
-          final nameCtrl = TextEditingController();
-          int newTagColorValue = BrainTheme.accentPurple.toARGB32();
-          return StatefulBuilder(builder: (mctx, setModalState) {
-            return Padding(
-              padding:
-                  EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-              child: Container(
-                height: 520,
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Gestionar etiquetas',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700)),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.pop(ctx),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(child:
-                        Consumer<TagsProvider>(builder: (context, prov, _) {
-                      final noteTags = prov.getTags(TagType.note);
-                      if (noteTags.isEmpty) {
-                        return Center(
-                          child: Text('Crea tu primera etiqueta',
-                              style: TextStyle(color: BrainTheme.textTertiary)),
-                        );
-                      }
-                      return ListView(
-                        children: noteTags
-                            .map((t) => Dismissible(
-                                  key: ValueKey(t.id),
-                                  direction: DismissDirection.endToStart,
-                                  background: Container(
-                                    alignment: Alignment.centerRight,
-                                    padding: const EdgeInsets.only(right: 20),
-                                    color: BrainTheme.accentRed,
-                                    child: const Icon(Icons.delete,
-                                        color: Colors.white),
-                                  ),
-                                  onDismissed: (_) => prov.deleteTag(t.id),
-                                  child: ListTile(
-                                    leading: CircleAvatar(
-                                        backgroundColor: t.color, radius: 14),
-                                    title: Text(t.name),
-                                    trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                              icon: const Icon(Icons.edit,
-                                                  size: 20),
-                                              onPressed: () {
-                                                int editColorValue =
-                                                    t.color.toARGB32();
-                                                final editNameCtrl =
-                                                    TextEditingController(
-                                                        text: t.name);
-                                                showDialog(
-                                                    context: context,
-                                                    builder: (dctx) =>
-                                                        StatefulBuilder(
-                                                            builder: (dState,
-                                                                    setDialogState) =>
-                                                                AlertDialog(
-                                                                  title: const Text(
-                                                                      'Editar etiqueta'),
-                                                                  content:
-                                                                      SingleChildScrollView(
-                                                                          child: Column(
-                                                                              mainAxisSize: MainAxisSize.min,
-                                                                              children: [
-                                                                        TextField(
-                                                                            controller:
-                                                                                editNameCtrl,
-                                                                            decoration:
-                                                                                const InputDecoration(hintText: 'Nombre')),
-                                                                        const SizedBox(
-                                                                            height:
-                                                                                16),
-                                                                        TagColorPicker(
-                                                                          selectedColorValue:
-                                                                              editColorValue,
-                                                                          onColorChanged: (v) =>
-                                                                              setDialogState(() => editColorValue = v),
-                                                                        ),
-                                                                      ])),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                        onPressed: () =>
-                                                                            Navigator.pop(
-                                                                                dctx),
-                                                                        child: Text(
-                                                                            AppLocalizations.of(dState).cancel)),
-                                                                    FilledButton(
-                                                                        onPressed:
-                                                                            () async {
-                                                                          await prov.updateTag(t.copyWith(
-                                                                              name: editNameCtrl.text,
-                                                                              color: Color(editColorValue)));
-                                                                          Navigator.pop(
-                                                                              dctx);
-                                                                        },
-                                                                        child: Text(
-                                                                            AppLocalizations.of(dState).save))
-                                                                  ],
-                                                                )));
-                                              }),
-                                          IconButton(
-                                              icon: const Icon(
-                                                  Icons.delete_outline,
-                                                  size: 20),
-                                              onPressed: () =>
-                                                  prov.deleteTag(t.id)),
-                                        ]),
-                                  ),
-                                ))
-                            .toList(),
-                      );
-                    })),
-                    const Divider(),
-                    const Text('Crear nueva etiqueta',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                              controller: nameCtrl,
-                              decoration: const InputDecoration(
-                                hintText: 'Nombre',
-                                isDense: true,
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 12),
-                              )),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    TagColorPicker(
-                      selectedColorValue: newTagColorValue,
-                      onColorChanged: (v) =>
-                          setModalState(() => newTagColorValue = v),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                          onPressed: () async {
-                            if (nameCtrl.text.trim().isEmpty) return;
-                            await context.read<TagsProvider>().addTag(
-                                name: nameCtrl.text.trim(),
-                                colorValue: newTagColorValue);
-                            nameCtrl.clear();
-                            setModalState(() => newTagColorValue =
-                                BrainTheme.accentPurple.toARGB32());
-                          },
-                          child: const Text('Crear etiqueta')),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          });
-        });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final shouldPop = await _onWillPop();
+        if (shouldPop && context.mounted) Navigator.pop(context);
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(_isEditing
             ? AppLocalizations.of(context).editNote
@@ -722,8 +574,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTypeSelector(),
-            const SizedBox(height: 8),
             _buildEmojiAndTitle(),
             const SizedBox(height: 12),
             _buildMetadataRow(),
@@ -736,51 +586,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildTypeSelector() {
-    return SizedBox(
-      height: 44,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: NoteType.values.map((type) {
-          final isSelected = _type == type;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: GestureDetector(
-              onTap: () => setState(() => _type = type),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? BrainTheme.accentPurple.withValues(alpha: 0.2)
-                      : BrainTheme.surfaceDark,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isSelected
-                        ? BrainTheme.accentPurple
-                        : BrainTheme.borderDark,
-                  ),
-                ),
-                child: Text(
-                  _typeLabel(type),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isSelected
-                        ? BrainTheme.accentPurple
-                        : BrainTheme.textSecondary,
-                    fontWeight: isSelected ? FontWeight.w600 : null,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
+    ),
     );
   }
 
@@ -926,7 +732,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           height: 1.6,
         ),
         decoration: InputDecoration(
-          hintText: _getHintForType(_type),
+          hintText: 'Escribe tu nota aquí...',
           border: InputBorder.none,
           filled: false,
         ),
@@ -995,120 +801,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     );
   }
 
-  String _typeLabel(NoteType type) {
-    switch (type) {
-      case NoteType.freeform:
-        return '📝 Libre';
-      case NoteType.checklist:
-        return '✓ Checklist';
-      case NoteType.journal:
-        return '📔 Diario';
-      case NoteType.reference:
-        return '📎 Referencia';
-      case NoteType.meetingNotes:
-        return '💡 Reunion';
-    }
-  }
-
-  String _getHintForType(NoteType type) {
-    switch (type) {
-      case NoteType.freeform:
-        return 'Escribe tus pensamientos...';
-      case NoteType.checklist:
-        return '- [ ] Elemento 1\n- [ ] Elemento 2\n- [x] Completado';
-      case NoteType.journal:
-        return 'Hoy me siento...\n\nLogros del día:\n\nReflexiones:';
-      case NoteType.reference:
-        return 'Fuente:\n\nPuntos clave:\n\nNotas:';
-      case NoteType.meetingNotes:
-        return 'Participantes:\n\nAgenda:\n\nDecisiones:\n\nSiguientes pasos:';
-    }
-  }
-
-  void _showEmojiPicker() {
-    final noteEmojis = [
-      '📝',
-      '💡',
-      '🎯',
-      '📗',
-      '🗂️',
-      '📌',
-      '💻',
-      '🗒️',
-      '✍️',
-      '📎',
-      '🧠',
-      '📓',
-      '✏️',
-      '📖',
-      '🪄',
-      '📚',
-      '⭐',
-      '🔥',
-      '✅',
-      '🚀',
-      '💪',
-      '🎨',
-      '📊',
-      '🔬',
-    ];
-
-    showModalBottomSheet(
-      context: context,
-      useSafeArea: true,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Elegir Emoji',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(ctx),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: noteEmojis.map((e) {
-                return GestureDetector(
-                  onTap: () {
-                    setState(() => _emoji = e);
-                    Navigator.pop(ctx);
-                  },
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: e == _emoji
-                          ? BrainTheme.accentPurple.withValues(alpha: 0.2)
-                          : BrainTheme.surfaceDark,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: e == _emoji
-                            ? BrainTheme.accentPurple
-                            : BrainTheme.borderDark,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(e, style: const TextStyle(fontSize: 24)),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
+  Future<void> _showEmojiPicker() async {
+    final result = await showEmojiPickerModal(context, _emoji);
+    if (result != null) setState(() => _emoji = result);
   }
 }
 

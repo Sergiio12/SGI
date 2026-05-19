@@ -52,7 +52,9 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         // Mini FABs
-        ScaleTransition(
+        IgnorePointer(
+          ignoring: !_isOpen,
+          child: ScaleTransition(
           scale: _animation,
           alignment: Alignment.bottomRight,
           child: Column(
@@ -100,6 +102,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
               const SizedBox(height: 14),
             ],
           ),
+        ),
         ),
 
         // Main FAB

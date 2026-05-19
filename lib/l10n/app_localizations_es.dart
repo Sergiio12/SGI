@@ -579,4 +579,92 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get justNow => 'ahora';
+
+  @override
+  String get allNotebooks => 'Todos los cuadernos';
+
+  @override
+  String get listView => 'Vista lista';
+
+  @override
+  String get gridView => 'Vista cuadrícula';
+
+  @override
+  String get emptyNotes => 'Sin notas';
+
+  @override
+  String get emptyNotesSubtitle =>
+      'Captura tus ideas, referencias y pensamientos';
+
+  @override
+  String get titleRequired => 'El título es obligatorio';
+
+  @override
+  String get notePinned => 'Nota anclada';
+
+  @override
+  String get noteUnpinned => 'Nota desanclada';
+
+  @override
+  String get pinned => 'ancladas';
+
+  @override
+  String get notebooksLabel => 'cuadernos';
+
+  @override
+  String get discardTitle => '¿Descartar cambios?';
+
+  @override
+  String get discardContent =>
+      'Tienes cambios sin guardar. ¿Seguro que quieres salir?';
+
+  @override
+  String get discard => 'Descartar';
+
+  @override
+  String get notesDeleted => 'nota(s) eliminada(s)';
+
+  @override
+  String get noteDeleted => 'Nota eliminada';
+
+  @override
+  String notesUndoDeleted(Object title) {
+    return 'Nota \"$title\" eliminada';
+  }
+
+  @override
+  String get undo => 'Deshacer';
+
+  @override
+  String get selectNotebook => 'Seleccionar cuaderno';
+
+  @override
+  String get moveToNotebook => 'Mover a cuaderno';
+
+  @override
+  String get chooseEmoji => 'Elegir Emoji';
+
+  @override
+  String get tapToAssignTags => 'Toca para asignar etiquetas a esta nota';
+
+  @override
+  String get noTags => 'Sin etiquetas';
+
+  @override
+  String get createTags => 'Crear etiquetas';
+
+  @override
+  String get manageTags => 'Gestionar etiquetas';
+
+  @override
+  String get createNewTag => 'Crear nueva etiqueta';
+
+  @override
+  String get accept => 'Aceptar';
+
+  @override
+  String get searchNotebook => 'Buscar cuaderno...';
+
+  @override
+  String get newNotebook => 'Nuevo cuaderno...';
 }

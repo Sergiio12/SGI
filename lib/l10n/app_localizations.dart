@@ -1237,6 +1237,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'just now'**
   String get justNow;
+
+  /// No description provided for @allNotebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'All notebooks'**
+  String get allNotebooks;
+
+  /// No description provided for @listView.
+  ///
+  /// In en, this message translates to:
+  /// **'List view'**
+  String get listView;
+
+  /// No description provided for @gridView.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid view'**
+  String get gridView;
+
+  /// No description provided for @emptyNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes'**
+  String get emptyNotes;
+
+  /// No description provided for @emptyNotesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture your ideas, references and thoughts'**
+  String get emptyNotesSubtitle;
+
+  /// No description provided for @titleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Title is required'**
+  String get titleRequired;
+
+  /// No description provided for @notePinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Note pinned'**
+  String get notePinned;
+
+  /// No description provided for @noteUnpinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Note unpinned'**
+  String get noteUnpinned;
+
+  /// No description provided for @pinned.
+  ///
+  /// In en, this message translates to:
+  /// **'pinned'**
+  String get pinned;
+
+  /// No description provided for @notebooksLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'notebooks'**
+  String get notebooksLabel;
+
+  /// No description provided for @discardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get discardTitle;
+
+  /// No description provided for @discardContent.
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes. Are you sure you want to leave?'**
+  String get discardContent;
+
+  /// No description provided for @discard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discard;
+
+  /// No description provided for @notesDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'note(s) deleted'**
+  String get notesDeleted;
+
+  /// No description provided for @noteDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Note deleted'**
+  String get noteDeleted;
+
+  /// No description provided for @notesUndoDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Note \"{title}\" deleted'**
+  String notesUndoDeleted(Object title);
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @selectNotebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Select notebook'**
+  String get selectNotebook;
+
+  /// No description provided for @moveToNotebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to notebook'**
+  String get moveToNotebook;
+
+  /// No description provided for @chooseEmoji.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Emoji'**
+  String get chooseEmoji;
+
+  /// No description provided for @tapToAssignTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to assign tags to this note'**
+  String get tapToAssignTags;
+
+  /// No description provided for @noTags.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags'**
+  String get noTags;
+
+  /// No description provided for @createTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Create tags'**
+  String get createTags;
+
+  /// No description provided for @manageTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage tags'**
+  String get manageTags;
+
+  /// No description provided for @createNewTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new tag'**
+  String get createNewTag;
+
+  /// No description provided for @accept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get accept;
+
+  /// No description provided for @searchNotebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Search notebook...'**
+  String get searchNotebook;
+
+  /// No description provided for @newNotebook.
+  ///
+  /// In en, this message translates to:
+  /// **'New notebook...'**
+  String get newNotebook;
 }
 
 class _AppLocalizationsDelegate
