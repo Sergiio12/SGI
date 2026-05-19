@@ -186,6 +186,35 @@ class TasksProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> moveTaskToStatus(String taskId, TaskStatus status) async {
+    try {
+      final index = _tasks.indexWhere((t) => t.id == taskId);
+      if (index == -1) return;
+      final task = _tasks[index];
+      if (task.status == status) return;
+      final updated = task.copyWith(
+        status: status,
+        lastActivityAt: DateTime.now(),
+      );
+      _tasks[index] = updated;
+      _notifyAndScheduleSave();
+      if (status == TaskStatus.completed || status == TaskStatus.cancelled) {
+        await NotificationService.cancelTaskReminders(taskId);
+      } else {
+        await NotificationService.scheduleTaskReminders(updated);
+      }
+      final message = status == TaskStatus.completed
+          ? 'Tarea completada'
+          : status == TaskStatus.cancelled
+              ? 'Tarea anulada'
+              : 'Tarea actualizada';
+      showSuccessNotification(message);
+    } catch (e) {
+      showErrorNotification('Error al mover tarea');
+      rethrow;
+    }
+  }
+
   Future<void> toggleSubtask(String taskId, String subtaskId) async {
     final index = _tasks.indexWhere((t) => t.id == taskId);
     if (index != -1) {
