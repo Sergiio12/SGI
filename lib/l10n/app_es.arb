@@ -216,6 +216,8 @@
   "goalPaused": "Pausado",
   "goalAbandoned": "Abandonado",
   "goalNeedsName": "El objetivo necesita un nombre",
+  "goalNotStarted": "Sin empezar",
+  "goalInProgress": "En progreso",
   "goalProgressCompleted": "completado",
   "justNow": "ahora",
 

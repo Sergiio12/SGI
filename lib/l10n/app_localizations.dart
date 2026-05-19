@@ -1226,6 +1226,18 @@ abstract class AppLocalizations {
   /// **'Goal needs a name'**
   String get goalNeedsName;
 
+  /// No description provided for @goalNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get goalNotStarted;
+
+  /// No description provided for @goalInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get goalInProgress;
+
   /// No description provided for @goalProgressCompleted.
   ///
   /// In en, this message translates to:

@@ -687,34 +687,90 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
             const SizedBox(height: 10),
             Consumer<ProjectsProvider>(
               builder: (context, projectsProvider, _) {
-                final projects = projectsProvider.projects;
-                if (projects.isEmpty) {
-                  return Text(
-                    AppLocalizations.of(context).emptyState,
-                    style:
-                        TextStyle(color: BrainTheme.textTertiary, fontSize: 13),
-                  );
-                }
-                return Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: projects.map((project) {
-                    final isSelected = _projectIds.contains(project.id);
-                    return FilterChip(
-                      label: Text(project.title),
-                      selected: isSelected,
-                      avatar: Text(project.emoji),
-                      onSelected: (selected) {
-                        setState(() {
-                          if (selected) {
-                            _projectIds.add(project.id);
-                          } else {
-                            _projectIds.remove(project.id);
-                          }
-                        });
-                      },
-                    );
-                  }).toList(),
+                final allProjects = projectsProvider.projects;
+                final selectedProjects =
+                    allProjects.where((p) => _projectIds.contains(p.id)).toList();
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (selectedProjects.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: selectedProjects.map((project) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Color(project.colorValue)
+                                    .withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Color(project.colorValue)
+                                      .withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(project.emoji, style: const TextStyle(fontSize: 14)),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    project.title,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: BrainTheme.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() => _projectIds.remove(project.id));
+                                    },
+                                    child: Icon(Icons.close, size: 14,
+                                        color: BrainTheme.textTertiary),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    GestureDetector(
+                      onTap: () => _showProjectPicker(allProjects,
+                          selectedProjects.map((p) => p.id).toList()),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: BrainTheme.cardDark,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: BrainTheme.borderDark),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.add, size: 18,
+                                color: BrainTheme.textTertiary),
+                            const SizedBox(width: 8),
+                            Text(
+                              selectedProjects.isEmpty
+                                  ? AppLocalizations.of(context).goalLinkedProjects
+                                  : '${AppLocalizations.of(context).goalLinkedProjects} (${selectedProjects.length})',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: BrainTheme.textTertiary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -808,6 +864,179 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
           ],
         ),
       ),
+    );
+  }
+
+  void _showProjectPicker(List<Project> allProjects, List<String> currentIds) {
+    final searchController = TextEditingController();
+    var searchQuery = '';
+    var selectedIds = currentIds.toList();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: BrainTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final filtered = searchQuery.isEmpty
+                ? allProjects
+                : allProjects.where((p) {
+                    final q = searchQuery.toLowerCase();
+                    return p.title.toLowerCase().contains(q);
+                  }).toList();
+
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: BrainTheme.textTertiary.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    TextField(
+                      controller: searchController,
+                      autofocus: true,
+                      onChanged: (v) =>
+                          setModalState(() => searchQuery = v),
+                      style: const TextStyle(fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context).searchInProjects,
+                        prefixIcon:
+                            const Icon(Icons.search, size: 20),
+                        suffixIcon: searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 18),
+                                onPressed: () {
+                                  searchController.clear();
+                                  setModalState(() => searchQuery = '');
+                                },
+                              )
+                            : null,
+                        isDense: true,
+                        filled: true,
+                        fillColor: BrainTheme.cardDark,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide:
+                              BorderSide(color: BrainTheme.borderDark),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (filtered.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        child: Text(
+                          AppLocalizations.of(context).noResults,
+                          style: TextStyle(
+                            color: BrainTheme.textTertiary,
+                          ),
+                        ),
+                      )
+                    else
+                      Flexible(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final project = filtered[index];
+                            final isSelected =
+                                selectedIds.contains(project.id);
+                            final pColor = Color(project.colorValue);
+                            return ListTile(
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color:
+                                      pColor.withValues(alpha: 0.15),
+                                  borderRadius:
+                                      BorderRadius.circular(12),
+                                ),
+                                child: Center(
+                                  child: Text(project.emoji,
+                                      style:
+                                          const TextStyle(fontSize: 18)),
+                                ),
+                              ),
+                              title: Text(
+                                project.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: BrainTheme.textPrimary,
+                                ),
+                              ),
+                              trailing: isSelected
+                                  ? Icon(Icons.check_circle,
+                                      color: pColor)
+                                  : Icon(Icons.circle_outlined,
+                                      color: BrainTheme.textTertiary),
+                              onTap: () {
+                                setModalState(() {
+                                  if (isSelected) {
+                                    selectedIds.remove(project.id);
+                                  } else {
+                                    selectedIds.add(project.id);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                                AppLocalizations.of(context).cancel),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() => _projectIds = selectedIds);
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: BrainTheme.accentPurple,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: Text(AppLocalizations.of(context).save),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -1014,6 +1243,8 @@ class _InfoTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       children: [
         if (goal.description.isNotEmpty) ...[
@@ -1129,6 +1360,8 @@ class _ProjectsTab extends StatelessWidget {
     }
 
     return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       itemCount: projects.length,
       itemBuilder: (context, index) {

@@ -168,15 +168,14 @@ class _NotesScreenState extends State<NotesScreen> {
   void _showBottomSnackBar(String message, {String? actionLabel, VoidCallback? onAction}) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
+    final paddingBottom = MediaQuery.of(context).padding.bottom;
     messenger.showSnackBar(SnackBar(
       content: Text(message),
       duration: const Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.only(
-        bottom: MediaQuery.of(context).padding.bottom + 8,
-        left: 16,
-        right: 16,
-      ),
+      margin: EdgeInsets.only(bottom: paddingBottom, left: 0, right: 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      shape: const RoundedRectangleBorder(),
       action: actionLabel != null && onAction != null
           ? SnackBarAction(label: actionLabel, textColor: BrainTheme.accentPurple, onPressed: onAction)
           : null,

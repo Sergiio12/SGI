@@ -574,6 +574,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalNeedsName => 'Goal needs a name';
 
   @override
+  String get goalNotStarted => 'Not started';
+
+  @override
+  String get goalInProgress => 'In progress';
+
+  @override
   String get goalProgressCompleted => 'completed';
 
   @override
