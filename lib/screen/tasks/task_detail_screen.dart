@@ -41,7 +41,57 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   List<String> _selectedTags = [];
   bool _showForm = false;
 
+  // Initial values for discard-changes detection
+  String _initialTitle = '';
+  String _initialDesc = '';
+  TaskPriority _initialPriority = TaskPriority.medium;
+  TaskStatus _initialStatus = TaskStatus.pending;
+  DateTime? _initialDueDate;
+  String? _initialProjectId;
+  String _initialEstimatedHours = '1';
+  String? _initialActualHours;
+  String _initialReminder = '';
+  List<SubTask> _initialSubtasks = [];
+  List<String> _initialLinkedNoteIds = [];
+  List<String> _initialSelectedTags = [];
+
   bool get _isEditing => widget.taskId != null;
+
+  bool get _hasUnsavedChanges {
+    if (_isEditing) {
+      return _titleController.text != _initialTitle ||
+          _descController.text != _initialDesc ||
+          _priority != _initialPriority ||
+          _status != _initialStatus ||
+          _dueDate != _initialDueDate ||
+          _projectId != _initialProjectId ||
+          _estimatedHoursController.text != _initialEstimatedHours ||
+          _actualHoursController.text != (_initialActualHours ?? '') ||
+          _reminderController.text != _initialReminder ||
+          !_listEquals(_subtasks, _initialSubtasks) ||
+          !_listEquals(_linkedNoteIds, _initialLinkedNoteIds) ||
+          !_listEquals(_selectedTags, _initialSelectedTags);
+    }
+    return _titleController.text.isNotEmpty ||
+        _descController.text.isNotEmpty ||
+        _priority != TaskPriority.medium ||
+        _dueDate != null ||
+        _projectId != null ||
+        _estimatedHoursController.text != '1' ||
+        _actualHoursController.text.isNotEmpty ||
+        _reminderController.text.isNotEmpty ||
+        _subtasks.isNotEmpty ||
+        _linkedNoteIds.isNotEmpty ||
+        _selectedTags.isNotEmpty;
+  }
+
+  bool _listEquals<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
   late TabController _tabController;
 
   @override
@@ -69,6 +119,21 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             _subtasks = List.from(task.subtasks);
             _selectedTags = List.from(task.tags);
             _linkedNoteIds = List.from(task.linkedNoteIds);
+            _initialTitle = task.title;
+            _initialDesc = task.description;
+            _initialPriority = task.priority;
+            _initialStatus = task.status;
+            _initialDueDate = task.dueDate;
+            _initialEstimatedHours = _formatNumber(task.estimatedHours);
+            _initialActualHours = task.actualHours != null
+                ? _formatNumber(task.actualHours!)
+                : null;
+            _initialReminder =
+                task.reminderMinutesBefore?.toString() ?? '';
+            _initialProjectId = task.projectId;
+            _initialSubtasks = List.from(task.subtasks);
+            _initialSelectedTags = List.from(task.tags);
+            _initialLinkedNoteIds = List.from(task.linkedNoteIds);
           });
         }
       });
@@ -80,6 +145,31 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       final tagsProv = context.read<TagsProvider>();
       if (!tagsProv.isLoaded) tagsProv.loadTags();
     });
+  }
+
+  Future<bool> _onWillPop() async {
+    if (!_hasUnsavedChanges) return true;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: BrainTheme.cardDark,
+        title: Text(AppLocalizations.of(ctx).discardTitle),
+        content: Text(AppLocalizations.of(ctx).discardContent),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(AppLocalizations.of(ctx).cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style:
+                FilledButton.styleFrom(backgroundColor: BrainTheme.accentRed),
+            child: Text(AppLocalizations.of(ctx).discard),
+          ),
+        ],
+      ),
+    );
+    return result ?? true;
   }
 
   @override
@@ -143,7 +233,23 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       );
     }
 
-    if (mounted) Navigator.pop(context);
+    if (mounted) {
+      _initialTitle = _titleController.text;
+      _initialDesc = _descController.text;
+      _initialPriority = _priority;
+      _initialStatus = _status;
+      _initialDueDate = _dueDate;
+      _initialEstimatedHours = _estimatedHoursController.text;
+      _initialActualHours = _actualHoursController.text.isNotEmpty
+          ? _actualHoursController.text
+          : null;
+      _initialReminder = _reminderController.text;
+      _initialProjectId = _projectId;
+      _initialSubtasks = List.from(_subtasks);
+      _initialSelectedTags = List.from(_selectedTags);
+      _initialLinkedNoteIds = List.from(_linkedNoteIds);
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -231,7 +337,14 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     final subtaskProgress =
         _subtasks.isEmpty ? 0.0 : subtaskDone / _subtasks.length;
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final shouldPop = await _onWillPop();
+        if (shouldPop && context.mounted) Navigator.pop(context);
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(isEditing
             ? AppLocalizations.of(context).editTask
@@ -642,6 +755,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             const SizedBox(height: 100),
           ],
         ),
+      ),
       ),
     );
   }

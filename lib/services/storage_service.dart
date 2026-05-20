@@ -27,6 +27,7 @@ class HiveStorageService implements IStorageService {
   static const String _trashNotesKey = 'brain_trash_notes';
   static const String _trashGoalsKey = 'brain_trash_goals';
   static const String _tagsKey = 'brain_tags';
+  static const String _notebookNamesKey = 'brain_notebook_names';
 
   Box<String>? _box;
 
@@ -207,6 +208,19 @@ class HiveStorageService implements IStorageService {
   Future<void> saveNotes(List<Note> notes) async {
     _cachedNotes = List<Note>.from(notes);
     await _saveList(_notesKey, notes.map((n) => n.toJson()).toList());
+  }
+
+  @override
+  Future<List<String>> loadNotebookNames() async {
+    final raw = _box!.get(_notebookNamesKey);
+    if (raw == null) return [];
+    final list = jsonDecode(raw) as List;
+    return list.cast<String>();
+  }
+
+  @override
+  Future<void> saveNotebookNames(List<String> names) async {
+    await _box!.put(_notebookNamesKey, jsonEncode(names));
   }
 
   @override

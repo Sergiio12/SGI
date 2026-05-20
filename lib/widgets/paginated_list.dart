@@ -8,20 +8,18 @@ class PaginatedList<T> extends StatefulWidget {
   final EdgeInsetsGeometry? padding;
   final ScrollController? scrollController;
   final Widget? emptyWidget;
-  final Widget? loadingIndicator;
-  final String loadMoreLabel;
+  final Widget Function(BuildContext)? loadingIndicator;
 
   const PaginatedList({
     super.key,
     required this.items,
     required this.itemBuilder,
-    this.pageSize = 20,
-    this.initialPageSize = 30,
+    this.pageSize = 30,
+    this.initialPageSize = 40,
     this.padding,
     this.scrollController,
     this.emptyWidget,
     this.loadingIndicator,
-    this.loadMoreLabel = 'Cargar más',
   });
 
   @override
@@ -32,6 +30,8 @@ class _PaginatedListState<T> extends State<PaginatedList<T>> {
   late ScrollController _scrollController;
   late int _visibleCount;
   bool _isLoadingMore = false;
+
+  static const double _scrollThreshold = 400;
 
   @override
   void initState() {
@@ -44,7 +44,7 @@ class _PaginatedListState<T> extends State<PaginatedList<T>> {
   @override
   void didUpdateWidget(PaginatedList<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.items != widget.items || oldWidget.items.length != widget.items.length) {
+    if (oldWidget.items != widget.items) {
       _visibleCount = widget.initialPageSize.clamp(0, widget.items.length);
       _isLoadingMore = false;
     }
@@ -59,9 +59,10 @@ class _PaginatedListState<T> extends State<PaginatedList<T>> {
   }
 
   void _onScroll() {
-    if (_scrollController.hasClients &&
-        _scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 300) {
+    if (!_scrollController.hasClients || _isLoadingMore) return;
+    if (_visibleCount >= widget.items.length) return;
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - _scrollThreshold) {
       _loadMore();
     }
   }
@@ -69,7 +70,7 @@ class _PaginatedListState<T> extends State<PaginatedList<T>> {
   void _loadMore() {
     if (_isLoadingMore || _visibleCount >= widget.items.length) return;
     setState(() => _isLoadingMore = true);
-    Future.delayed(const Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 50), () {
       if (!mounted) return;
       setState(() {
         _visibleCount =
@@ -79,68 +80,44 @@ class _PaginatedListState<T> extends State<PaginatedList<T>> {
     });
   }
 
-  int get _remaining => widget.items.length - _visibleCount;
-
   @override
   Widget build(BuildContext context) {
-    if (widget.items.isEmpty) {
+    final count = widget.items.length;
+    if (count == 0) {
       return widget.emptyWidget ?? const SizedBox.shrink();
     }
 
-    final displayItems = widget.items.take(_visibleCount).toList();
-    final hasMore = _remaining > 0;
+    final displayCount = _visibleCount.clamp(0, count);
+    final hasMore = displayCount < count;
 
     return ListView.builder(
       controller: _scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: widget.padding,
-      itemCount: displayItems.length + (hasMore ? 1 : 0),
+      itemCount: displayCount + (hasMore ? 1 : 0),
       itemBuilder: (context, index) {
-        if (index >= displayItems.length) {
-          return _buildLoadMoreButton();
+        if (index >= displayCount) {
+          return _buildLoadingIndicator();
         }
-        return widget.itemBuilder(context, displayItems[index], index);
+        return widget.itemBuilder(context, widget.items[index], index);
       },
     );
   }
 
-  Widget _buildLoadMoreButton() {
-    final count = _remaining > widget.pageSize ? widget.pageSize : _remaining;
+  Widget _buildLoadingIndicator() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Center(
-        child: _isLoadingMore
-            ? widget.loadingIndicator ??
-                const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2.5),
-                )
-            : GestureDetector(
-                onTap: _loadMore,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  child: Text(
-                    '${widget.loadMoreLabel} (+$count)',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ),
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: widget.loadingIndicator?.call(context) ??
+          Center(
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white.withValues(alpha: 0.3),
               ),
-      ),
+            ),
+          ),
     );
   }
 }

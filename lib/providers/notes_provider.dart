@@ -38,6 +38,7 @@ class NotesProvider extends ChangeNotifier {
   List<Note> _unpinnedNotes = [];
   List<Note> _recentNotes = [];
   List<String> _notebooks = ['General'];
+  List<String> _notebookNames = [];
   Map<String, int> _cachedNotebookCounts = {};
   Map<String, int> _cachedTagCounts = {};
 
@@ -53,6 +54,7 @@ class NotesProvider extends ChangeNotifier {
 
   Future<void> loadNotes() async {
     _notes = await _storage.loadNotes();
+    _notebookNames = await _storage.loadNotebookNames();
     _updateComputedLists();
     _isLoaded = true;
     notifyListeners();
@@ -66,8 +68,9 @@ class NotesProvider extends ChangeNotifier {
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     _recentNotes = sorted.take(10).toList();
 
-    final values = _notes.map((n) => n.notebook).toSet().toList()..sort();
-    _notebooks = values.isEmpty ? ['General'] : values;
+    final derived = _notes.map((n) => n.notebook).toSet();
+    final merged = {...derived, ..._notebookNames.toSet()}.toList()..sort();
+    _notebooks = merged.isEmpty ? ['General'] : merged;
 
     _cachedNotebookCounts = {};
     for (final n in _notes) {
@@ -85,8 +88,17 @@ class NotesProvider extends ChangeNotifier {
 
   void _notifyAndScheduleSave() {
     _updateComputedLists();
+    _pruneOrphanNotebookNames();
     notifyListeners();
-    _saveDebouncer.call(() => _storage.saveNotes(_notes));
+    _saveDebouncer.call(() async {
+      await _storage.saveNotes(_notes);
+      await _storage.saveNotebookNames(_notebookNames);
+    });
+  }
+
+  void _pruneOrphanNotebookNames() {
+    final derived = _notes.map((n) => n.notebook).toSet();
+    _notebookNames.removeWhere(derived.contains);
   }
 
   List<Note> getNotesByProject(String projectId) =>
@@ -261,6 +273,15 @@ class NotesProvider extends ChangeNotifier {
     } catch (e, s) {
       AppException(message: 'Error al eliminar cuaderno', code: 'DELETE_NOTEBOOK', stackTrace: s).log();
     }
+  }
+
+  Future<void> createNotebook(String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty || _notebooks.contains(trimmed)) return;
+    _notebookNames.add(trimmed);
+    _updateComputedLists();
+    notifyListeners();
+    await _storage.saveNotebookNames(_notebookNames);
   }
 
   Future<void> replaceAll(List<Note> notes) async {

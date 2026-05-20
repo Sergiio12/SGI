@@ -448,9 +448,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 12),
                     ),
-                    onSubmitted: (value) {
+                    onSubmitted: (value) async {
                       if (value.trim().isNotEmpty) {
-                        setState(() => _notebook = value.trim());
+                        final name = value.trim();
+                        final prov = context.read<NotesProvider>();
+                        if (!prov.notebooks.contains(name)) {
+                          await prov.createNotebook(name);
+                        }
+                        setState(() => _notebook = name);
                         Navigator.pop(ctx);
                       }
                     },

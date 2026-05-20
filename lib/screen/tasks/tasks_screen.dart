@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -31,6 +32,7 @@ class _TasksScreenState extends State<TasksScreen> {
   final _projectSearchController = TextEditingController();
   String _searchQuery = '';
   String _projectSearchQuery = '';
+  Timer? _searchDebounce;
   Set<TaskPriority> _selectedPriorities = TaskPriority.values.toSet();
   _TaskDueDateFilter _dueDateFilter = _TaskDueDateFilter.all;
   bool _onlyWithDescription = false;
@@ -42,6 +44,7 @@ class _TasksScreenState extends State<TasksScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     _projectSearchController.dispose();
     super.dispose();
@@ -188,8 +191,19 @@ class _TasksScreenState extends State<TasksScreen> {
     }
   }
 
-  TaskStatus _boardStatus(TaskStatus status) {
-    return status;
+  List<Task> _boardTaskList(TasksProvider provider, TaskStatus status) {
+    switch (status) {
+      case TaskStatus.pending:
+        return provider.todoTasks;
+      case TaskStatus.inProgress:
+        return provider.inProgressTasks;
+      case TaskStatus.inReview:
+        return provider.inReviewTasks;
+      case TaskStatus.completed:
+        return provider.doneTasks;
+      case TaskStatus.cancelled:
+        return provider.cancelledTasks;
+    }
   }
 
   @override
@@ -207,8 +221,12 @@ class _TasksScreenState extends State<TasksScreen> {
               searchQuery: _searchQuery,
               showSearch: _showSearch,
               searchController: _searchController,
-              onSearchChanged: (v) =>
-                  setState(() => _searchQuery = v.toLowerCase()),
+              onSearchChanged: (v) {
+                _searchDebounce?.cancel();
+                _searchDebounce = Timer(const Duration(milliseconds: 200), () {
+                  setState(() => _searchQuery = v.toLowerCase());
+                });
+              },
               onToggleSearch: () => setState(() {
                 _showSearch = !_showSearch;
                 if (!_showSearch) {
@@ -247,27 +265,20 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   Widget _buildBoard(BuildContext context, TasksProvider provider) {
-    final filteredTasks = _filteredTasks(provider.tasks);
-    final sortedTasks = [...filteredTasks]..sort(_compareTasks);
     final visibleColumns = TaskStatus.values
         .where((status) => _visibleBoardColumns.contains(status))
         .toList();
-    final columns = Map.fromEntries(
-      visibleColumns.map((status) => MapEntry(status, <Task>[])),
-    );
-
-    for (final task in sortedTasks) {
-      final boardStatus = _boardStatus(task.status);
-      if (columns.containsKey(boardStatus)) {
-        columns[boardStatus]!.add(task);
-      }
+    final columns = <TaskStatus, List<Task>>{};
+    for (final status in visibleColumns) {
+      final statusTasks = _boardTaskList(provider, status);
+      columns[status] = _filteredTasks(statusTasks)..sort(_compareTasks);
     }
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final boardWidth = visibleColumns.isEmpty
             ? constraints.maxWidth
-            : max((280 + 32) * visibleColumns.length.toDouble(),
+            : max((290 + 34) * visibleColumns.length.toDouble(),
                 constraints.maxWidth);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,7 +288,7 @@ class _TasksScreenState extends State<TasksScreen> {
               child: Row(
                 children: [
                   Text(
-                    '${filteredTasks.length} ${AppLocalizations.of(context).tasks}',
+                    '${columns.values.fold(0, (s, l) => s + l.length)} ${AppLocalizations.of(context).tasks}',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
@@ -1304,7 +1315,7 @@ class _TaskBoardColumn extends StatelessWidget {
       builder: (context, candidateData, rejectedData) {
         final isHovered = candidateData.isNotEmpty;
         return Container(
-          width: 260,
+          width: 290,
           margin: const EdgeInsets.only(left: 8, right: 8),
           decoration: BoxDecoration(
             color: BrainTheme.surfaceDark.withValues(alpha: 0.4),
@@ -1339,8 +1350,8 @@ class _TaskBoardColumn extends StatelessWidget {
                     ? _EmptyColumn(icon: _columnIcon, color: _columnColor)
                     : PaginatedList<Task>(
                         items: tasks,
-                        pageSize: 20,
-                        initialPageSize: 30,
+                        pageSize: 30,
+                        initialPageSize: 40,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         itemBuilder: (context, task, index) {
                           return Padding(
@@ -1350,7 +1361,7 @@ class _TaskBoardColumn extends StatelessWidget {
                               feedback: Material(
                                 color: Colors.transparent,
                                 child: SizedBox(
-                                  width: 240,
+                                  width: 270,
                                   child: Transform.scale(
                                     scale: 1.03,
                                     child: Card(

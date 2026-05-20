@@ -16,6 +16,8 @@ abstract class IStorageService {
   Future<void> saveProjects(List<Project> projects);
   Future<List<Note>> loadNotes();
   Future<void> saveNotes(List<Note> notes);
+  Future<List<String>> loadNotebookNames();
+  Future<void> saveNotebookNames(List<String> names);
   Future<List<Goal>> loadGoals();
   Future<void> saveGoals(List<Goal> goals);
   Future<List<Tag>> loadTags();

@@ -61,17 +61,17 @@ class TaskCard extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-        margin: const EdgeInsets.only(bottom: 6),
+        margin: const EdgeInsets.only(bottom: 8),
         decoration: ShapeDecoration(
           color: BrainTheme.cardDark.withValues(alpha: isDimmed ? 0.5 : 0.9),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
             side: BorderSide(color: borderColor, width: 1),
           ),
           shadows: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 3,
+              blurRadius: 4,
               offset: const Offset(0, 1),
             ),
           ],
@@ -81,10 +81,10 @@ class TaskCard extends StatelessWidget {
           children: [
             Positioned(
               left: 0, top: 0, bottom: 0,
-              child: Container(width: 3, color: stripColor),
+              child: Container(width: 4, color: stripColor),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(13, 9, 9, 9),
+              padding: const EdgeInsets.fromLTRB(15, 11, 11, 11),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -97,7 +97,7 @@ class TaskCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.3,
                             height: 1.2,
@@ -111,13 +111,13 @@ class TaskCard extends StatelessWidget {
                     ],
                   ),
                   if (task.description.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
                       task.description,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         color: isDimmed
                             ? BrainTheme.textTertiary.withValues(alpha: 0.6)
                             : BrainTheme.textSecondary,
@@ -125,7 +125,7 @@ class TaskCard extends StatelessWidget {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   _MetadataRow(
                     task: task,
                     isDimmed: isDimmed,
@@ -134,7 +134,7 @@ class TaskCard extends StatelessWidget {
                     subtaskProgress: subtaskProgress,
                   ),
                   if (hasSubtasks) ...[
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 7),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(2),
                       child: TweenAnimationBuilder<double>(
@@ -144,7 +144,7 @@ class TaskCard extends StatelessWidget {
                         builder: (context, value, _) {
                           return LinearProgressIndicator(
                             value: value,
-                            minHeight: 2,
+                            minHeight: 3,
                             backgroundColor:
                                 BrainTheme.borderDark.withValues(alpha: 0.4),
                             valueColor: AlwaysStoppedAnimation(
@@ -215,58 +215,58 @@ class _MetadataRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 5, height: 5,
+          width: 6, height: 6,
           decoration: BoxDecoration(
             color: priColor,
             shape: BoxShape.circle,
           ),
         ),
-        const SizedBox(width: 3),
+        const SizedBox(width: 4),
         Text(
           _priorityLabel(task.priority, context),
           style: TextStyle(
-            fontSize: 10,
+            fontSize: 11,
             color: priColor,
             fontWeight: FontWeight.w600,
-            height: 1.1,
+            height: 1.2,
           ),
         ),
-        const SizedBox(width: 8),
-        Icon(Icons.calendar_today, size: 9, color: textColor),
-        const SizedBox(width: 2),
+        const SizedBox(width: 10),
+        Icon(Icons.calendar_today, size: 10, color: textColor),
+        const SizedBox(width: 3),
         Text(
           DateFormat('dd/MM/yy').format(task.createdAt),
-          style: TextStyle(fontSize: 10, color: textColor, height: 1.1),
+          style: TextStyle(fontSize: 11, color: textColor, height: 1.2),
         ),
         if (task.dueDate != null) ...[
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Icon(
             task.isOverdue ? Icons.error_outline : Icons.event,
-            size: 9,
+            size: 10,
             color: task.isOverdue ? BrainTheme.accentRed : textColor,
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: 3),
           Text(
             DateFormat('dd/MM/yy').format(task.dueDate!),
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               color: task.isOverdue ? BrainTheme.accentRed : textColor,
               fontWeight: task.isOverdue ? FontWeight.w600 : FontWeight.w400,
-              height: 1.1,
+              height: 1.2,
             ),
           ),
         ],
         if (hasSubtasks) ...[
-          const SizedBox(width: 8),
-          Icon(Icons.checklist, size: 9, color: textColor),
-          const SizedBox(width: 2),
+          const SizedBox(width: 10),
+          Icon(Icons.checklist, size: 10, color: textColor),
+          const SizedBox(width: 3),
           Text(
             '${task.subtasks.where((s) => s.isDone).length}/${task.subtasks.length}',
-            style: TextStyle(fontSize: 10, color: textColor, height: 1.1),
+            style: TextStyle(fontSize: 11, color: textColor, height: 1.2),
           ),
         ],
         if (task.projectId != null) ...[
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           _ProjectBadgeCompact(projectId: task.projectId!),
         ],
       ],
@@ -304,20 +304,20 @@ class _ProjectBadgeCompact extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 6, height: 6,
+          width: 7, height: 7,
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
           ),
         ),
-        const SizedBox(width: 2),
+        const SizedBox(width: 3),
         Text(
           project.title,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: FontWeight.w500,
             color: color,
-            height: 1.1,
+            height: 1.2,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
