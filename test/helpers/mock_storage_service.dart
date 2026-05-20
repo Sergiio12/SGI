@@ -16,6 +16,10 @@ class MockStorageService implements IStorageService {
   List<Project> _trashProjects = [];
   List<Note> _trashNotes = [];
   List<Goal> _trashGoals = [];
+  List<String> _notebookNames = [];
+  Map<String, String> _dailyIntentions = {};
+  Map<String, List<String>> _dailyPlans = {};
+  Map<String, String> _dailyTimeBlocks = {};
 
   List<Task> get savedTasks => _tasks;
   List<Task> get trashTasks => _trashTasks;
@@ -102,6 +106,38 @@ class MockStorageService implements IStorageService {
   }
 
   @override
+  Future<List<String>> loadNotebookNames() async => _notebookNames;
+
+  @override
+  Future<void> saveNotebookNames(List<String> names) async {
+    _notebookNames = List<String>.from(names);
+  }
+
+  @override
+  Future<Map<String, String>> loadDailyIntentions() async => _dailyIntentions;
+
+  @override
+  Future<void> saveDailyIntentions(Map<String, String> intentions) async {
+    _dailyIntentions = Map<String, String>.from(intentions);
+  }
+
+  @override
+  Future<Map<String, List<String>>> loadDailyPlans() async => _dailyPlans;
+
+  @override
+  Future<void> saveDailyPlans(Map<String, List<String>> plans) async {
+    _dailyPlans = plans.map((k, v) => MapEntry(k, List<String>.from(v)));
+  }
+
+  @override
+  Future<Map<String, String>> loadDailyTimeBlocks() async => _dailyTimeBlocks;
+
+  @override
+  Future<void> saveDailyTimeBlocks(Map<String, String> blocks) async {
+    _dailyTimeBlocks = Map<String, String>.from(blocks);
+  }
+
+  @override
   Future<void> clearAll() async {
     _tasks = [];
     _projects = [];
@@ -112,5 +148,9 @@ class MockStorageService implements IStorageService {
     _trashProjects = [];
     _trashNotes = [];
     _trashGoals = [];
+    _notebookNames = [];
+    _dailyIntentions = {};
+    _dailyPlans = {};
+    _dailyTimeBlocks = {};
   }
 }

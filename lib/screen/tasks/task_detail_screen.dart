@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../config/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/notification_service_v2.dart';
+import '../../utils/undo_helper.dart';
 import '../../models/task.dart';
 import '../../providers/tags_provider.dart';
 import '../../providers/projects_provider.dart';
@@ -1046,8 +1047,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       ),
     );
     if (confirm == true) {
-      await context.read<TasksProvider>().deleteTask(task.id);
-      if (mounted) Navigator.pop(context);
+      final tid = task.id;
+      await context.read<TasksProvider>().deleteTask(tid);
+      if (mounted) {
+        showUndoSnackBar(context,
+          message: AppLocalizations.of(context).taskDeleted,
+          onUndo: () => context.read<TasksProvider>().restoreTask(tid),
+        );
+        Navigator.pop(context);
+      }
     }
   }
 

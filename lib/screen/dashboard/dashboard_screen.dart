@@ -5,6 +5,7 @@ import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../../config/theme.dart';
 import '../../models/task.dart';
+import '../../providers/daily_planner_provider.dart';
 import '../../providers/goals_provider.dart';
 import '../../providers/notes_provider.dart';
 import '../../providers/projects_provider.dart';
@@ -14,6 +15,7 @@ import '../../widgets/skeleton_card.dart';
 import '../../widgets/task_card.dart';
 
 import '../../providers/dashboard_provider.dart';
+import 'dashboard_widgets.dart';
 import 'metrics_screens.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -104,9 +106,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer5<TasksProvider, ProjectsProvider, NotesProvider,
-        GoalsProvider, DashboardProvider>(
-      builder: (context, tasks, projects, notes, goals, dashboard, _) {
+    return Consumer6<TasksProvider, ProjectsProvider, NotesProvider,
+        GoalsProvider, DashboardProvider, DailyPlannerProvider>(
+      builder: (context, tasks, projects, notes, goals, dashboard, planner, _) {
+        final today = DateTime.now();
+        // Computar completados por día para sparklines y heatmap (últimos 28 días)
+        final last28Counts = List.generate(28, (i) {
+          final day = today.subtract(Duration(days: 27 - i));
+          return tasks.tasks.where((t) =>
+            t.status == TaskStatus.completed &&
+            t.updatedAt.year == day.year &&
+            t.updatedAt.month == day.month &&
+            t.updatedAt.day == day.day
+          ).length;
+        });
+        final last7Counts = last28Counts.sublist(21);
+
         if (!tasks.isLoaded || !projects.isLoaded || !notes.isLoaded || !goals.isLoaded) {
           return SingleChildScrollView(
             padding: EdgeInsets.all(16),
@@ -121,8 +136,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           );
         }
-        final today = DateTime.now();
-
         // Calculo de productividad real: tareas con fecha de finalización hoy o adelante.
         final todayStart = DateTime(today.year, today.month, today.day);
         final upcomingTasks = tasks.tasks.where((t) {
@@ -136,12 +149,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final todayProgress = totalUpcomingTasks == 0
             ? 0.0
             : (completedUpcomingTasks / totalUpcomingTasks);
-
-        // Filtrar tareas del dia seleccionado en el calendario
-        final selectedDateTasks = tasks.tasks.where((t) {
-          final d = t.dueDate;
-          return d != null && _isSameDay(d, _selectedDate);
-        }).toList();
 
         // Calculos de metrics avanzadas para stats cards
         final activeTasksCount = tasks.tasks.where((t) => t.isActive).length;
@@ -165,28 +172,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final totalNotesCount = notes.notes.length;
         final notesNotebooksCount = notes.notebooks.length;
 
-        return SingleChildScrollView(
+        return RefreshIndicator(
+          onRefresh: () => Future.wait([
+            tasks.loadTasks(),
+            projects.loadProjects(),
+            notes.loadNotes(),
+            goals.loadGoals(),
+          ]),
+          child: SingleChildScrollView(
           padding: ResponsiveHelper.getResponsivePadding(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. HEADER: INTELLIGENT GREETING & RADIAL PROGRESS RING
-              _buildMindGreetingHeader(context, todayProgress,
-                  completedUpcomingTasks, totalUpcomingTasks),
+              // 1. HEADER: INTELLIGENT GREETING + INTENTION + RADIAL PROGRESS
+              _buildMindGreetingHeader(
+                context,
+                todayProgress,
+                completedUpcomingTasks,
+                totalUpcomingTasks,
+                planner,
+              ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               // 2. CALENDAR WEEK RIBBON (INTERACTIVE)
               _buildCalendarWeekRibbon(tasks),
 
+              const SizedBox(height: 20),
+
+              // 3. TIMELINE AGENDA WITH TIME BLOCKS
+              TimelineAgenda(
+                selectedDate: _selectedDate,
+                planner: planner,
+                tasksProv: tasks,
+              ),
+
               const SizedBox(height: 24),
 
-              // 3. DAILY AGENDA / CHECKLIST UNDER CALENDAR
-              _buildDailyAgendaChecklist(selectedDateTasks, tasks, context),
-
-              const SizedBox(height: 24),
-
-              // 4. PREMIUM REDESIGNED STATS GRID
+              // 4. PREMIUM STATS GRID
               _buildPremiumStatsGrid(
                 context,
                 tasks,
@@ -203,36 +226,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 notesNotebooksCount,
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 20),
 
-              // Focus tasks section if any
-              if (tasks.focusTasks.isNotEmpty) ...[
-                const SizedBox(height: 32),
-                _SectionHeader(
-                  title: AppLocalizations.of(context).focusMode,
-                  icon: Icons.center_focus_strong,
-                  color: BrainTheme.accentOrange,
-                  count: tasks.focusTasks.length,
-                  actionLabel: 'Abrir',
-                  onAction: () => Navigator.pushNamed(context, '/focus'),
-                ).animate().fadeIn().slideX(begin: -0.1, end: 0),
-                const SizedBox(height: 12),
-                ...tasks.focusTasks.take(3).map(
-                      (task) => TaskCard(
-                        task: task,
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          '/task',
-                          arguments: task.id,
-                        ),
-                        onToggle: () => tasks.toggleTaskStatus(task.id),
-                      ),
-                    ),
-              ],
+              // 5. PRODUCTIVITY SPARKLINE
+              ProductivitySparkline(dailyCounts: last7Counts),
 
-              // Overdue section if any
+              const SizedBox(height: 16),
+
+              // 6. WEEKLY HEATMAP
+              WeeklyHeatmap(dailyCounts: last28Counts),
+
+              const SizedBox(height: 24),
+
+              // 7. FOCUS MODE SHORTCUT
+              _buildFocusSection(context, tasks, planner, today),
+
+              const SizedBox(height: 16),
+
+              // 8. OVERDUE SECTION
               if (tasks.overdueTasks.isNotEmpty) ...[
-                const SizedBox(height: 32),
                 _SectionHeader(
                   title: AppLocalizations.of(context).overdueTasks,
                   icon: Icons.warning_amber_rounded,
@@ -256,17 +268,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 100),
             ],
           ),
-        );
-      },
-    );
+        ),
+      );
+    },
+  );
   }
 
-  // WIDGET: Mind Greeting Header
+  // WIDGET: Mind Greeting Header + Daily Intention
   Widget _buildMindGreetingHeader(
     BuildContext context,
     double todayProgress,
     int completedUpcomingTasks,
     int totalUpcomingTasks,
+    DailyPlannerProvider planner,
   ) {
     final hour = DateTime.now().hour;
     final greeting = hour < 12
@@ -300,90 +314,140 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       padding: const EdgeInsets.all(20),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  greeting,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.5,
-                    color: BrainTheme.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatDateSpanish(DateTime.now()),
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: BrainTheme.accentPurple,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Tu mapa mental operativo e inteligente.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: BrainTheme.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          // Circular Progress Radial
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: BrainTheme.surfaceDark,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.05),
-                width: 1,
-              ),
-            ),
-            padding: const EdgeInsets.all(6),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                CircularProgressIndicator(
-                  value: todayProgress,
-                  strokeWidth: 6,
-                  backgroundColor: BrainTheme.borderDark,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    todayProgress == 1.0
-                        ? BrainTheme.accentGreen
-                        : BrainTheme.accentPurple,
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${(todayProgress * 100).toInt()}%',
+                      greeting,
                       style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
                         color: BrainTheme.textPrimary,
                       ),
                     ),
+                    const SizedBox(height: 4),
                     Text(
-                      '$completedUpcomingTasks/$totalUpcomingTasks',
+                      _formatDateSpanish(DateTime.now()),
                       style: TextStyle(
-                        fontSize: 9,
-                        color: BrainTheme.textTertiary,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: BrainTheme.accentPurple,
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
+              // Circular Progress Radial
+              Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  color: BrainTheme.surfaceDark,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    width: 1,
+                  ),
+                ),
+                padding: const EdgeInsets.all(5),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      value: todayProgress,
+                      strokeWidth: 5,
+                      backgroundColor: BrainTheme.borderDark,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        todayProgress == 1.0
+                            ? BrainTheme.accentGreen
+                            : BrainTheme.accentPurple,
+                      ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${(todayProgress * 100).toInt()}%',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: BrainTheme.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          '$completedUpcomingTasks/$totalUpcomingTasks',
+                          style: TextStyle(
+                            fontSize: 8,
+                            color: BrainTheme.textTertiary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Daily Intention Banner
+          GestureDetector(
+            onTap: () => _showIntentionEditor(context, planner),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: BrainTheme.accentPurple.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+                  width: 0.5,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.lightbulb_outline_rounded,
+                    size: 14,
+                    color: BrainTheme.accentPurple,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      planner.intention.isNotEmpty
+                          ? planner.intention
+                          : '¿Cuál es tu intención para hoy?',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: planner.intention.isNotEmpty
+                            ? BrainTheme.textPrimary
+                            : BrainTheme.textTertiary,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      Icons.edit_outlined,
+                      size: 12,
+                      color: BrainTheme.accentPurple,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -392,6 +456,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .animate()
         .fadeIn(duration: 400.ms)
         .slideY(begin: -0.05, end: 0, curve: Curves.easeOut);
+  }
+
+  void _showIntentionEditor(BuildContext context, DailyPlannerProvider planner) {
+    final controller = TextEditingController(text: planner.intention);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: BrainTheme.cardDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Intención del día',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: BrainTheme.textPrimary,
+          ),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 3,
+          decoration: InputDecoration(
+            hintText: '¿Qué es lo más importante que quieres lograr hoy?',
+            hintStyle: TextStyle(color: BrainTheme.textTertiary, fontSize: 13),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: BrainTheme.borderDark),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: BrainTheme.accentPurple),
+            ),
+            fillColor: BrainTheme.surfaceDark,
+            filled: true,
+          ),
+          style: TextStyle(color: BrainTheme.textPrimary, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(foregroundColor: BrainTheme.textSecondary),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              planner.setIntention(controller.text);
+              planner.save();
+              Navigator.pop(ctx);
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: BrainTheme.accentPurple,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
   }
 
   // WIDGET: Calendar Week Ribbon
@@ -676,186 +799,92 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // WIDGET: Daily Agenda / Checklist
-  Widget _buildDailyAgendaChecklist(
-    List<Task> selectedDateTasks,
-    TasksProvider tasksProvider,
+  Widget _buildFocusSection(
     BuildContext context,
+    TasksProvider tasks,
+    DailyPlannerProvider planner,
+    DateTime today,
   ) {
-    final dateString = _isSameDay(_selectedDate, DateTime.now())
-        ? AppLocalizations.of(context).today
-        : '${_getDayNameAbbr(_selectedDate)} ${_selectedDate.day}';
+    final l10n = AppLocalizations.of(context);
+    final plannedCount = planner.plannedTaskIds.length;
+    final timeBlockedCount = planner.timeBlocks.length;
 
-    final pendingTasks = selectedDateTasks.where((t) => t.isActive).toList();
-    final completedTasks = selectedDateTasks
-        .where((t) => t.status == TaskStatus.completed)
-        .toList();
-    final orderedAgendaTasks = [
-      ...pendingTasks,
-      ...completedTasks,
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.playlist_add_check_rounded,
-                color: BrainTheme.accentBlue, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              'Agenda para $dateString',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: BrainTheme.textPrimary,
-                letterSpacing: -0.3,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              '${completedTasks.length}/${selectedDateTasks.length}',
-              style: TextStyle(
-                fontSize: 12,
-                color: BrainTheme.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        color: BrainTheme.cardDark.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: BrainTheme.accentOrange.withValues(alpha: 0.1),
+          width: 1,
         ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 10,
-          runSpacing: 8,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: BrainTheme.accentOrange.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                '${pendingTasks.length} pendientes',
-                style: TextStyle(
-                  color: BrainTheme.accentOrange,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: BrainTheme.accentGreen.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                '${completedTasks.length} completadas',
-                style: TextStyle(
-                  color: BrainTheme.accentGreen,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: BrainTheme.cardDark.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                '${selectedDateTasks.length} en total',
-                style: TextStyle(
-                  color: BrainTheme.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        if (selectedDateTasks.isEmpty)
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: BrainTheme.cardDark.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.03),
-                width: 1,
-              ),
+              color: BrainTheme.accentOrange.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14),
             ),
+            child:
+                Icon(Icons.center_focus_strong, size: 22, color: BrainTheme.accentOrange),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.calendar_today_outlined,
-                  size: 32,
-                  color: BrainTheme.textTertiary.withValues(alpha: 0.3),
-                ),
-                const SizedBox(height: 8),
                 Text(
-                  'Día despejado',
+                  l10n.focusMode,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: BrainTheme.textSecondary,
+                    color: BrainTheme.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
-                  'No tienes tareas programadas para esta fecha.',
-                  textAlign: TextAlign.center,
+                  '${tasks.focusTasks.length} tareas en foco · $plannedCount planificadas · $timeBlockedCount con bloque',
                   style: TextStyle(
                     fontSize: 11,
-                    color: BrainTheme.textTertiary,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/task');
-                  },
-                  icon: const Icon(Icons.add, size: 14),
-                  label: Text(AppLocalizations.of(context).createTask),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        BrainTheme.accentBlue.withValues(alpha: 0.15),
-                    foregroundColor: BrainTheme.accentBlue,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    textStyle: const TextStyle(
-                        fontSize: 11, fontWeight: FontWeight.bold),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    color: BrainTheme.textSecondary,
                   ),
                 ),
               ],
             ),
-          )
-              .animate()
-              .fadeIn(duration: 300.ms)
-              .scaleXY(begin: 0.95, end: 1.0, curve: Curves.easeOut)
-        else
-          Column(
-            children: orderedAgendaTasks.map((task) {
-              return TaskCard(
-                task: task,
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  '/task',
-                  arguments: task.id,
-                ),
-                onToggle: () => tasksProvider.toggleTaskStatus(task.id),
-              );
-            }).toList(),
           ),
-      ],
-    );
+          GestureDetector(
+            onTap: () => Navigator.pushNamed(context, '/focus'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: BrainTheme.accentOrange.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    'Abrir',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: BrainTheme.accentOrange,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.arrow_forward_ios,
+                      size: 10, color: BrainTheme.accentOrange),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    )
+        .animate()
+        .fadeIn(duration: 400.ms)
+        .slideY(begin: 0.05, end: 0, curve: Curves.easeOut);
   }
 }
 
@@ -992,16 +1021,12 @@ class _SectionHeader extends StatelessWidget {
   final IconData icon;
   final int? count;
   final Color color;
-  final String? actionLabel;
-  final VoidCallback? onAction;
 
   const _SectionHeader({
     required this.title,
     required this.icon,
     required this.color,
     this.count,
-    this.actionLabel,
-    this.onAction,
   });
 
   @override
@@ -1051,18 +1076,7 @@ class _SectionHeader extends StatelessWidget {
             ),
           ),
         ],
-        const Spacer(),
-        if (actionLabel != null && onAction != null)
-          TextButton(
-            onPressed: onAction,
-            style: TextButton.styleFrom(
-              foregroundColor: color,
-              textStyle:
-                  const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-            ),
-            child: Text(actionLabel!),
-          ),
+
       ],
     );
   }

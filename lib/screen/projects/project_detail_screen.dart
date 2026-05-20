@@ -13,6 +13,7 @@ import '../../providers/notes_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../utils/notification_service_v2.dart';
+import '../../utils/undo_helper.dart';
 import '../../widgets/note_card.dart';
 import '../../widgets/task_card.dart';
 
@@ -369,8 +370,15 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
       ),
     );
     if (confirm == true) {
-      await context.read<ProjectsProvider>().deleteProject(project.id);
-      if (mounted) Navigator.pop(context);
+      final pid = project.id;
+      await context.read<ProjectsProvider>().deleteProject(pid);
+      if (mounted) {
+        showUndoSnackBar(context,
+          message: AppLocalizations.of(context).itemDeleted,
+          onUndo: () => context.read<ProjectsProvider>().restoreProject(pid),
+        );
+        Navigator.pop(context);
+      }
     }
   }
 

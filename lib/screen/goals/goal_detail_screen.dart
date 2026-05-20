@@ -8,6 +8,7 @@ import '../../models/goal.dart';
 import '../../models/project.dart';
 import '../../models/tag.dart';
 import '../../utils/notification_service_v2.dart';
+import '../../utils/undo_helper.dart';
 import '../../providers/goals_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tags_provider.dart';
@@ -181,8 +182,15 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
       ),
     );
     if (confirm == true) {
-      await context.read<GoalsProvider>().deleteGoal(widget.goalId!);
-      if (mounted) Navigator.pop(context);
+      final gid = widget.goalId!;
+      await context.read<GoalsProvider>().deleteGoal(gid);
+      if (mounted) {
+        showUndoSnackBar(context,
+          message: AppLocalizations.of(context).itemDeleted,
+          onUndo: () => context.read<GoalsProvider>().restoreGoal(gid),
+        );
+        Navigator.pop(context);
+      }
     }
   }
 

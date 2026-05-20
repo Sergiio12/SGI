@@ -28,6 +28,9 @@ class HiveStorageService implements IStorageService {
   static const String _trashGoalsKey = 'brain_trash_goals';
   static const String _tagsKey = 'brain_tags';
   static const String _notebookNamesKey = 'brain_notebook_names';
+  static const String _dailyIntentionsKey = 'brain_daily_intentions';
+  static const String _dailyPlansKey = 'brain_daily_plans';
+  static const String _dailyTimeBlocksKey = 'brain_daily_time_blocks';
 
   Box<String>? _box;
 
@@ -221,6 +224,45 @@ class HiveStorageService implements IStorageService {
   @override
   Future<void> saveNotebookNames(List<String> names) async {
     await _box!.put(_notebookNamesKey, jsonEncode(names));
+  }
+
+  @override
+  Future<Map<String, String>> loadDailyIntentions() async {
+    final raw = _box!.get(_dailyIntentionsKey);
+    if (raw == null) return {};
+    final map = jsonDecode(raw) as Map<String, dynamic>;
+    return map.map((k, v) => MapEntry(k, v as String));
+  }
+
+  @override
+  Future<void> saveDailyIntentions(Map<String, String> intentions) async {
+    await _box!.put(_dailyIntentionsKey, jsonEncode(intentions));
+  }
+
+  @override
+  Future<Map<String, List<String>>> loadDailyPlans() async {
+    final raw = _box!.get(_dailyPlansKey);
+    if (raw == null) return {};
+    final map = jsonDecode(raw) as Map<String, dynamic>;
+    return map.map((k, v) => MapEntry(k, (v as List).cast<String>()));
+  }
+
+  @override
+  Future<void> saveDailyPlans(Map<String, List<String>> plans) async {
+    await _box!.put(_dailyPlansKey, jsonEncode(plans));
+  }
+
+  @override
+  Future<Map<String, String>> loadDailyTimeBlocks() async {
+    final raw = _box!.get(_dailyTimeBlocksKey);
+    if (raw == null) return {};
+    final map = jsonDecode(raw) as Map<String, dynamic>;
+    return map.map((k, v) => MapEntry(k, v as String));
+  }
+
+  @override
+  Future<void> saveDailyTimeBlocks(Map<String, String> blocks) async {
+    await _box!.put(_dailyTimeBlocksKey, jsonEncode(blocks));
   }
 
   @override

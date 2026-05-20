@@ -8,6 +8,7 @@ import '../../models/goal.dart';
 import '../../providers/goals_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tags_provider.dart';
+import '../../utils/undo_helper.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/goal_card.dart';
 import '../../widgets/skeleton_card.dart';
@@ -175,8 +176,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
                             color: BrainTheme.accentRed.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: BrainTheme.accentRed
-                                  .withValues(alpha: 0.2),
+                              color:
+                                  BrainTheme.accentRed.withValues(alpha: 0.2),
                             ),
                           ),
                           child: Row(
@@ -228,37 +229,40 @@ class _GoalsScreenState extends State<GoalsScreen> {
               )
             else
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
-                  children: [
-                    if (monthly.isNotEmpty)
-                      _buildSection(
-                        context,
-                        AppLocalizations.of(context).goalMonthly,
-                        monthly,
-                        BrainTheme.accentGreen,
-                        Icons.calendar_view_month,
-                        projectsProvider,
-                      ),
-                    if (quarterly.isNotEmpty)
-                      _buildSection(
-                        context,
-                        AppLocalizations.of(context).goalQuarterly,
-                        quarterly,
-                        BrainTheme.accentPurple,
-                        Icons.view_week_outlined,
-                        projectsProvider,
-                      ),
-                    if (yearly.isNotEmpty)
-                      _buildSection(
-                        context,
-                        AppLocalizations.of(context).goalYearly,
-                        yearly,
-                        BrainTheme.accentBlue,
-                        Icons.event_available_outlined,
-                        projectsProvider,
-                      ),
-                  ],
+                child: RefreshIndicator(
+                  onRefresh: () => context.read<GoalsProvider>().loadGoals(),
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
+                    children: [
+                      if (monthly.isNotEmpty)
+                        _buildSection(
+                          context,
+                          AppLocalizations.of(context).goalMonthly,
+                          monthly,
+                          BrainTheme.accentGreen,
+                          Icons.calendar_view_month,
+                          projectsProvider,
+                        ),
+                      if (quarterly.isNotEmpty)
+                        _buildSection(
+                          context,
+                          AppLocalizations.of(context).goalQuarterly,
+                          quarterly,
+                          BrainTheme.accentPurple,
+                          Icons.view_week_outlined,
+                          projectsProvider,
+                        ),
+                      if (yearly.isNotEmpty)
+                        _buildSection(
+                          context,
+                          AppLocalizations.of(context).goalYearly,
+                          yearly,
+                          BrainTheme.accentBlue,
+                          Icons.event_available_outlined,
+                          projectsProvider,
+                        ),
+                    ],
+                  ),
                 ),
               ),
           ],
@@ -372,7 +376,15 @@ class _GoalsScreenState extends State<GoalsScreen> {
       ),
     );
     if (confirm == true) {
-      await context.read<GoalsProvider>().deleteGoal(goal.id);
+      final gid = goal.id;
+      await context.read<GoalsProvider>().deleteGoal(gid);
+      if (context.mounted) {
+        showUndoSnackBar(
+          context,
+          message: '${l10n.itemDeleted}',
+          onUndo: () => context.read<GoalsProvider>().restoreGoal(gid),
+        );
+      }
     }
   }
 
@@ -463,13 +475,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
                           spacing: 8,
                           runSpacing: 8,
                           children: allTags.map((tag) {
-                            final selected =
-                                selectedTagIds.contains(tag.id);
+                            final selected = selectedTagIds.contains(tag.id);
                             return FilterChip(
                               label: Text(tag.name),
                               selected: selected,
-                              selectedColor: tag.color
-                                  .withValues(alpha: 0.2),
+                              selectedColor: tag.color.withValues(alpha: 0.2),
                               backgroundColor: BrainTheme.cardDark,
                               avatar: CircleAvatar(
                                 backgroundColor: tag.color,
@@ -550,20 +560,17 @@ class _GoalsScreenState extends State<GoalsScreen> {
                                     : BrainTheme.textSecondary,
                               ),
                               onSelected: (_) {
-                                setModalState(
-                                    () => selectedProjectId = null);
+                                setModalState(() => selectedProjectId = null);
                               },
                             ),
                             ...projects.map((project) {
-                              final selected =
-                                  selectedProjectId == project.id;
+                              final selected = selectedProjectId == project.id;
                               final pColor = Color(project.colorValue);
                               return ChoiceChip(
-                                label: Text(
-                                    '${project.emoji} ${project.title}'),
+                                label:
+                                    Text('${project.emoji} ${project.title}'),
                                 selected: selected,
-                                selectedColor:
-                                    pColor.withValues(alpha: 0.2),
+                                selectedColor: pColor.withValues(alpha: 0.2),
                                 backgroundColor: BrainTheme.cardDark,
                                 labelStyle: TextStyle(
                                   color: selected
@@ -571,9 +578,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
                                       : BrainTheme.textSecondary,
                                 ),
                                 onSelected: (_) {
-                                  setModalState(() =>
-                                      selectedProjectId =
-                                          selected ? null : project.id);
+                                  setModalState(() => selectedProjectId =
+                                      selected ? null : project.id);
                                 },
                               );
                             }),
@@ -665,8 +671,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
       }));
     }
     if (_progressFilter != _ProgressFilter.all) {
-      chips.add(_buildFilterChip(
-          _progressFilterLabel(_progressFilter, l10n), () {
+      chips.add(
+          _buildFilterChip(_progressFilterLabel(_progressFilter, l10n), () {
         setState(() => _progressFilter = _ProgressFilter.all);
       }));
     }
@@ -938,7 +944,8 @@ class _FilterIconButton extends StatelessWidget {
         child: Badge(
           isLabelVisible: badgeCount > 0,
           label: Text('$badgeCount',
-              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+              style:
+                  const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
           child: Icon(
             icon,
             size: 18,

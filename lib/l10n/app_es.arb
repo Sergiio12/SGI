@@ -252,5 +252,11 @@
   "createNewTag": "Crear nueva etiqueta",
   "accept": "Aceptar",
   "searchNotebook": "Buscar cuaderno...",
-  "newNotebook": "Nuevo cuaderno..."
+  "newNotebook": "Nuevo cuaderno...",
+
+  "plannedTasks": "Planificadas",
+  "unscheduled": "Sin programar",
+  "heatmap": "Mapa de actividad",
+  "dropToAddToMyDay": "Suelta para añadir a Mi Día",
+  "newTaskWithStatus": "Nueva tarea · {status}"
 }

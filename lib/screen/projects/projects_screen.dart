@@ -9,6 +9,7 @@ import '../../models/project.dart';
 import '../../providers/projects_provider.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/project_card.dart';
+import '../../utils/undo_helper.dart';
 import '../../widgets/skeleton_card.dart';
 
 enum _ProjectSortBy { updatedAt, title, deadline, progress }
@@ -163,46 +164,49 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               )
             else
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
-                  children: [
-                    if (active.isNotEmpty)
-                      _buildSection(
-                        context,
-                        'Activos',
-                        active,
-                        BrainTheme.accentGreen,
-                        Icons.play_arrow_rounded,
-                        provider,
-                      ),
-                    if (paused.isNotEmpty)
-                      _buildSection(
-                        context,
-                        'Pausados',
-                        paused,
-                        BrainTheme.accentOrange,
-                        Icons.pause_rounded,
-                        provider,
-                      ),
-                    if (completed.isNotEmpty)
-                      _buildSection(
-                        context,
-                        AppLocalizations.of(context).statusCompleted,
-                        completed,
-                        BrainTheme.accentBlue,
-                        Icons.check_rounded,
-                        provider,
-                      ),
-                    if (abandoned.isNotEmpty)
-                      _buildSection(
-                        context,
-                        'Abandonados',
-                        abandoned,
-                        BrainTheme.textTertiary,
-                        Icons.stop_rounded,
-                        provider,
-                      ),
-                  ],
+                child: RefreshIndicator(
+                  onRefresh: () => provider.loadProjects(),
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
+                    children: [
+                      if (active.isNotEmpty)
+                        _buildSection(
+                          context,
+                          'Activos',
+                          active,
+                          BrainTheme.accentGreen,
+                          Icons.play_arrow_rounded,
+                          provider,
+                        ),
+                      if (paused.isNotEmpty)
+                        _buildSection(
+                          context,
+                          'Pausados',
+                          paused,
+                          BrainTheme.accentOrange,
+                          Icons.pause_rounded,
+                          provider,
+                        ),
+                      if (completed.isNotEmpty)
+                        _buildSection(
+                          context,
+                          AppLocalizations.of(context).statusCompleted,
+                          completed,
+                          BrainTheme.accentBlue,
+                          Icons.check_rounded,
+                          provider,
+                        ),
+                      if (abandoned.isNotEmpty)
+                        _buildSection(
+                          context,
+                          'Abandonados',
+                          abandoned,
+                          BrainTheme.textTertiary,
+                          Icons.stop_rounded,
+                          provider,
+                        ),
+                    ],
+                  ),
                 ),
               ),
           ],
@@ -318,7 +322,15 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       ),
     );
     if (confirm == true) {
-      await provider.deleteProject(project.id);
+      final pid = project.id;
+      await provider.deleteProject(pid);
+      if (context.mounted) {
+        showUndoSnackBar(
+          context,
+          message: '${AppLocalizations.of(context).itemDeleted}',
+          onUndo: () => provider.restoreProject(pid),
+        );
+      }
     }
   }
 

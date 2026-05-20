@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
+import 'providers/daily_planner_provider.dart';
 import 'providers/dashboard_provider.dart';
 import 'providers/goals_provider.dart';
 import 'providers/notes_provider.dart';
@@ -35,6 +36,9 @@ class AppBootstrap {
     final goalsProvider = GoalsProvider(storage: storageService);
     final trashProvider = TrashProvider(storage: storageService);
     trashProvider.register();
+
+    final dailyPlannerProvider =
+        DailyPlannerProvider(tasksProvider: tasksProvider, storage: storageService);
 
     return MultiProvider(
       providers: [
@@ -72,6 +76,7 @@ class AppBootstrap {
             return previous;
           },
         ),
+        ChangeNotifierProvider.value(value: dailyPlannerProvider),
       ],
       child: const SecondBrainApp(),
     );

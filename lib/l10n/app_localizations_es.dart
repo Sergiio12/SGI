@@ -682,4 +682,21 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get newNotebook => 'Nuevo cuaderno...';
+
+  @override
+  String get plannedTasks => 'Planificadas';
+
+  @override
+  String get unscheduled => 'Sin programar';
+
+  @override
+  String get heatmap => 'Mapa de actividad';
+
+  @override
+  String get dropToAddToMyDay => 'Suelta para añadir a Mi Día';
+
+  @override
+  String newTaskWithStatus(Object status) {
+    return 'Nueva tarea · $status';
+  }
 }

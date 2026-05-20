@@ -12,6 +12,8 @@ import '../../models/task.dart';
 import '../../models/project.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
+import '../../providers/daily_planner_provider.dart';
+import '../../utils/undo_helper.dart';
 import '../../widgets/paginated_list.dart';
 import '../../widgets/skeleton_card.dart';
 import '../../widgets/task_card.dart';
@@ -40,7 +42,7 @@ class _TasksScreenState extends State<TasksScreen> {
   String? _selectedProjectId;
   Set<TaskStatus> _visibleBoardColumns = TaskStatus.values.toSet();
   _TaskSortOption _sortOption = _TaskSortOption.priority;
-  bool _showSearch = false;
+  int _wipLimit = 15;
 
   @override
   void dispose() {
@@ -208,8 +210,8 @@ class _TasksScreenState extends State<TasksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TasksProvider>(
-      builder: (context, provider, _) {
+    return Consumer2<TasksProvider, DailyPlannerProvider>(
+      builder: (context, provider, planner, _) {
         if (!provider.isLoaded) return const SkeletonList();
         return Column(
           children: [
@@ -219,7 +221,6 @@ class _TasksScreenState extends State<TasksScreen> {
                 .slideY(begin: -0.2, end: 0, curve: Curves.easeOut),
             _SearchFilterBar(
               searchQuery: _searchQuery,
-              showSearch: _showSearch,
               searchController: _searchController,
               onSearchChanged: (v) {
                 _searchDebounce?.cancel();
@@ -227,13 +228,6 @@ class _TasksScreenState extends State<TasksScreen> {
                   setState(() => _searchQuery = v.toLowerCase());
                 });
               },
-              onToggleSearch: () => setState(() {
-                _showSearch = !_showSearch;
-                if (!_showSearch) {
-                  _searchQuery = '';
-                  _searchController.clear();
-                }
-              }),
               onAdvancedFilters: _showAdvancedFilters,
               activeFilterCount: _activeFilterCount(),
             ),
@@ -256,7 +250,7 @@ class _TasksScreenState extends State<TasksScreen> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: _buildBoard(context, provider),
+              child: _buildBoard(context, provider, planner),
             ),
           ],
         );
@@ -264,7 +258,8 @@ class _TasksScreenState extends State<TasksScreen> {
     );
   }
 
-  Widget _buildBoard(BuildContext context, TasksProvider provider) {
+  Widget _buildBoard(
+      BuildContext context, TasksProvider provider, DailyPlannerProvider planner) {
     final visibleColumns = TaskStatus.values
         .where((status) => _visibleBoardColumns.contains(status))
         .toList();
@@ -305,10 +300,64 @@ class _TasksScreenState extends State<TasksScreen> {
                       color: BrainTheme.textTertiary.withValues(alpha: 0.7),
                     ),
                   ),
+                  const Spacer(),
+                  Text(
+                    'WIP: $_wipLimit',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w400,
+                      color: BrainTheme.textTertiary.withValues(alpha: 0.5),
+                    ),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 8),
+            // ── Drag-to-Today zone ──
+            DragTarget<Task>(
+              onAcceptWithDetails: (details) {
+                planner.addTaskToDay(details.data.id);
+              },
+              builder: (context, candidateData, rejectedData) {
+                final hovering = candidateData.isNotEmpty;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  height: hovering ? 40 : 0,
+                  decoration: BoxDecoration(
+                    color: hovering
+                        ? BrainTheme.accentPurple.withValues(alpha: 0.1)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                    border: hovering
+                        ? Border.all(
+                            color: BrainTheme.accentPurple
+                                .withValues(alpha: 0.3),
+                          )
+                        : null,
+                  ),
+                  child: hovering
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add,
+                                size: 14, color: BrainTheme.accentPurple),
+                            const SizedBox(width: 6),
+                            Text(
+                              AppLocalizations.of(context).dropToAddToMyDay,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: BrainTheme.accentPurple,
+                              ),
+                            ),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                );
+              },
+            ),
+            // ── Board ──
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -342,12 +391,17 @@ class _TasksScreenState extends State<TasksScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: visibleColumns.map((status) {
                             final colTasks = columns[status]!;
+                            final overWip = _wipLimit > 0 &&
+                                colTasks.length > _wipLimit;
                             return _TaskBoardColumn(
                               status: status,
                               title: _statusLabel(status, context),
                               tasks: colTasks,
+                              overWip: overWip,
                               onTaskMoved: (task) =>
                                   provider.moveTaskToStatus(task.id, status),
+                              onCreateTask: () =>
+                                  _showInlineCreateTask(context, status, provider),
                               taskBuilder: (task) =>
                                   _buildTaskCard(task, provider),
                             );
@@ -360,6 +414,175 @@ class _TasksScreenState extends State<TasksScreen> {
         );
       },
     );
+  }
+
+  Future<void> _showInlineCreateTask(
+    BuildContext context,
+    TaskStatus status,
+    TasksProvider provider,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final titleCtl = TextEditingController();
+    var priority = TaskPriority.medium;
+    var dueDate = DateTime.now().add(const Duration(days: 1));
+
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: BrainTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                left: 20,
+                right: 20,
+                top: 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: _statusColor(status),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        AppLocalizations.of(context).newTaskWithStatus(_statusLabel(status, context)),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: BrainTheme.textPrimary,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: Icon(Icons.close,
+                            color: BrainTheme.textSecondary),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: titleCtl,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: l10n.createTask,
+                      filled: true,
+                      fillColor: BrainTheme.cardDark,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:
+                            BorderSide(color: BrainTheme.borderDark),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: TaskPriority.values.map((p) {
+                      final selected = priority == p;
+                      final color = BrainTheme.priorityColor(p.index);
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ChoiceChip(
+                          label: Text(_priorityLabel(p, context)),
+                          selected: selected,
+                          selectedColor: color.withValues(alpha: 0.15),
+                          backgroundColor: BrainTheme.cardDark,
+                          labelStyle: TextStyle(
+                            color: selected ? color : BrainTheme.textSecondary,
+                            fontSize: 11,
+                            fontWeight: selected
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                          ),
+                          side: BorderSide(
+                            color: selected
+                                ? color.withValues(alpha: 0.4)
+                                : BrainTheme.borderDark,
+                          ),
+                          onSelected: (_) =>
+                              setModalState(() => priority = p),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_today,
+                          size: 14, color: BrainTheme.textTertiary),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: dueDate,
+                            firstDate: DateTime.now()
+                                .subtract(const Duration(days: 30)),
+                            lastDate: DateTime.now()
+                                .add(const Duration(days: 365)),
+                          );
+                          if (picked != null) {
+                            setModalState(() => dueDate = picked);
+                          }
+                        },
+                        child: Text(
+                          DateFormat('dd/MM/yyyy').format(dueDate),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: BrainTheme.accentBlue,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      FilledButton(
+                        onPressed: () {
+                          if (titleCtl.text.trim().isEmpty) return;
+                          provider.addTask(
+                            title: titleCtl.text.trim(),
+                            priority: priority,
+                            dueDate: dueDate,
+                          ).then((result) {
+                            final task = result.valueOrNull;
+                            if (task != null && status != TaskStatus.pending) {
+                              provider.moveTaskToStatus(task.id, status);
+                            }
+                          });
+                          Navigator.pop(ctx, true);
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: BrainTheme.accentPurple,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(l10n.createTask),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (result == true && mounted) setState(() {});
   }
 
   Future<void> _showAdvancedFilters() async {
@@ -713,12 +936,68 @@ class _TasksScreenState extends State<TasksScreen> {
   Color _statusColor(TaskStatus status) => BrainTheme.statusColor(status);
 
   Widget _buildTaskCard(Task task, TasksProvider provider) {
-    return TaskCard(
-      task: task,
-      enableSlide: false,
-      compact: true,
-      onTap: () => Navigator.pushNamed(context, '/task', arguments: task.id),
-      onDismissed: () => provider.deleteTask(task.id),
+    final planner = context.read<DailyPlannerProvider>();
+    final isPlanned = planner.isTaskPlanned(task.id);
+    return Padding(
+      padding: const EdgeInsets.only(right: 28),
+      child: Stack(
+        children: [
+          TaskCard(
+            task: task,
+            enableSlide: false,
+            compact: true,
+            onTap: () =>
+                Navigator.pushNamed(context, '/task', arguments: task.id),
+            onDismissed: () {
+              final tid = task.id;
+              provider.deleteTask(tid);
+              showUndoSnackBar(context,
+                message: 'Tarea movida a la papelera',
+                onUndo: () => provider.restoreTask(tid),
+              );
+            },
+          ),
+          Positioned(
+            right: -24,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: () {
+                  if (isPlanned) {
+                    planner.removeTaskFromDay(task.id);
+                  } else {
+                    planner.addTaskToDay(task.id);
+                  }
+                },
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: isPlanned
+                        ? BrainTheme.accentPurple.withValues(alpha: 0.2)
+                        : BrainTheme.surfaceDark,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: isPlanned
+                          ? BrainTheme.accentPurple
+                          : BrainTheme.borderDark,
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Icon(
+                    isPlanned ? Icons.check : Icons.add,
+                    size: 12,
+                    color: isPlanned
+                        ? BrainTheme.accentPurple
+                        : BrainTheme.textTertiary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1160,19 +1439,15 @@ class _FilterSection extends StatelessWidget {
 
 class _SearchFilterBar extends StatelessWidget {
   final String searchQuery;
-  final bool showSearch;
   final TextEditingController searchController;
   final ValueChanged<String> onSearchChanged;
-  final VoidCallback onToggleSearch;
   final VoidCallback onAdvancedFilters;
   final int activeFilterCount;
 
   const _SearchFilterBar({
     required this.searchQuery,
-    required this.showSearch,
     required this.searchController,
     required this.onSearchChanged,
-    required this.onToggleSearch,
     required this.onAdvancedFilters,
     required this.activeFilterCount,
   });
@@ -1276,14 +1551,18 @@ class _TaskBoardColumn extends StatelessWidget {
   final TaskStatus status;
   final String title;
   final List<Task> tasks;
+  final bool overWip;
   final ValueChanged<Task> onTaskMoved;
+  final VoidCallback onCreateTask;
   final Widget Function(Task) taskBuilder;
 
   const _TaskBoardColumn({
     required this.status,
     required this.title,
     required this.tasks,
+    this.overWip = false,
     required this.onTaskMoved,
+    required this.onCreateTask,
     required this.taskBuilder,
   });
 
@@ -1343,6 +1622,8 @@ class _TaskBoardColumn extends StatelessWidget {
                 icon: _columnIcon,
                 title: title,
                 count: tasks.length,
+                overWip: overWip,
+                onCreateTask: onCreateTask,
               ),
               const SizedBox(height: 4),
               Expanded(
@@ -1405,18 +1686,22 @@ class _ColumnHeader extends StatelessWidget {
   final IconData icon;
   final String title;
   final int count;
+  final bool overWip;
+  final VoidCallback onCreateTask;
 
   const _ColumnHeader({
     required this.color,
     required this.icon,
     required this.title,
     required this.count,
+    this.overWip = false,
+    required this.onCreateTask,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
+      padding: const EdgeInsets.fromLTRB(10, 8, 6, 6),
       child: Row(
         children: [
           Container(
@@ -1439,13 +1724,34 @@ class _ColumnHeader extends StatelessWidget {
               letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(width: 6),
-          Text(
-            '$count',
-            style: TextStyle(
-              fontSize: 10,
-              color: color,
-              fontWeight: FontWeight.w600,
+          const SizedBox(width: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+            decoration: BoxDecoration(
+              color: overWip
+                  ? BrainTheme.accentRed.withValues(alpha: 0.15)
+                  : color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              '$count',
+              style: TextStyle(
+                fontSize: 10,
+                color: overWip ? BrainTheme.accentRed : color,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: onCreateTask,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(Icons.add, size: 13, color: color),
             ),
           ),
         ],

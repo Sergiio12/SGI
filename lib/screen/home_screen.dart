@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../l10n/app_localizations.dart';
@@ -7,7 +8,7 @@ import '../providers/projects_provider.dart';
 import '../providers/notes_provider.dart';
 import '../providers/goals_provider.dart';
 import '../utils/notification_service_v2.dart';
-import '../widgets/brain_drawer.dart';
+import '../widgets/navigation_sidebar.dart';
 import '../widgets/quick_capture_fab.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'tasks/tasks_screen.dart';
@@ -256,70 +257,159 @@ class _HomeScreenState extends State<HomeScreen> {
     final tabs = _tabsBuilder(context);
     final currentTab = tabs[_currentIndex];
 
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: BrainTheme.primaryDark.withValues(alpha: 0.8),
-        leading: IconButton(
-          icon: Icon(Icons.menu_rounded, color: BrainTheme.textPrimary),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    BrainTheme.accentPurple,
-                    BrainTheme.accentPurple.withValues(alpha: 0.7),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth > 900;
+
+        if (isWide) {
+          // ── WIDE: Sidebar + Body (no bottom nav, no hamburger) ──
+          return CallbackShortcuts(
+            bindings: _shortcuts(context),
+            child: Focus(
+              autofocus: true,
+              child: Scaffold(
+                backgroundColor: BrainTheme.primaryDark,
+                body: Row(
+                  children: [
+                    NavigationSidebar(
+                      currentIndex: _currentIndex,
+                      onItemSelected: _onTabChanged,
+                    ),
+                    Expanded(
+                      child: Scaffold(
+                        backgroundColor: BrainTheme.primaryDark,
+                        appBar: _buildAppBar(context, currentTab, hasSidebar: true),
+                        body: _buildBody(context, tabs),
+                        floatingActionButton: QuickCaptureFAB(
+                          onCapture: _handleQuickCapture,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                currentTab.icon,
-                size: 18,
-                color: Colors.white,
               ),
             ),
-            const SizedBox(width: 12),
-            Text(
-              currentTab.title,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: BrainTheme.textPrimary,
-                letterSpacing: -0.5,
+          );
+        }
+
+        // ── NARROW: Drawer + Bottom Nav ──
+        return CallbackShortcuts(
+          bindings: _shortcuts(context),
+          child: Focus(
+            autofocus: true,
+            child: Scaffold(
+              key: _scaffoldKey,
+              appBar: _buildAppBar(context, currentTab, hasSidebar: false),
+              drawer: Drawer(
+                backgroundColor: BrainTheme.surfaceDark,
+                child: NavigationSidebar(
+                  currentIndex: _currentIndex,
+                  onItemSelected: (index) {
+                    _onTabChanged(index);
+                    Navigator.pop(context);
+                  },
+                ),
               ),
+              body: _buildBody(context, tabs),
+              floatingActionButton: QuickCaptureFAB(
+                onCapture: _handleQuickCapture,
+              ),
+              bottomNavigationBar: _buildBottomNav(tabs),
             ),
-          ],
-        ),
-        actions: [
+          ),
+        );
+      },
+    );
+  }
+
+  Map<ShortcutActivator, VoidCallback> _shortcuts(BuildContext context) {
+    return {
+      const SingleActivator(LogicalKeyboardKey.keyN): () =>
+          _showQuickTaskDialog(),
+      const SingleActivator(LogicalKeyboardKey.keyP): () =>
+          Navigator.pushNamed(context, '/project'),
+      const SingleActivator(LogicalKeyboardKey.keyG): () =>
+          Navigator.pushNamed(context, '/goal'),
+      const SingleActivator(LogicalKeyboardKey.keyM): () =>
+          Navigator.pushNamed(context, '/note'),
+      const SingleActivator(LogicalKeyboardKey.slash): () =>
+          Navigator.pushNamed(context, '/search'),
+      const SingleActivator(LogicalKeyboardKey.digit1): () =>
+          _onTabChanged(0),
+      const SingleActivator(LogicalKeyboardKey.digit2): () =>
+          _onTabChanged(1),
+      const SingleActivator(LogicalKeyboardKey.digit3): () =>
+          _onTabChanged(2),
+      const SingleActivator(LogicalKeyboardKey.digit4): () =>
+          _onTabChanged(3),
+      const SingleActivator(LogicalKeyboardKey.digit5): () =>
+          _onTabChanged(4),
+    };
+  }
+
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    ({String title, IconData icon, Widget screen}) currentTab, {
+    required bool hasSidebar,
+  }) {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: BrainTheme.primaryDark.withValues(alpha: 0.8),
+      leading: hasSidebar
+          ? null
+          : IconButton(
+              icon: Icon(Icons.menu_rounded, color: BrainTheme.textPrimary),
+              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
+      title: Row(
+        children: [
           Container(
-            margin: const EdgeInsets.only(right: 4),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: BrainTheme.surfaceDark,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: BrainTheme.borderDark),
+              gradient: LinearGradient(
+                colors: [
+                  BrainTheme.accentPurple,
+                  BrainTheme.accentPurple.withValues(alpha: 0.7),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: IconButton(
-              icon: const Icon(Icons.search_rounded, size: 20),
-              onPressed: () => Navigator.pushNamed(context, '/search'),
-              tooltip: AppLocalizations.of(context).search,
+            child: Icon(currentTab.icon, size: 18, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            currentTab.title,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: BrainTheme.textPrimary,
+              letterSpacing: -0.5,
             ),
           ),
         ],
       ),
-      drawer: const BrainDrawer(),
-      body: _buildBody(),
-      floatingActionButton: QuickCaptureFAB(onCapture: _handleQuickCapture),
-      bottomNavigationBar: _buildBottomNav(),
+      actions: [
+        Container(
+          margin: const EdgeInsets.only(right: 4),
+          decoration: BoxDecoration(
+            color: BrainTheme.surfaceDark,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: BrainTheme.borderDark),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.search_rounded, size: 20),
+            onPressed: () => Navigator.pushNamed(context, '/search'),
+            tooltip: AppLocalizations.of(context).search,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(
+    BuildContext context,
+    List<({String title, IconData icon, Widget screen})> tabs,
+  ) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       switchInCurve: Curves.easeOut,
@@ -338,12 +428,14 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: KeyedSubtree(
         key: ValueKey(_currentIndex),
-        child: _tabsBuilder(context)[_currentIndex].screen,
+        child: tabs[_currentIndex].screen,
       ),
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav(
+    List<({String title, IconData icon, Widget screen})> tabs,
+  ) {
     return Container(
       decoration: BoxDecoration(
         border: Border(
@@ -369,7 +461,7 @@ class _HomeScreenState extends State<HomeScreen> {
           fontSize: 11,
           fontWeight: FontWeight.w500,
         ),
-        items: _tabsBuilder(context)
+        items: tabs
             .map(
               (tab) => BottomNavigationBarItem(
                 icon: Icon(tab.icon, size: 22),

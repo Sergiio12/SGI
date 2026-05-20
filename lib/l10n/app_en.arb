@@ -252,5 +252,11 @@
   "createNewTag": "Create new tag",
   "accept": "Accept",
   "searchNotebook": "Search notebook...",
-  "newNotebook": "New notebook..."
+  "newNotebook": "New notebook...",
+
+  "plannedTasks": "Planned",
+  "unscheduled": "Unscheduled",
+  "heatmap": "Activity heatmap",
+  "dropToAddToMyDay": "Drop to add to My Day",
+  "newTaskWithStatus": "New task · {status}"
 }

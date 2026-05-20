@@ -47,7 +47,9 @@ class TrashScreen extends StatelessWidget {
 
           final items = trash.sortedItems;
 
-          return ListView.builder(
+          return RefreshIndicator(
+            onRefresh: () => context.read<TrashProvider>().reload(),
+            child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
             itemCount: items.length,
             itemBuilder: (context, index) {
@@ -58,6 +60,7 @@ class TrashScreen extends StatelessWidget {
                 onPermanentDelete: () => _permanentDeleteItem(context, bundle),
               );
             },
+            ),
           );
         },
       ),

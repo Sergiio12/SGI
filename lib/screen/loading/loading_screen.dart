@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../../config/routes.dart';
 import '../../config/theme.dart';
 
+import '../../providers/daily_planner_provider.dart';
 import '../../providers/goals_provider.dart';
 import '../../providers/notes_provider.dart';
 import '../../providers/projects_provider.dart';
@@ -244,6 +245,8 @@ class _LoadingScreenState extends State<LoadingScreen>
       await NotificationService.rescheduleAll(
         tasksProvider.tasks,
       );
+
+      await context.read<DailyPlannerProvider>().load();
     } catch (_) {}
   }
 

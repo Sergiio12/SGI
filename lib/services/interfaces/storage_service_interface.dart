@@ -32,5 +32,12 @@ abstract class IStorageService {
   Future<List<Goal>> loadTrashGoals();
   Future<void> saveTrashGoals(List<Goal> goals);
 
+  Future<Map<String, String>> loadDailyIntentions();
+  Future<void> saveDailyIntentions(Map<String, String> intentions);
+  Future<Map<String, List<String>>> loadDailyPlans();
+  Future<void> saveDailyPlans(Map<String, List<String>> plans);
+  Future<Map<String, String>> loadDailyTimeBlocks();
+  Future<void> saveDailyTimeBlocks(Map<String, String> blocks);
+
   Future<void> clearAll();
 }

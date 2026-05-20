@@ -78,7 +78,15 @@ class _NotesScreenState extends State<NotesScreen> {
     }
     _exitSelectionMode();
     if (mounted) {
-      _showBottomSnackBar('${ids.length} ${AppLocalizations.of(context).notesDeleted}');
+      _showBottomSnackBar(
+        '${ids.length} ${AppLocalizations.of(context).notesDeleted}',
+        actionLabel: AppLocalizations.of(context).undo,
+        onAction: () {
+          for (final id in ids) {
+            provider.restoreNote(id);
+          }
+        },
+      );
     }
   }
 
@@ -256,7 +264,12 @@ class _NotesScreenState extends State<NotesScreen> {
             _buildFilterRow(),
             _buildTagFilter(),
             const SizedBox(height: 8),
-            Expanded(child: _buildNotesList()),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => context.read<NotesProvider>().loadNotes(),
+                child: _buildNotesList(),
+              ),
+            ),
             if (_selectionMode) _buildSelectionToolbar(),
           ],
         );

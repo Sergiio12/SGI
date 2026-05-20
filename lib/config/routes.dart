@@ -13,6 +13,7 @@ import '../screen/stats/stats_screen.dart';
 import '../screen/search/search_screen.dart';
 import '../screen/settings/settings_screen.dart';
 import '../screen/tasks/task_detail_screen.dart';
+import '../screen/today/daily_review_screen.dart';
 import '../screen/today/today_screen.dart';
 import '../screen/trash/trash_screen.dart';
 
@@ -32,12 +33,14 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String trash = '/trash';
   static const String stats = '/stats';
+  static const String dailyReview = '/daily-review';
 
   static Map<String, WidgetBuilder> get routes => {
         loading: (_) => const LoadingScreen(),
         search: (_) => const SearchScreen(),
         focus: (_) => const FocusScreen(),
         today: (_) => const TodayScreen(),
+        dailyReview: (_) => const DailyReviewScreen(),
         calendar: (_) => const CalendarScreen(),
         progress: (_) => const ProgressScreen(),
         data: (_) => const DataScreen(),

@@ -1435,6 +1435,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New notebook...'**
   String get newNotebook;
+
+  /// No description provided for @plannedTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned'**
+  String get plannedTasks;
+
+  /// No description provided for @unscheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Unscheduled'**
+  String get unscheduled;
+
+  /// No description provided for @heatmap.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity heatmap'**
+  String get heatmap;
+
+  /// No description provided for @dropToAddToMyDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop to add to My Day'**
+  String get dropToAddToMyDay;
+
+  /// No description provided for @newTaskWithStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'New task · {status}'**
+  String newTaskWithStatus(Object status);
 }
 
 class _AppLocalizationsDelegate
