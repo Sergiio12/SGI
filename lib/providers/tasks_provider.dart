@@ -57,6 +57,9 @@ class TasksProvider extends ChangeNotifier {
   List<Task> get todayTasks => _todayTasks;
   List<Task> get focusTasks => _focusTasks;
 
+  List<Task> get cancelledTasks =>
+      _tasks.where((t) => t.status == TaskStatus.cancelled).toList();
+
   Future<void> loadTasks() async {
     _tasks = await _storage.loadTasks();
     _page = 1;

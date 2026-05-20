@@ -36,130 +36,133 @@ class TaskCard extends StatelessWidget {
     final isCancelled = task.status == TaskStatus.cancelled;
     final isDimmed = isDone || isCancelled;
     final priColor = BrainTheme.priorityColor(task.priority.index);
+    final l10n = AppLocalizations.of(context);
+    final subtaskProgress = task.subtasks.isEmpty
+        ? (isDone ? 1.0 : 0.0)
+        : task.subtasks.where((s) => s.isDone).length / task.subtasks.length;
+    final hasSubtasks = task.subtasks.isNotEmpty;
+
     final borderColor = isCancelled
-        ? BrainTheme.accentRed.withValues(alpha: 0.3)
+        ? BrainTheme.accentRed.withValues(alpha: 0.2)
         : isDone
-            ? Colors.transparent
-            : priColor.withValues(alpha: 0.25);
-    final leftBarColor = isCancelled
-        ? BrainTheme.accentRed.withValues(alpha: 0.5)
-        : isDone
-            ? Colors.transparent
+            ? BrainTheme.accentGreen.withValues(alpha: 0.15)
+            : BrainTheme.borderDark.withValues(alpha: 0.5);
+
+    final stripColor = isDone
+        ? BrainTheme.accentGreen.withValues(alpha: 0.5)
+        : isCancelled
+            ? BrainTheme.accentRed.withValues(alpha: 0.5)
             : priColor;
 
-    final l10n = AppLocalizations.of(context);
     final card = Semantics(
       label: '${task.title}, ${task.status.name}',
-      value: isDone
-          ? l10n.statusCompleted
-          : isCancelled
-              ? l10n.statusCancelled
-              : l10n.active,
       button: true,
       onTapHint: onTap != null ? l10n.details : null,
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 10),
-        elevation: 0,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: borderColor, width: 1.2),
-        ),
-        color: isDone
-            ? BrainTheme.surfaceDark.withValues(alpha: 0.5)
-            : isCancelled
-                ? BrainTheme.surfaceDark.withValues(alpha: 0.3)
-                : BrainTheme.cardDark,
-        child: InkWell(
-          onTap: onTap,
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  width: 4,
-                  decoration: BoxDecoration(
-                    color: leftBarColor,
-                    borderRadius: const BorderRadius.horizontal(
-                        left: Radius.circular(18)),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.all(compact ? 10 : 14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                task.title,
-                                maxLines: compact ? 1 : 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: compact ? 13 : 15,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.3,
-                                  color: isDimmed
-                                      ? BrainTheme.textTertiary
-                                      : BrainTheme.textPrimary,
-                                  decoration: isDone
-                                      ? TextDecoration.lineThrough
-                                      : null,
-                                ),
-                              ),
-                            ),
-                            if (action != null)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 4),
-                                child: action,
-                              ),
-                          ],
-                        ),
-                        if (task.description.isNotEmpty && !compact) ...[
-                          const SizedBox(height: 6),
-                          Text(
-                            task.description,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: BrainTheme.textSecondary,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 5,
-                          runSpacing: 4,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            _StatusBadge(status: task.status),
-                            _PriorityBadge(priority: task.priority),
-                            if (task.dueDate != null)
-                              _DateBadge(
-                                  date: task.dueDate!,
-                                  isOverdue: task.isOverdue),
-                            if (task.subtasks.isNotEmpty) _subtabsBadge(task),
-                            if (task.projectId != null)
-                              _ProjectBadge(projectId: task.projectId!),
-                            _DateBadge(
-                              date: task.createdAt,
-                              isOverdue: false,
-                              compact: true,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        decoration: ShapeDecoration(
+          color: BrainTheme.cardDark.withValues(alpha: isDimmed ? 0.5 : 0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(color: borderColor, width: 1),
           ),
+          shadows: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          children: [
+            Positioned(
+              left: 0, top: 0, bottom: 0,
+              child: Container(width: 3, color: stripColor),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(13, 9, 9, 9),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          task.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                            height: 1.2,
+                            color: isDimmed
+                                ? BrainTheme.textTertiary
+                                : BrainTheme.textPrimary,
+                            decoration: isDone ? TextDecoration.lineThrough : null,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (task.description.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      task.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDimmed
+                            ? BrainTheme.textTertiary.withValues(alpha: 0.6)
+                            : BrainTheme.textSecondary,
+                        height: 1.2,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 6),
+                  _MetadataRow(
+                    task: task,
+                    isDimmed: isDimmed,
+                    priColor: priColor,
+                    hasSubtasks: hasSubtasks,
+                    subtaskProgress: subtaskProgress,
+                  ),
+                  if (hasSubtasks) ...[
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(2),
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: subtaskProgress),
+                        duration: 600.ms,
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, _) {
+                          return LinearProgressIndicator(
+                            value: value,
+                            minHeight: 2,
+                            backgroundColor:
+                                BrainTheme.borderDark.withValues(alpha: 0.4),
+                            valueColor: AlwaysStoppedAnimation(
+                              subtaskProgress >= 1.0
+                                  ? BrainTheme.accentGreen
+                                  : BrainTheme.accentPurple,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
       ),
     ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.03, end: 0);
 
@@ -173,11 +176,11 @@ class TaskCard extends StatelessWidget {
         children: [
           SlidableAction(
             onPressed: (_) => onDismissed?.call(),
-            backgroundColor: BrainTheme.accentRed.withValues(alpha: 0.2),
+            backgroundColor: BrainTheme.accentRed.withValues(alpha: 0.15),
             foregroundColor: BrainTheme.accentRed,
             icon: Icons.delete_outline,
             label: AppLocalizations.of(context).delete,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(14),
           ),
         ],
       ),
@@ -185,206 +188,110 @@ class TaskCard extends StatelessWidget {
     );
   }
 
-  Widget _subtabsBadge(Task task) {
-    final done = task.subtasks.where((s) => s.isDone).length;
-    final total = task.subtasks.length;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: BrainTheme.accentPurple.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(7),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.checklist, size: 10, color: BrainTheme.accentPurple),
-          const SizedBox(width: 3),
-          Text(
-            '$done/$total',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: BrainTheme.accentPurple,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-class _StatusBadge extends StatelessWidget {
-  final TaskStatus status;
+class _MetadataRow extends StatelessWidget {
+  final Task task;
+  final bool isDimmed;
+  final Color priColor;
+  final bool hasSubtasks;
+  final double subtaskProgress;
 
-  const _StatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final data = _statusData(status, context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: data.color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(7),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(data.icon, size: 10, color: data.color),
-          const SizedBox(width: 3),
-          Text(
-            data.label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: data.color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  _StatusData _statusData(TaskStatus status, BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    switch (status) {
-      case TaskStatus.pending:
-        return _StatusData(
-            Icons.circle_outlined, BrainTheme.textTertiary, l10n.statusPending);
-      case TaskStatus.inProgress:
-        return _StatusData(Icons.play_circle_outline, BrainTheme.accentBlue,
-            l10n.statusInProgress);
-      case TaskStatus.inReview:
-        return _StatusData(Icons.rate_review_outlined, BrainTheme.accentOrange,
-            l10n.statusInReview);
-      case TaskStatus.completed:
-        return _StatusData(
-            Icons.check_circle, BrainTheme.accentGreen, l10n.statusCompleted);
-      case TaskStatus.cancelled:
-        return _StatusData(
-            Icons.cancel_outlined, BrainTheme.accentRed, l10n.statusCancelled);
-    }
-  }
-}
-
-class _PriorityBadge extends StatelessWidget {
-  final TaskPriority priority;
-
-  const _PriorityBadge({required this.priority});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final color = BrainTheme.priorityColor(priority.index);
-    String label;
-    switch (priority) {
-      case TaskPriority.low:
-        label = l10n.priorityLow;
-      case TaskPriority.medium:
-        label = l10n.priorityMedium;
-      case TaskPriority.high:
-        label = l10n.priorityHigh;
-      case TaskPriority.urgent:
-        label = l10n.priorityUrgent;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(7),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 3),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DateBadge extends StatelessWidget {
-  final DateTime date;
-  final bool isOverdue;
-  final bool compact;
-
-  const _DateBadge({
-    required this.date,
-    required this.isOverdue,
-    this.compact = false,
+  const _MetadataRow({
+    required this.task,
+    required this.isDimmed,
+    required this.priColor,
+    required this.hasSubtasks,
+    required this.subtaskProgress,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (compact) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-        decoration: BoxDecoration(
-          color: BrainTheme.textTertiary.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(7),
+    final textColor = isDimmed
+        ? BrainTheme.textTertiary.withValues(alpha: 0.6)
+        : BrainTheme.textTertiary;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 5, height: 5,
+          decoration: BoxDecoration(
+            color: priColor,
+            shape: BoxShape.circle,
+          ),
         ),
-        child: Text(
-          DateFormat('dd/MM').format(date),
+        const SizedBox(width: 3),
+        Text(
+          _priorityLabel(task.priority, context),
           style: TextStyle(
             fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: BrainTheme.textTertiary,
+            color: priColor,
+            fontWeight: FontWeight.w600,
+            height: 1.1,
           ),
         ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: isOverdue
-            ? BrainTheme.accentRed.withValues(alpha: 0.1)
-            : BrainTheme.accentBlue.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(7),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+        const SizedBox(width: 8),
+        Icon(Icons.calendar_today, size: 9, color: textColor),
+        const SizedBox(width: 2),
+        Text(
+          DateFormat('dd/MM/yy').format(task.createdAt),
+          style: TextStyle(fontSize: 10, color: textColor, height: 1.1),
+        ),
+        if (task.dueDate != null) ...[
+          const SizedBox(width: 8),
           Icon(
-            isOverdue ? Icons.error_outline : Icons.schedule,
-            size: 10,
-            color: isOverdue ? BrainTheme.accentRed : BrainTheme.accentBlue,
+            task.isOverdue ? Icons.error_outline : Icons.event,
+            size: 9,
+            color: task.isOverdue ? BrainTheme.accentRed : textColor,
           ),
-          const SizedBox(width: 3),
+          const SizedBox(width: 2),
           Text(
-            DateFormat('dd MMM').format(date),
+            DateFormat('dd/MM/yy').format(task.dueDate!),
             style: TextStyle(
               fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: isOverdue ? BrainTheme.accentRed : BrainTheme.accentBlue,
+              color: task.isOverdue ? BrainTheme.accentRed : textColor,
+              fontWeight: task.isOverdue ? FontWeight.w600 : FontWeight.w400,
+              height: 1.1,
             ),
           ),
         ],
-      ),
+        if (hasSubtasks) ...[
+          const SizedBox(width: 8),
+          Icon(Icons.checklist, size: 9, color: textColor),
+          const SizedBox(width: 2),
+          Text(
+            '${task.subtasks.where((s) => s.isDone).length}/${task.subtasks.length}',
+            style: TextStyle(fontSize: 10, color: textColor, height: 1.1),
+          ),
+        ],
+        if (task.projectId != null) ...[
+          const SizedBox(width: 8),
+          _ProjectBadgeCompact(projectId: task.projectId!),
+        ],
+      ],
     );
+  }
+
+  String _priorityLabel(TaskPriority p, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    switch (p) {
+      case TaskPriority.low:
+        return l10n.priorityLow;
+      case TaskPriority.medium:
+        return l10n.priorityMedium;
+      case TaskPriority.high:
+        return l10n.priorityHigh;
+      case TaskPriority.urgent:
+        return l10n.priorityUrgent;
+    }
   }
 }
 
-class _ProjectBadge extends StatelessWidget {
+class _ProjectBadgeCompact extends StatelessWidget {
   final String projectId;
 
-  const _ProjectBadge({required this.projectId});
+  const _ProjectBadgeCompact({required this.projectId});
 
   @override
   Widget build(BuildContext context) {
@@ -392,33 +299,30 @@ class _ProjectBadge extends StatelessWidget {
       (p) => p.getProjectById(projectId),
     );
     if (project == null) return const SizedBox.shrink();
-    return Semantics(
-      label: '${AppLocalizations.of(context).project}: ${project.title}',
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-        decoration: BoxDecoration(
-          color: Color(project.colorValue).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(7),
+    final color = Color(project.colorValue);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 6, height: 6,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
         ),
-        child: Text(
-          '${project.emoji} ${project.title}',
+        const SizedBox(width: 2),
+        Text(
+          project.title,
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w500,
-            color: Color(project.colorValue),
+            color: color,
+            height: 1.1,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-      ),
+      ],
     );
   }
-}
-
-class _StatusData {
-  final IconData icon;
-  final Color color;
-  final String label;
-
-  const _StatusData(this.icon, this.color, this.label);
 }

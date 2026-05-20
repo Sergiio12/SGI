@@ -186,12 +186,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             },
           ),
           SliverToBoxAdapter(
-            child: _TaskQuickActions(task: task)
-                .animate()
-                .fadeIn(delay: 200.ms)
-                .slideY(begin: 0.1, end: 0),
-          ),
-          SliverToBoxAdapter(
             child: _TaskMetaSection(
               task: task,
               subtaskProgress: subtaskProgress,
@@ -199,7 +193,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1, end: 0),
           ),
           SliverToBoxAdapter(
-            child: const SizedBox(height: 4),
+            child: const SizedBox(height: 8),
           ),
           SliverPersistentHeader(
             pinned: true,
@@ -252,7 +246,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             onPressed: _save,
             child: Text(
               AppLocalizations.of(context).save,
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  fontWeight: FontWeight.w600, color: BrainTheme.accentPurple),
             ),
           ),
         ],
@@ -262,210 +257,60 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _titleController,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-                color: BrainTheme.textPrimary,
+            _FormCard(
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _titleController,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: BrainTheme.textPrimary,
+                      letterSpacing: -0.5,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context).sortTitle,
+                      border: InputBorder.none,
+                      filled: false,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    autofocus: !isEditing,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _descController,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: BrainTheme.textSecondary,
+                      height: 1.4,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context).description,
+                      border: InputBorder.none,
+                      filled: false,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    maxLines: null,
+                    minLines: 2,
+                  ),
+                ],
               ),
-              decoration: InputDecoration(
-                hintText: AppLocalizations.of(context).sortTitle,
-                border: InputBorder.none,
-                filled: false,
-              ),
-              autofocus: !isEditing,
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _descController,
-              style: TextStyle(
-                fontSize: 15,
-                color: BrainTheme.textSecondary,
-              ),
-              decoration: InputDecoration(
-                hintText: AppLocalizations.of(context).description,
-                border: InputBorder.none,
-                filled: false,
-              ),
-              maxLines: null,
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             _FormSection(
               title: AppLocalizations.of(context).details,
               icon: Icons.tune,
               children: [
-                _FormRow(
-                  icon: Icons.flag_outlined,
-                  label: AppLocalizations.of(context).filterStatus,
-                  child: DropdownButton<TaskStatus>(
-                    value: _status,
-                    dropdownColor: BrainTheme.cardDark,
-                    underline: const SizedBox.shrink(),
-                    isExpanded: true,
-                    items: TaskStatus.values
-                        .map((s) => DropdownMenuItem(
-                              value: s,
-                              child: Row(
-                                children: [
-                                  Icon(_statusIcon(s),
-                                      size: 16, color: _statusColor(s)),
-                                  const SizedBox(width: 8),
-                                  Text(_statusLabel(s, context)),
-                                ],
-                              ),
-                            ))
-                        .toList(),
-                    onChanged: (value) => setState(() => _status = value!),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _FormRow(
-                  icon: Icons.priority_high,
-                  label: AppLocalizations.of(context).sortPriority,
-                  child: Row(
-                    children: TaskPriority.values.map((priority) {
-                      final isSelected = priority == _priority;
-                      return Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _priority = priority),
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 2),
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? BrainTheme.priorityColor(priority.index)
-                                      .withValues(alpha: 0.2)
-                                  : BrainTheme.surfaceDark,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: isSelected
-                                    ? BrainTheme.priorityColor(priority.index)
-                                    : BrainTheme.borderDark,
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: BrainTheme.priorityColor(
-                                        priority.index),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  _priorityLabel(priority, context),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: isSelected
-                                        ? BrainTheme.priorityColor(
-                                            priority.index)
-                                        : BrainTheme.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _FormRow(
-                  icon: Icons.calendar_today_outlined,
-                  label: AppLocalizations.of(context).dueDate,
-                  child: GestureDetector(
-                    onTap: () async {
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: _dueDate ?? DateTime.now(),
-                        firstDate:
-                            DateTime.now().subtract(const Duration(days: 365)),
-                        lastDate:
-                            DateTime.now().add(const Duration(days: 365 * 3)),
-                      );
-                      if (date != null) setState(() => _dueDate = date);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: BrainTheme.surfaceDark,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: BrainTheme.borderDark),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _dueDate != null &&
-                                    _dueDate!.isBefore(DateTime.now())
-                                ? Icons.error_outline
-                                : Icons.event,
-                            size: 14,
-                            color: _dueDate != null &&
-                                    _dueDate!.isBefore(DateTime.now())
-                                ? BrainTheme.accentRed
-                                : BrainTheme.textSecondary,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _dueDate != null
-                                ? DateFormat('dd MMM yyyy').format(_dueDate!)
-                                : AppLocalizations.of(context).noDueDate,
-                            style: TextStyle(color: BrainTheme.textPrimary),
-                          ),
-                          if (_dueDate != null) ...[
-                            const SizedBox(width: 6),
-                            GestureDetector(
-                              onTap: () => setState(() => _dueDate = null),
-                              child: Icon(Icons.close,
-                                  size: 14, color: BrainTheme.textTertiary),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _FormRow(
-                  icon: Icons.folder_outlined,
-                  label: AppLocalizations.of(context).project,
-                  child: Consumer<ProjectsProvider>(
-                    builder: (context, projects, _) {
-                      return DropdownButton<String?>(
-                        value: _projectId,
-                        dropdownColor: BrainTheme.cardDark,
-                        underline: const SizedBox.shrink(),
-                        hint: Text(AppLocalizations.of(context).noDueDate),
-                        isExpanded: true,
-                        items: [
-                          DropdownMenuItem(
-                              value: null,
-                              child:
-                                  Text(AppLocalizations.of(context).noDueDate)),
-                          ...projects.projects
-                              .map((project) => DropdownMenuItem(
-                                    value: project.id,
-                                    child: Text(
-                                        '${project.emoji} ${project.title}'),
-                                  )),
-                        ],
-                        onChanged: (value) =>
-                            setState(() => _projectId = value),
-                      );
-                    },
-                  ),
-                ),
+                _buildStatusSelector(),
+                const SizedBox(height: 12),
+                _buildPrioritySelector(),
+                const SizedBox(height: 12),
+                _buildDateField(),
+                const SizedBox(height: 12),
+                _buildProjectField(),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             _FormSection(
               title: AppLocalizations.of(context).notifications,
               icon: Icons.timer_outlined,
@@ -473,44 +318,39 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
+                      child: _FormTextField(
                         controller: _estimatedHoursController,
+                        label: AppLocalizations.of(context).task,
+                        icon: Icons.timer_outlined,
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).task,
-                          isDense: true,
-                        ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: TextField(
+                      child: _FormTextField(
                         controller: _actualHoursController,
+                        label: AppLocalizations.of(context).note,
+                        icon: Icons.schedule,
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).note,
-                          isDense: true,
-                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: TextField(
+                      child: _FormTextField(
                         controller: _reminderController,
+                        label: AppLocalizations.of(context).notifications,
+                        icon: Icons.notifications_outlined,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).notifications,
-                          hintText: '60',
-                          isDense: true,
-                        ),
+                        hint: '60',
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             _FormSection(
               title: AppLocalizations.of(context).tags,
               icon: Icons.label_outline,
@@ -547,7 +387,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                     children: [
                                       Text(tag.name,
                                           style: TextStyle(
-                                              fontSize: 12, color: tag.color)),
+                                              fontSize: 12,
+                                              color: tag.color,
+                                              fontWeight: FontWeight.w500)),
                                       const SizedBox(width: 4),
                                       Icon(Icons.close,
                                           size: 12, color: tag.color),
@@ -563,13 +405,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: _showTagPicker,
-                              icon: const Icon(Icons.playlist_add, size: 16),
-                              label: Text(AppLocalizations.of(context).filter),
+                              icon:
+                                  const Icon(Icons.playlist_add, size: 16),
+                              label: Text(
+                                  AppLocalizations.of(context).filter),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: BrainTheme.accentPurple,
                                 side: BorderSide(
                                     color: BrainTheme.accentPurple
                                         .withValues(alpha: 0.3)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
                             ),
                           ),
@@ -577,10 +424,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           OutlinedButton.icon(
                             onPressed: _showManageTagsModal,
                             icon: const Icon(Icons.settings, size: 16),
-                            label: Text(AppLocalizations.of(context).settings),
+                            label: Text(
+                                AppLocalizations.of(context).settings),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: BrainTheme.textSecondary,
-                              side: BorderSide(color: BrainTheme.borderDark),
+                              side: BorderSide(
+                                  color: BrainTheme.borderDark),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
                         ],
@@ -590,7 +442,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 }),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             _FormSection(
               title: AppLocalizations.of(context).notes,
               icon: Icons.link,
@@ -604,17 +456,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           if (note == null) return const SizedBox.shrink();
                           return Container(
                             margin: const EdgeInsets.only(bottom: 6),
-                            padding: const EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: BrainTheme.surfaceDark,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: BrainTheme.borderDark),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: BrainTheme.borderDark),
                             ),
                             child: Row(
                               children: [
                                 Text(note.emoji,
-                                    style: const TextStyle(fontSize: 16)),
-                                const SizedBox(width: 8),
+                                    style: const TextStyle(fontSize: 18)),
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -624,19 +477,22 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                           style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w500,
-                                              color: BrainTheme.textPrimary)),
+                                              color:
+                                                  BrainTheme.textPrimary)),
                                       Text(note.notebook,
                                           style: TextStyle(
                                               fontSize: 11,
-                                              color: BrainTheme.textTertiary)),
+                                              color:
+                                                  BrainTheme.textTertiary)),
                                     ],
                                   ),
                                 ),
                                 IconButton(
                                   icon: Icon(Icons.link_off,
-                                      size: 16, color: BrainTheme.accentRed),
-                                  onPressed: () =>
-                                      setState(() => _linkedNoteIds.remove(id)),
+                                      size: 16,
+                                      color: BrainTheme.accentRed),
+                                  onPressed: () => setState(
+                                      () => _linkedNoteIds.remove(id)),
                                   visualDensity: VisualDensity.compact,
                                 ),
                               ],
@@ -652,6 +508,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           side: BorderSide(
                               color: BrainTheme.accentPurple
                                   .withValues(alpha: 0.3)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ],
@@ -659,24 +518,35 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 }),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             _FormSection(
               title: AppLocalizations.of(context).subtasks,
               icon: Icons.checklist,
               trailing: Text(
                 '$subtaskDone/${_subtasks.length}',
-                style: TextStyle(fontSize: 12, color: BrainTheme.textTertiary),
+                style: TextStyle(
+                    fontSize: 12, color: BrainTheme.textTertiary),
               ),
               children: [
                 if (_subtasks.isNotEmpty) ...[
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: subtaskProgress,
-                      minHeight: 4,
-                      backgroundColor: BrainTheme.borderDark,
-                      valueColor:
-                          AlwaysStoppedAnimation(BrainTheme.accentGreen),
+                    borderRadius: BorderRadius.circular(3),
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: subtaskProgress),
+                      duration: 400.ms,
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, _) {
+                        return LinearProgressIndicator(
+                          value: value,
+                          minHeight: 4,
+                          backgroundColor: BrainTheme.borderDark,
+                          valueColor: AlwaysStoppedAnimation(
+                            subtaskProgress >= 1.0
+                                ? BrainTheme.accentGreen
+                                : BrainTheme.accentPurple,
+                          ),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -694,7 +564,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                   subtask.copyWith(isDone: !subtask.isDone);
                             });
                           },
-                          child: Container(
+                          child: AnimatedContainer(
+                            duration: 200.ms,
                             width: 20,
                             height: 20,
                             decoration: BoxDecoration(
@@ -733,8 +604,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                         IconButton(
                           icon: Icon(Icons.close,
                               size: 16, color: BrainTheme.textTertiary),
-                          onPressed: () =>
-                              setState(() => _subtasks.removeAt(entry.key)),
+                          onPressed: () => setState(
+                              () => _subtasks.removeAt(entry.key)),
                           visualDensity: VisualDensity.compact,
                         ),
                       ],
@@ -748,10 +619,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       child: TextField(
                         controller: _subtaskController,
                         decoration: InputDecoration(
-                          hintText: AppLocalizations.of(context).addSubtask,
+                          hintText:
+                              AppLocalizations.of(context).addSubtask,
                           border: InputBorder.none,
                           filled: false,
-                          contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          contentPadding:
+                              EdgeInsets.symmetric(vertical: 8),
+                          isDense: true,
                         ),
                         onSubmitted: (_) => _addSubtask(),
                       ),
@@ -769,6 +643,268 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStatusSelector() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(Icons.flag_outlined,
+            size: 16, color: BrainTheme.textTertiary),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 70,
+          child: Text(
+            AppLocalizations.of(context).status,
+            style:
+                TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: BrainTheme.surfaceDark,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: BrainTheme.borderDark),
+            ),
+            child: DropdownButton<TaskStatus>(
+              value: _status,
+              dropdownColor: BrainTheme.cardDark,
+              underline: const SizedBox.shrink(),
+              isExpanded: true,
+              items: TaskStatus.values
+                  .map((s) => DropdownMenuItem(
+                        value: s,
+                        child: Row(
+                          children: [
+                            Icon(_statusIcon(s),
+                                size: 16, color: _statusColor(s)),
+                            const SizedBox(width: 8),
+                            Text(_statusLabel(s, context)),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+              onChanged: (value) => setState(() => _status = value!),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPrioritySelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.priority_high,
+                size: 16, color: BrainTheme.textTertiary),
+            const SizedBox(width: 8),
+            Text(
+              AppLocalizations.of(context).sortPriority,
+              style:
+                  TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: TaskPriority.values.map((priority) {
+            final isSelected = priority == _priority;
+            final color = BrainTheme.priorityColor(priority.index);
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _priority = priority),
+                child: AnimatedContainer(
+                  duration: 200.ms,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? color.withValues(alpha: 0.15)
+                        : BrainTheme.surfaceDark,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected
+                          ? color.withValues(alpha: 0.5)
+                          : BrainTheme.borderDark,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      AnimatedContainer(
+                        duration: 200.ms,
+                        width: isSelected ? 10 : 8,
+                        height: isSelected ? 10 : 8,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: color.withValues(alpha: 0.4),
+                                    blurRadius: 6,
+                                  ),
+                                ]
+                              : [],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _priorityLabel(priority, context),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: isSelected ? color : BrainTheme.textTertiary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateField() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(Icons.calendar_today_outlined,
+            size: 16, color: BrainTheme.textTertiary),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 70,
+          child: Text(
+            AppLocalizations.of(context).dueDate,
+            style:
+                TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: GestureDetector(
+            onTap: () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: _dueDate ?? DateTime.now(),
+                firstDate:
+                    DateTime.now().subtract(const Duration(days: 365)),
+                lastDate:
+                    DateTime.now().add(const Duration(days: 365 * 3)),
+              );
+              if (date != null) setState(() => _dueDate = date);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: BrainTheme.surfaceDark,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: BrainTheme.borderDark),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _dueDate != null &&
+                            _dueDate!.isBefore(DateTime.now())
+                        ? Icons.error_outline
+                        : Icons.event,
+                    size: 14,
+                    color: _dueDate != null &&
+                            _dueDate!.isBefore(DateTime.now())
+                        ? BrainTheme.accentRed
+                        : BrainTheme.textSecondary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _dueDate != null
+                        ? DateFormat('dd MMM yyyy').format(_dueDate!)
+                        : AppLocalizations.of(context).noDueDate,
+                    style: TextStyle(color: BrainTheme.textPrimary),
+                  ),
+                  if (_dueDate != null) ...[
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: () => setState(() => _dueDate = null),
+                      child: Icon(Icons.close,
+                          size: 14, color: BrainTheme.textTertiary),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProjectField() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(Icons.folder_outlined,
+            size: 16, color: BrainTheme.textTertiary),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 70,
+          child: Text(
+            AppLocalizations.of(context).project,
+            style:
+                TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Consumer<ProjectsProvider>(
+            builder: (context, projects, _) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: BrainTheme.surfaceDark,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: BrainTheme.borderDark),
+                ),
+                child: DropdownButton<String?>(
+                  value: _projectId,
+                  dropdownColor: BrainTheme.cardDark,
+                  underline: const SizedBox.shrink(),
+                  hint: Text(
+                      AppLocalizations.of(context).noDueDate),
+                  isExpanded: true,
+                  items: [
+                    DropdownMenuItem(
+                        value: null,
+                        child: Text(
+                            AppLocalizations.of(context).noDueDate)),
+                    ...projects.projects
+                        .map((project) => DropdownMenuItem(
+                              value: project.id,
+                              child: Text(
+                                  '${project.emoji} ${project.title}'),
+                            )),
+                  ],
+                  onChanged: (value) =>
+                      setState(() => _projectId = value),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -839,8 +975,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                 color: BrainTheme.textPrimary)),
                       ),
                       IconButton(
-                        icon:
-                            Icon(Icons.close, color: BrainTheme.textSecondary),
+                        icon: Icon(Icons.close,
+                            color: BrainTheme.textSecondary),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -860,7 +996,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                             ),
                           ),
                           title: Text(t.name,
-                              style: TextStyle(color: BrainTheme.textPrimary)),
+                              style:
+                                  TextStyle(color: BrainTheme.textPrimary)),
                           value: isSelected,
                           activeColor: BrainTheme.accentPurple,
                           onChanged: (v) => setState(() {
@@ -934,7 +1071,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     const SizedBox(height: 12),
                     TextField(
                       decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context).searchInNotes,
+                        hintText:
+                            AppLocalizations.of(context).searchInNotes,
                         prefixIcon: const Icon(Icons.search, size: 20),
                         isDense: true,
                       ),
@@ -1009,15 +1147,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                 color: BrainTheme.textPrimary)),
                       ),
                       IconButton(
-                        icon:
-                            Icon(Icons.close, color: BrainTheme.textSecondary),
+                        icon: Icon(Icons.close,
+                            color: BrainTheme.textSecondary),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Expanded(
-                    child: Consumer<TagsProvider>(builder: (context, prov, _) {
+                    child: Consumer<TagsProvider>(
+                        builder: (context, prov, _) {
                       return ListView(
                         children: prov.tags
                             .map((t) => ListTile(
@@ -1116,7 +1255,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   TextField(
                       controller: nameCtrl,
                       decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).tag)),
+                          labelText:
+                              AppLocalizations.of(context).tag)),
                   const SizedBox(height: 12),
                   TagColorPicker(
                     selectedColorValue: newTagColorValue,
@@ -1137,7 +1277,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     style: FilledButton.styleFrom(
                       backgroundColor: BrainTheme.accentPurple,
                     ),
-                    child: Text(AppLocalizations.of(context).createTask),
+                    child:
+                        Text(AppLocalizations.of(context).createTask),
                   ),
                 ],
               ),
@@ -1230,6 +1371,117 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   }
 }
 
+// ─── FORM HELPERS ────────────────────────────────────────────────────────
+
+class _FormCard extends StatelessWidget {
+  final Widget child;
+
+  const _FormCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: BrainTheme.cardDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: BrainTheme.borderDark),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _FormTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final IconData icon;
+  final TextInputType? keyboardType;
+  final String? hint;
+
+  const _FormTextField({
+    required this.controller,
+    required this.label,
+    required this.icon,
+    this.keyboardType,
+    this.hint,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon, size: 14),
+        isDense: true,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+}
+
+class _FormSection extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final List<Widget> children;
+  final Widget? trailing;
+
+  const _FormSection({
+    required this.title,
+    required this.icon,
+    required this.children,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: BrainTheme.cardDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: BrainTheme.borderDark),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: BrainTheme.accentPurple.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 14, color: BrainTheme.accentPurple),
+              ),
+              const SizedBox(width: 8),
+              Text(title,
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: BrainTheme.textPrimary)),
+              if (trailing != null) ...[
+                const Spacer(),
+                trailing!,
+              ],
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...children,
+        ],
+      ),
+    );
+  }
+}
+
 // ─── HEADER SLIVER ─────────────────────────────────────────────────────
 
 class _TaskHeaderSliver extends StatelessWidget {
@@ -1252,7 +1504,7 @@ class _TaskHeaderSliver extends StatelessWidget {
     final priColor = BrainTheme.priorityColor(task.priority.index);
 
     return SliverAppBar(
-      expandedHeight: 240,
+      expandedHeight: 220,
       pinned: false,
       floating: false,
       backgroundColor: Colors.transparent,
@@ -1276,8 +1528,7 @@ class _TaskHeaderSliver extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
-            child:
-                const Icon(Icons.edit_outlined, color: Colors.white, size: 18),
+            child: const Icon(Icons.edit_outlined, color: Colors.white, size: 18),
           ),
           onPressed: onEdit,
         ),
@@ -1288,8 +1539,7 @@ class _TaskHeaderSliver extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
-            child:
-                const Icon(Icons.delete_outline, color: Colors.white, size: 18),
+            child: const Icon(Icons.delete_outline, color: Colors.white, size: 18),
           ),
           onPressed: onDelete,
         ),
@@ -1301,12 +1551,12 @@ class _TaskHeaderSliver extends StatelessWidget {
             gradient: LinearGradient(
               colors: [
                 priColor,
-                priColor.withValues(alpha: 0.6),
+                priColor.withValues(alpha: 0.5),
                 BrainTheme.primaryDark,
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              stops: const [0.0, 0.4, 1.0],
+              stops: const [0.0, 0.35, 1.0],
             ),
           ),
           child: Stack(
@@ -1324,6 +1574,18 @@ class _TaskHeaderSliver extends StatelessWidget {
                 ),
               ),
               Positioned(
+                bottom: -30,
+                left: -30,
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.04),
+                  ),
+                ),
+              ),
+              Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
@@ -1336,14 +1598,13 @@ class _TaskHeaderSliver extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            width: 56,
-                            height: 56,
+                            width: 48,
+                            height: 48,
                             decoration: BoxDecoration(
                               color: task.status == TaskStatus.completed
-                                  ? BrainTheme.accentGreen
-                                      .withValues(alpha: 0.3)
+                                  ? BrainTheme.accentGreen.withValues(alpha: 0.3)
                                   : Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.3),
                                 width: 2,
@@ -1355,7 +1616,7 @@ class _TaskHeaderSliver extends StatelessWidget {
                                     ? Icons.check_circle
                                     : Icons.task_alt,
                                 color: Colors.white,
-                                size: 28,
+                                size: 24,
                               ),
                             ),
                           ).animate().scaleXY(
@@ -1364,7 +1625,7 @@ class _TaskHeaderSliver extends StatelessWidget {
                                 duration: 500.ms,
                                 curve: Curves.easeOutBack,
                               ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1372,10 +1633,11 @@ class _TaskHeaderSliver extends StatelessWidget {
                                 Text(
                                   task.title,
                                   style: const TextStyle(
-                                    fontSize: 24,
+                                    fontSize: 22,
                                     fontWeight: FontWeight.w800,
                                     color: Colors.white,
                                     letterSpacing: -0.5,
+                                    height: 1.1,
                                   ),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
@@ -1383,7 +1645,7 @@ class _TaskHeaderSliver extends StatelessWidget {
                                     .animate()
                                     .fadeIn(delay: 200.ms)
                                     .slideX(begin: 0.1, end: 0),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 6),
                                 Row(
                                   children: [
                                     _TaskHeaderBadge(
@@ -1396,8 +1658,7 @@ class _TaskHeaderSliver extends StatelessWidget {
                                         .slideX(begin: 0.1, end: 0),
                                     const SizedBox(width: 6),
                                     _TaskHeaderBadge(
-                                      label: _priorityLabel(
-                                          task.priority, context),
+                                      label: _priorityLabel(task.priority, context),
                                       color: priColor,
                                       icon: Icons.flag_outlined,
                                     )
@@ -1412,11 +1673,11 @@ class _TaskHeaderSliver extends StatelessWidget {
                         ],
                       ),
                       if (task.description.isNotEmpty) ...[
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         Text(
                           task.description,
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 12,
                             color: Colors.white.withValues(alpha: 0.7),
                             height: 1.3,
                           ),
@@ -1515,113 +1776,14 @@ class _TaskHeaderBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: color),
+          Icon(icon, size: 11, color: color),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-                fontSize: 11, fontWeight: FontWeight.w600, color: color),
+                fontSize: 10, fontWeight: FontWeight.w600, color: color),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ─── QUICK ACTIONS ─────────────────────────────────────────────────────
-
-class _TaskQuickActions extends StatelessWidget {
-  final Task task;
-
-  const _TaskQuickActions({required this.task});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDone = task.status == TaskStatus.completed;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        children: [
-          _QuickBtn(
-            icon: isDone ? Icons.undo : Icons.check_circle_outline,
-            label: isDone
-                ? AppLocalizations.of(context).restore
-                : AppLocalizations.of(context).statusCompleted,
-            color: isDone ? BrainTheme.accentOrange : BrainTheme.accentGreen,
-            onTap: () {
-              context.read<TasksProvider>().toggleTaskStatus(task.id);
-            },
-          ),
-          const SizedBox(width: 8),
-          _QuickBtn(
-            icon: Icons.play_circle_outline,
-            label: AppLocalizations.of(context).statusInProgress,
-            color: BrainTheme.accentBlue,
-            onTap: () {
-              context.read<TasksProvider>().moveTaskToStatus(
-                    task.id,
-                    task.status == TaskStatus.inProgress
-                        ? TaskStatus.pending
-                        : TaskStatus.inProgress,
-                  );
-            },
-          ),
-          const SizedBox(width: 8),
-          _QuickBtn(
-            icon: Icons.rate_review_outlined,
-            label: AppLocalizations.of(context).statusInReview,
-            color: BrainTheme.accentOrange,
-            onTap: () {
-              context.read<TasksProvider>().moveTaskToStatus(
-                    task.id,
-                    task.status == TaskStatus.inReview
-                        ? TaskStatus.pending
-                        : TaskStatus.inReview,
-                  );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuickBtn extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _QuickBtn({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withValues(alpha: 0.2)),
-          ),
-          child: Column(
-            children: [
-              Icon(icon, size: 20, color: color),
-              const SizedBox(height: 2),
-              Text(label,
-                  style: TextStyle(
-                      fontSize: 10, fontWeight: FontWeight.w600, color: color)),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -1707,13 +1869,23 @@ class _TaskMetaSection extends StatelessWidget {
                                 color: BrainTheme.textPrimary)),
                         const SizedBox(height: 6),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: subtaskProgress,
-                            minHeight: 8,
-                            backgroundColor: BrainTheme.borderDark,
-                            valueColor:
-                                AlwaysStoppedAnimation(BrainTheme.accentGreen),
+                          borderRadius: BorderRadius.circular(3),
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0, end: subtaskProgress),
+                            duration: 600.ms,
+                            curve: Curves.easeOutCubic,
+                            builder: (context, value, _) {
+                              return LinearProgressIndicator(
+                                value: value,
+                                minHeight: 6,
+                                backgroundColor: BrainTheme.borderDark,
+                                valueColor: AlwaysStoppedAnimation(
+                                  subtaskProgress >= 1.0
+                                      ? BrainTheme.accentGreen
+                                      : BrainTheme.accentPurple,
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -1725,7 +1897,9 @@ class _TaskMetaSection extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: BrainTheme.accentGreen,
+                      color: subtaskProgress >= 1.0
+                          ? BrainTheme.accentGreen
+                          : BrainTheme.accentPurple,
                     ),
                   ),
                 ],
@@ -1755,20 +1929,27 @@ class _MetaTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: BrainTheme.cardDark,
+          gradient: LinearGradient(
+            colors: [
+              color.withValues(alpha: 0.05),
+              BrainTheme.cardDark,
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: BrainTheme.borderDark),
         ),
         child: Column(
           children: [
-            Icon(icon, size: 18, color: color),
+            Icon(icon, size: 16, color: color),
             const SizedBox(height: 4),
             Text(
               value,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: BrainTheme.textPrimary,
                 letterSpacing: -0.5,
@@ -1776,7 +1957,7 @@ class _MetaTile extends StatelessWidget {
             ),
             Text(
               label,
-              style: TextStyle(fontSize: 10, color: BrainTheme.textTertiary),
+              style: TextStyle(fontSize: 9, color: BrainTheme.textTertiary),
             ),
           ],
         ),
@@ -1802,7 +1983,7 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      height: 56,
+      height: 52,
       color: BrainTheme.primaryDark,
       child: TabBar(
         controller: tabController,
@@ -1811,18 +1992,19 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
         indicatorColor: BrainTheme.accentPurple,
         indicatorSize: TabBarIndicatorSize.label,
         indicatorWeight: 3,
-        labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        labelStyle:
+            const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
         tabs: [
           Tab(
               child: Row(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.info_outline, size: 16),
-            SizedBox(width: 6),
+            const Icon(Icons.info_outline, size: 15),
+            SizedBox(width: 5),
             Text(AppLocalizations.of(context).details),
           ])),
           Tab(
               child: Row(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.checklist, size: 16),
-            const SizedBox(width: 6),
+            const Icon(Icons.checklist, size: 15),
+            const SizedBox(width: 5),
             Text(AppLocalizations.of(context).subtasks),
             if (subtaskCount > 0) ...[
               const SizedBox(width: 4),
@@ -1831,8 +2013,8 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
           ])),
           Tab(
               child: Row(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.link, size: 16),
-            const SizedBox(width: 6),
+            const Icon(Icons.link, size: 15),
+            const SizedBox(width: 5),
             Text(AppLocalizations.of(context).notes),
             if (noteCount > 0) ...[
               const SizedBox(width: 4),
@@ -1846,23 +2028,23 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   Widget _tabCount(int count) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       decoration: BoxDecoration(
         color: BrainTheme.accentPurple.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text('$count',
           style: TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: FontWeight.w700,
               color: BrainTheme.accentPurple)),
     );
   }
 
   @override
-  double get maxExtent => 56;
+  double get maxExtent => 52;
   @override
-  double get minExtent => 56;
+  double get minExtent => 52;
 
   @override
   bool shouldRebuild(_TaskTabBarDelegate oldDelegate) {
@@ -1881,112 +2063,82 @@ class _TaskInfoTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       children: [
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.description_outlined,
-                        size: 18, color: BrainTheme.accentPurple),
-                    const SizedBox(width: 8),
-                    Text(AppLocalizations.of(context).description,
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: BrainTheme.textPrimary)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  task.description.isNotEmpty
-                      ? task.description
-                      : AppLocalizations.of(context).noData,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: task.description.isNotEmpty
-                        ? BrainTheme.textSecondary
-                        : BrainTheme.textTertiary,
-                    height: 1.5,
-                  ),
-                ),
-              ],
+        _InfoCard(
+          icon: Icons.description_outlined,
+          iconColor: BrainTheme.accentPurple,
+          title: AppLocalizations.of(context).description,
+          child: Text(
+            task.description.isNotEmpty
+                ? task.description
+                : AppLocalizations.of(context).noData,
+            style: TextStyle(
+              fontSize: 14,
+              color: task.description.isNotEmpty
+                  ? BrainTheme.textSecondary
+                  : BrainTheme.textTertiary,
+              height: 1.5,
             ),
           ),
         ),
         const SizedBox(height: 10),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.info_outline,
-                        size: 18, color: BrainTheme.accentBlue),
-                    const SizedBox(width: 8),
-                    Text(AppLocalizations.of(context).details,
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: BrainTheme.textPrimary)),
-                  ],
+        _InfoCard(
+          icon: Icons.info_outline,
+          iconColor: BrainTheme.accentBlue,
+          title: AppLocalizations.of(context).details,
+          child: Column(
+            children: [
+              _detailRow(
+                  Icons.flag_outlined,
+                  AppLocalizations.of(context).status,
+                  _statusLabel(task.status, context)),
+              const Divider(height: 16),
+              _detailRow(
+                  Icons.priority_high,
+                  AppLocalizations.of(context).sortPriority,
+                  _priorityLabel(task.priority, context)),
+              const Divider(height: 16),
+              _detailRow(
+                Icons.calendar_today_outlined,
+                AppLocalizations.of(context).itemCreated,
+                DateFormat('dd MMM yyyy, HH:mm').format(task.createdAt),
+              ),
+              if (task.dueDate != null) ...[
+                const Divider(height: 16),
+                _detailRow(
+                  task.isOverdue ? Icons.error_outline : Icons.event,
+                  AppLocalizations.of(context).dueDate,
+                  DateFormat('dd MMM yyyy').format(task.dueDate!),
+                  valueColor:
+                      task.isOverdue ? BrainTheme.accentRed : null,
                 ),
-                const SizedBox(height: 16),
-                _detailRow(
-                    Icons.flag_outlined,
-                    AppLocalizations.of(context).filterStatus,
-                    _statusLabel(task.status, context)),
-                const Divider(height: 20),
-                _detailRow(
-                    Icons.priority_high,
-                    AppLocalizations.of(context).sortPriority,
-                    _priorityLabel(task.priority, context)),
-                const Divider(height: 20),
-                _detailRow(
-                  Icons.calendar_today_outlined,
-                  AppLocalizations.of(context).itemCreated,
-                  DateFormat('dd MMM yyyy, HH:mm').format(task.createdAt),
-                ),
-                if (task.dueDate != null) ...[
-                  const Divider(height: 20),
-                  _detailRow(
-                    task.isOverdue ? Icons.error_outline : Icons.event,
-                    AppLocalizations.of(context).dueDate,
-                    DateFormat('dd MMM yyyy').format(task.dueDate!),
-                    valueColor: task.isOverdue ? BrainTheme.accentRed : null,
-                  ),
-                ],
-                if (task.projectId != null) ...[
-                  const Divider(height: 20),
-                  Consumer<ProjectsProvider>(builder: (context, pp, _) {
-                    final project = pp.getProjectById(task.projectId!);
-                    return _detailRow(
-                      Icons.folder_outlined,
-                      AppLocalizations.of(context).project,
-                      project != null
-                          ? '${project.emoji} ${project.title}'
-                          : '—',
-                    );
-                  }),
-                ],
-                const Divider(height: 20),
-                _detailRow(
-                    Icons.timer_outlined,
-                    AppLocalizations.of(context).task,
-                    '${task.estimatedHours.toStringAsFixed(1)}h'),
-                if (task.actualHours != null) ...[
-                  const Divider(height: 20),
-                  _detailRow(Icons.schedule, AppLocalizations.of(context).note,
-                      '${task.actualHours!.toStringAsFixed(1)}h'),
-                ],
               ],
-            ),
+              if (task.projectId != null) ...[
+                const Divider(height: 16),
+                Consumer<ProjectsProvider>(builder: (context, pp, _) {
+                  final project = pp.getProjectById(task.projectId!);
+                  return _detailRow(
+                    Icons.folder_outlined,
+                    AppLocalizations.of(context).project,
+                    project != null
+                        ? '${project.emoji} ${project.title}'
+                        : '—',
+                  );
+                }),
+              ],
+              const Divider(height: 16),
+              _detailRow(
+                  Icons.timer_outlined,
+                  AppLocalizations.of(context).task,
+                  '${task.estimatedHours.toStringAsFixed(1)}h'),
+              if (task.actualHours != null) ...[
+                const Divider(height: 16),
+                _detailRow(Icons.schedule,
+                    AppLocalizations.of(context).note,
+                    '${task.actualHours!.toStringAsFixed(1)}h'),
+              ],
+            ],
           ),
         ),
       ],
@@ -2027,24 +2179,76 @@ class _TaskInfoTab extends StatelessWidget {
       {Color? valueColor}) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: BrainTheme.textTertiary),
+        Icon(icon, size: 15, color: BrainTheme.textTertiary),
         const SizedBox(width: 10),
         SizedBox(
           width: 80,
           child: Text(label,
-              style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary)),
+              style:
+                  TextStyle(fontSize: 12, color: BrainTheme.textSecondary)),
         ),
         Expanded(
           child: Text(
             value,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w500,
               color: valueColor ?? BrainTheme.textPrimary,
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _InfoCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final Widget child;
+
+  const _InfoCard({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: BrainTheme.cardDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: BrainTheme.borderDark),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 14, color: iconColor),
+              ),
+              const SizedBox(width: 8),
+              Text(title,
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: BrainTheme.textPrimary)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
     );
   }
 }
@@ -2072,11 +2276,12 @@ class _TaskSubtabsTab extends StatelessWidget {
             Text('📋', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
             Text(AppLocalizations.of(context).noTasks,
-                style:
-                    TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
+                style: TextStyle(
+                    fontSize: 16, color: BrainTheme.textSecondary)),
             const SizedBox(height: 8),
             Text(AppLocalizations.of(context).emptyStateDescription,
-                style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
+                style:
+                    TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
           ],
         ),
       );
@@ -2087,16 +2292,23 @@ class _TaskSubtabsTab extends StatelessWidget {
       itemCount: subtasks.length,
       itemBuilder: (_, index) {
         final subtask = subtasks[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
+        return Container(
+          margin: const EdgeInsets.only(bottom: 6),
+          decoration: BoxDecoration(
+            color: BrainTheme.cardDark,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: BrainTheme.borderDark),
+          ),
           child: ListTile(
+            dense: true,
             leading: GestureDetector(
               onTap: () {
                 final updated = [...subtasks];
                 updated[index] = subtask.copyWith(isDone: !subtask.isDone);
                 onChanged(updated);
               },
-              child: Container(
+              child: AnimatedContainer(
+                duration: 200.ms,
                 width: 22,
                 height: 22,
                 decoration: BoxDecoration(
@@ -2119,7 +2331,7 @@ class _TaskSubtabsTab extends StatelessWidget {
             title: Text(
               subtask.title,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 color: subtask.isDone
                     ? BrainTheme.textTertiary
                     : BrainTheme.textPrimary,
@@ -2154,11 +2366,12 @@ class _TaskNotesTab extends StatelessWidget {
             Text('🔗', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
             Text(AppLocalizations.of(context).noData,
-                style:
-                    TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
+                style: TextStyle(
+                    fontSize: 16, color: BrainTheme.textSecondary)),
             const SizedBox(height: 8),
             Text(AppLocalizations.of(context).emptyStateDescription,
-                style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
+                style:
+                    TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
           ],
         ),
       );
@@ -2172,109 +2385,50 @@ class _TaskNotesTab extends StatelessWidget {
           itemBuilder: (_, index) {
             final note = provider.getNoteById(linkedNoteIds[index]);
             if (note == null) return const SizedBox.shrink();
-            return Card(
+            return Container(
               margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: Text(note.emoji, style: const TextStyle(fontSize: 24)),
-                title: Text(note.title,
-                    style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        color: BrainTheme.textPrimary)),
-                subtitle: Text(note.notebook,
-                    style: TextStyle(color: BrainTheme.textTertiary)),
-                trailing: IconButton(
-                  icon: Icon(Icons.link_off,
-                      color: BrainTheme.accentRed, size: 18),
-                  onPressed: () {
-                    final updated = List<String>.from(linkedNoteIds)
-                      ..removeAt(index);
-                    onChanged(updated);
-                  },
-                ),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: BrainTheme.cardDark,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: BrainTheme.borderDark),
+              ),
+              child: Row(
+                children: [
+                  Text(note.emoji,
+                      style: const TextStyle(fontSize: 22)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(note.title,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: BrainTheme.textPrimary,
+                                fontSize: 14)),
+                        Text(note.notebook,
+                            style: TextStyle(
+                                color: BrainTheme.textTertiary,
+                                fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.link_off,
+                        color: BrainTheme.accentRed, size: 18),
+                    onPressed: () {
+                      final updated = List<String>.from(linkedNoteIds)
+                        ..removeAt(index);
+                      onChanged(updated);
+                    },
+                  ),
+                ],
               ),
             );
           },
         );
       },
-    );
-  }
-}
-
-// ─── FORM HELPERS ──────────────────────────────────────────────────────
-
-class _FormSection extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final List<Widget> children;
-  final Widget? trailing;
-
-  const _FormSection({
-    required this.title,
-    required this.icon,
-    required this.children,
-    this.trailing,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 16, color: BrainTheme.accentPurple),
-                const SizedBox(width: 8),
-                Text(title,
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: BrainTheme.textPrimary)),
-                if (trailing != null) ...[
-                  const Spacer(),
-                  trailing!,
-                ],
-              ],
-            ),
-            const SizedBox(height: 14),
-            ...children,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FormRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Widget child;
-
-  const _FormRow({
-    required this.icon,
-    required this.label,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Icon(icon, size: 16, color: BrainTheme.textTertiary),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 70,
-          child: Text(
-            label,
-            style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(child: child),
-      ],
     );
   }
 }

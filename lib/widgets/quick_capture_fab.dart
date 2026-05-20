@@ -111,11 +111,12 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
           button: true,
           child: FloatingActionButton(
             onPressed: _toggle,
-            backgroundColor: BrainTheme.accentPurple,
+            backgroundColor: BrainTheme.accentPurple.withValues(alpha: 0.9),
+            elevation: 4,
             child: AnimatedRotation(
               turns: _isOpen ? 0.125 : 0,
               duration: const Duration(milliseconds: 250),
-              child: const Icon(Icons.add, size: 28),
+              child: const Icon(Icons.add, size: 24),
             ),
           ),
         ),
@@ -164,11 +165,11 @@ class _MiniFAB extends StatelessWidget {
           heroTag: label,
           backgroundColor: color,
           foregroundColor: Colors.white,
-          elevation: 8,
+          elevation: 3,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           onPressed: onTap,
-          child: Icon(icon, size: 20),
+          child: Icon(icon, size: 18),
         ),
       ],
     )

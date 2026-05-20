@@ -153,8 +153,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
     final progress =
         projectTasks.isEmpty ? 0.0 : completedTasks / projectTasks.length;
 
-    return CustomScrollView(
-      slivers: [
+    return NestedScrollView(
+      headerSliverBuilder: (context, innerBoxIsScrolled) => [
         _HeaderSliver(
           project: project,
           progress: progress,
@@ -191,17 +191,15 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
                 .length,
           ),
         ),
-        SliverFillRemaining(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _ProjectInfoTab(projectId: project.id),
-              _ProjectTasksTab(projectId: project.id),
-              _ProjectNotesTab(projectId: project.id),
-            ],
-          ),
-        ),
       ],
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _ProjectInfoTab(projectId: project.id),
+          _ProjectTasksTab(projectId: project.id),
+          _ProjectNotesTab(projectId: project.id),
+        ],
+      ),
     );
   }
 
@@ -653,24 +651,24 @@ class _HeaderSliver extends StatelessWidget {
       case ProjectStatus.active:
         return AppLocalizations.of(context).active;
       case ProjectStatus.paused:
-        return 'Pausado';
+        return AppLocalizations.of(context).paused;
       case ProjectStatus.completed:
         return AppLocalizations.of(context).statusCompleted;
       case ProjectStatus.abandoned:
-        return 'Abandonado';
+        return AppLocalizations.of(context).abandoned;
     }
   }
 
   Color _statusColor(ProjectStatus status) {
     switch (status) {
       case ProjectStatus.active:
-        return BrainTheme.accentGreen;
+        return BrainTheme.statusColor(TaskStatus.inProgress);
       case ProjectStatus.paused:
-        return BrainTheme.accentOrange;
+        return BrainTheme.statusColor(TaskStatus.inReview);
       case ProjectStatus.completed:
-        return BrainTheme.accentBlue;
+        return BrainTheme.statusColor(TaskStatus.completed);
       case ProjectStatus.abandoned:
-        return Colors.grey;
+        return BrainTheme.statusColor(TaskStatus.cancelled);
     }
   }
 
@@ -770,7 +768,7 @@ class _QuickActions extends StatelessWidget {
                 ? Icons.play_circle_outline
                 : Icons.pause_circle_outline,
             label:
-                project.status == ProjectStatus.paused ? 'Reanudar' : 'Pausar',
+                '${AppLocalizations.of(context).statusInProgress} / ${AppLocalizations.of(context).active}',
             color: project.status == ProjectStatus.paused
                 ? BrainTheme.accentGreen
                 : BrainTheme.accentOrange,
@@ -1743,7 +1741,7 @@ class _ProjectMetaGrid extends StatelessWidget {
           children: [
             Expanded(
               child: _MetaField(
-                label: AppLocalizations.of(context).filterStatus,
+                label: AppLocalizations.of(context).status,
                 child: DropdownButton<ProjectStatus>(
                   value: status,
                   isExpanded: true,
@@ -1860,24 +1858,24 @@ class _ProjectMetaGrid extends StatelessWidget {
       case ProjectStatus.active:
         return AppLocalizations.of(context).active;
       case ProjectStatus.paused:
-        return 'Pausado';
+        return AppLocalizations.of(context).paused;
       case ProjectStatus.completed:
         return AppLocalizations.of(context).statusCompleted;
       case ProjectStatus.abandoned:
-        return 'Abandonado';
+        return AppLocalizations.of(context).abandoned;
     }
   }
 
   Color _statusColor(ProjectStatus s) {
     switch (s) {
       case ProjectStatus.active:
-        return BrainTheme.accentGreen;
+        return BrainTheme.statusColor(TaskStatus.inProgress);
       case ProjectStatus.paused:
-        return BrainTheme.accentOrange;
+        return BrainTheme.statusColor(TaskStatus.inReview);
       case ProjectStatus.completed:
-        return BrainTheme.accentBlue;
+        return BrainTheme.statusColor(TaskStatus.completed);
       case ProjectStatus.abandoned:
-        return BrainTheme.textTertiary;
+        return BrainTheme.statusColor(TaskStatus.cancelled);
     }
   }
 

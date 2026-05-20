@@ -2,11 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/task.dart';
+import '../../models/project.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../widgets/paginated_list.dart';
@@ -26,7 +28,9 @@ class TasksScreen extends StatefulWidget {
 
 class _TasksScreenState extends State<TasksScreen> {
   final _searchController = TextEditingController();
+  final _projectSearchController = TextEditingController();
   String _searchQuery = '';
+  String _projectSearchQuery = '';
   Set<TaskPriority> _selectedPriorities = TaskPriority.values.toSet();
   _TaskDueDateFilter _dueDateFilter = _TaskDueDateFilter.all;
   bool _onlyWithDescription = false;
@@ -39,21 +43,8 @@ class _TasksScreenState extends State<TasksScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _projectSearchController.dispose();
     super.dispose();
-  }
-
-  void _clearFilters() {
-    setState(() {
-      _searchQuery = '';
-      _searchController.clear();
-      _selectedPriorities = TaskPriority.values.toSet();
-      _dueDateFilter = _TaskDueDateFilter.all;
-      _onlyWithDescription = false;
-      _onlyWithProject = false;
-      _selectedProjectId = null;
-      _visibleBoardColumns = TaskStatus.values.toSet();
-      _sortOption = _TaskSortOption.priority;
-    });
   }
 
   bool _matchesSearch(Task task) {
@@ -150,9 +141,6 @@ class _TasksScreenState extends State<TasksScreen> {
     }
   }
 
-  String _dueDateFilterLabel(BuildContext context) =>
-      _dueDateFilterLabelFor(_dueDateFilter, context);
-
   String _dueDateFilterLabelFor(
       _TaskDueDateFilter filter, BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -211,7 +199,10 @@ class _TasksScreenState extends State<TasksScreen> {
         if (!provider.isLoaded) return const SkeletonList();
         return Column(
           children: [
-            _StatsBar(provider: provider),
+            _TodaySummaryBar(provider: provider)
+                .animate()
+                .fadeIn(duration: 400.ms)
+                .slideY(begin: -0.2, end: 0, curve: Curves.easeOut),
             _SearchFilterBar(
               searchQuery: _searchQuery,
               showSearch: _showSearch,
@@ -227,18 +218,24 @@ class _TasksScreenState extends State<TasksScreen> {
               }),
               onAdvancedFilters: _showAdvancedFilters,
               activeFilterCount: _activeFilterCount(),
-              selectedProjectId: _selectedProjectId,
-              onProjectChanged: (v) => setState(() => _selectedProjectId = v),
             ),
-            if (_activeFilterCount() > 0)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: _buildFilterChips(context),
-                ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+              child: _ProjectSelector(
+                selectedProjectId: _selectedProjectId,
+                searchQuery: _projectSearchQuery,
+                searchController: _projectSearchController,
+                onSearchChanged: (v) =>
+                    setState(() => _projectSearchQuery = v),
+                onProjectChanged: (v) {
+                  setState(() {
+                    _selectedProjectId = v;
+                    _projectSearchQuery = '';
+                    _projectSearchController.clear();
+                  });
+                },
               ),
+            ),
             const SizedBox(height: 8),
             Expanded(
               child: _buildBoard(context, provider),
@@ -249,10 +246,7 @@ class _TasksScreenState extends State<TasksScreen> {
     );
   }
 
-  Widget _buildBoard(
-    BuildContext context,
-    TasksProvider provider,
-  ) {
+  Widget _buildBoard(BuildContext context, TasksProvider provider) {
     final filteredTasks = _filteredTasks(provider.tasks);
     final sortedTasks = [...filteredTasks]..sort(_compareTasks);
     final visibleColumns = TaskStatus.values
@@ -283,42 +277,27 @@ class _TasksScreenState extends State<TasksScreen> {
               child: Row(
                 children: [
                   Text(
-                    AppLocalizations.of(context).tasks,
+                    '${filteredTasks.length} ${AppLocalizations.of(context).tasks}',
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: BrainTheme.textSecondary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: BrainTheme.textTertiary,
+                      letterSpacing: 0.2,
                     ),
                   ),
                   const SizedBox(width: 6),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: BrainTheme.accentPurple.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      '${filteredTasks.length}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: BrainTheme.accentPurple,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
                   Text(
-                    _sortLabel(context),
+                    '• ${_sortLabel(context)}',
                     style: TextStyle(
                       fontSize: 11,
-                      color: BrainTheme.textTertiary,
+                      fontWeight: FontWeight.w400,
+                      color: BrainTheme.textTertiary.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -328,13 +307,23 @@ class _TasksScreenState extends State<TasksScreen> {
                       ? Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              AppLocalizations.of(context).filterAll,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: BrainTheme.textSecondary,
-                              ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.filter_alt_off_outlined,
+                                    size: 48,
+                                    color: BrainTheme.textTertiary
+                                        .withValues(alpha: 0.3)),
+                                const SizedBox(height: 12),
+                                Text(
+                                  AppLocalizations.of(context).filterAll,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: BrainTheme.textSecondary,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         )
@@ -410,163 +399,203 @@ class _TasksScreenState extends State<TasksScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Text(AppLocalizations.of(context).sortPriority,
-                        style: TextStyle(color: BrainTheme.textPrimary)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: TaskPriority.values.map((priority) {
-                        final active = selectedPriorities.contains(priority);
-                        return FilterChip(
-                          label: Text(_priorityLabel(priority, context)),
-                          selected: active,
-                          selectedColor:
-                              BrainTheme.accentPurple.withValues(alpha: 0.12),
-                          backgroundColor: BrainTheme.cardDark,
-                          labelStyle: TextStyle(
-                            color: active
-                                ? BrainTheme.accentPurple
-                                : BrainTheme.textSecondary,
+                    const SizedBox(height: 16),
+                    _FilterSection(
+                      icon: Icons.priority_high,
+                      title: AppLocalizations.of(context).sortPriority,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: TaskPriority.values.map((priority) {
+                          final active = selectedPriorities.contains(priority);
+                          final color = BrainTheme.priorityColor(priority.index);
+                          return FilterChip(
+                            label: Text(_priorityLabel(priority, context)),
+                            selected: active,
+                            selectedColor: color.withValues(alpha: 0.15),
+                            backgroundColor: BrainTheme.cardDark,
+                            labelStyle: TextStyle(
+                              color: active ? color : BrainTheme.textSecondary,
+                              fontWeight:
+                                  active ? FontWeight.w600 : FontWeight.w400,
+                            ),
+                            side: BorderSide(
+                              color: active
+                                  ? color.withValues(alpha: 0.4)
+                                  : BrainTheme.borderDark,
+                            ),
+                            onSelected: (selected) {
+                              setModalState(() {
+                                if (selected) {
+                                  selectedPriorities.add(priority);
+                                } else {
+                                  selectedPriorities.remove(priority);
+                                }
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _FilterSection(
+                      icon: Icons.calendar_today,
+                      title: AppLocalizations.of(context).sortDueDate,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _TaskDueDateFilter.values.map((filter) {
+                          final selected = dueDateFilter == filter;
+                          return ChoiceChip(
+                            label: Text(_dueDateFilterLabelFor(filter, context)),
+                            selected: selected,
+                            selectedColor:
+                                BrainTheme.accentBlue.withValues(alpha: 0.15),
+                            backgroundColor: BrainTheme.cardDark,
+                            labelStyle: TextStyle(
+                              color: selected
+                                  ? BrainTheme.accentBlue
+                                  : BrainTheme.textSecondary,
+                              fontWeight:
+                                  selected ? FontWeight.w600 : FontWeight.w400,
+                            ),
+                            side: BorderSide(
+                              color: selected
+                                  ? BrainTheme.accentBlue.withValues(alpha: 0.4)
+                                  : BrainTheme.borderDark,
+                            ),
+                            onSelected: (_) {
+                              setModalState(() => dueDateFilter = filter);
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _FilterSection(
+                      icon: Icons.tune,
+                      title: 'Filtros extra',
+                      child: Column(
+                        children: [
+                          SwitchListTile(
+                            value: onlyWithDescription,
+                            activeThumbColor: BrainTheme.accentPurple,
+                            title: Text(
+                                AppLocalizations.of(context)
+                                    .onlyWithDescription,
+                                style: TextStyle(
+                                    color: BrainTheme.textPrimary,
+                                    fontSize: 14)),
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            onChanged: (value) {
+                              setModalState(
+                                  () => onlyWithDescription = value);
+                            },
                           ),
-                          onSelected: (selected) {
-                            setModalState(() {
-                              if (selected) {
-                                selectedPriorities.add(priority);
-                              } else {
-                                selectedPriorities.remove(priority);
+                          SwitchListTile(
+                            value: onlyWithProject,
+                            activeThumbColor: BrainTheme.accentPurple,
+                            title: Text(
+                                AppLocalizations.of(context).onlyWithProject,
+                                style: TextStyle(
+                                    color: BrainTheme.textPrimary,
+                                    fontSize: 14)),
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            onChanged: (value) {
+                              setModalState(() => onlyWithProject = value);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _FilterSection(
+                      icon: Icons.view_column,
+                      title: AppLocalizations.of(context).status,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: TaskStatus.values.map((status) {
+                          final selected =
+                              visibleBoardColumns.contains(status);
+                          final color = _statusColor(status);
+                          return FilterChip(
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(_statusIcon(status),
+                                    size: 14, color: color),
+                                const SizedBox(width: 4),
+                                Text(_statusLabel(status, context)),
+                              ],
+                            ),
+                            selected: selected,
+                            selectedColor: color.withValues(alpha: 0.15),
+                            backgroundColor: BrainTheme.cardDark,
+                            labelStyle: TextStyle(
+                              color:
+                                  selected ? color : BrainTheme.textSecondary,
+                              fontWeight:
+                                  selected ? FontWeight.w600 : FontWeight.w400,
+                            ),
+                            side: BorderSide(
+                              color: selected
+                                  ? color.withValues(alpha: 0.4)
+                                  : BrainTheme.borderDark,
+                            ),
+                            onSelected: (isSelected) {
+                              setModalState(() {
+                                if (isSelected) {
+                                  visibleBoardColumns.add(status);
+                                } else {
+                                  visibleBoardColumns.remove(status);
+                                }
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _FilterSection(
+                      icon: Icons.sort,
+                      title: AppLocalizations.of(context).sortBy,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: BrainTheme.cardDark,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: BrainTheme.borderDark),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<_TaskSortOption>(
+                            value: sortOption,
+                            isExpanded: true,
+                            dropdownColor: BrainTheme.cardDark,
+                            items: _TaskSortOption.values.map((option) {
+                              return DropdownMenuItem(
+                                value: option,
+                                child: Text(
+                                    _sortOptionLabel(option, context)),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setModalState(() => sortOption = value);
                               }
-                            });
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(AppLocalizations.of(context).sortDueDate,
-                        style: TextStyle(color: BrainTheme.textPrimary)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _TaskDueDateFilter.values.map((filter) {
-                        final selected = dueDateFilter == filter;
-                        return ChoiceChip(
-                          label: Text(_dueDateFilterLabelFor(filter, context)),
-                          selected: selected,
-                          selectedColor:
-                              BrainTheme.accentBlue.withValues(alpha: 0.18),
-                          backgroundColor: BrainTheme.cardDark,
-                          labelStyle: TextStyle(
-                            color: selected
-                                ? BrainTheme.accentBlue
-                                : BrainTheme.textSecondary,
+                            },
                           ),
-                          onSelected: (_) {
-                            setModalState(() => dueDateFilter = filter);
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 16),
-                    SwitchListTile(
-                      value: onlyWithDescription,
-                      activeThumbColor: BrainTheme.accentPurple,
-                      title: Text(
-                          AppLocalizations.of(context).onlyWithDescription,
-                          style: TextStyle(color: BrainTheme.textPrimary)),
-                      subtitle: Text(
-                        AppLocalizations.of(context).description,
-                        style: TextStyle(
-                            color: BrainTheme.textSecondary, fontSize: 12),
-                      ),
-                      onChanged: (value) {
-                        setModalState(() => onlyWithDescription = value);
-                      },
-                    ),
-                    SwitchListTile(
-                      value: onlyWithProject,
-                      activeThumbColor: BrainTheme.accentPurple,
-                      title: Text(AppLocalizations.of(context).onlyWithProject,
-                          style: TextStyle(color: BrainTheme.textPrimary)),
-                      subtitle: Text(
-                        AppLocalizations.of(context).project,
-                        style: TextStyle(
-                            color: BrainTheme.textSecondary, fontSize: 12),
-                      ),
-                      onChanged: (value) {
-                        setModalState(() => onlyWithProject = value);
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Text(AppLocalizations.of(context).filterStatus,
-                        style: TextStyle(color: BrainTheme.textPrimary)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: TaskStatus.values.map((status) {
-                        final selected = visibleBoardColumns.contains(status);
-                        return FilterChip(
-                          label: Text(_statusLabel(status, context)),
-                          selected: selected,
-                          selectedColor:
-                              BrainTheme.accentPurple.withValues(alpha: 0.12),
-                          backgroundColor: BrainTheme.cardDark,
-                          labelStyle: TextStyle(
-                            color: selected
-                                ? BrainTheme.accentPurple
-                                : BrainTheme.textSecondary,
-                          ),
-                          onSelected: (isSelected) {
-                            setModalState(() {
-                              if (isSelected) {
-                                visibleBoardColumns.add(status);
-                              } else {
-                                visibleBoardColumns.remove(status);
-                              }
-                            });
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(AppLocalizations.of(context).sortBy,
-                        style: TextStyle(color: BrainTheme.textPrimary)),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: BrainTheme.cardDark,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: BrainTheme.borderDark),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<_TaskSortOption>(
-                          value: sortOption,
-                          isExpanded: true,
-                          dropdownColor: BrainTheme.cardDark,
-                          items: _TaskSortOption.values.map((option) {
-                            return DropdownMenuItem(
-                              value: option,
-                              child: Text(_sortOptionLabel(option, context)),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              setModalState(() => sortOption = value);
-                            }
-                          },
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () {
-                              _clearFilters();
                               setModalState(() {
                                 selectedPriorities
                                   ..clear()
@@ -580,8 +609,15 @@ class _TasksScreenState extends State<TasksScreen> {
                                 sortOption = _TaskSortOption.priority;
                               });
                             },
-                            child:
-                                Text(AppLocalizations.of(context).clearFilters),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                  color: BrainTheme.borderDark),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                                AppLocalizations.of(context).clearFilters),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -602,10 +638,12 @@ class _TasksScreenState extends State<TasksScreen> {
                               backgroundColor: BrainTheme.accentPurple,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(12),
                               ),
+                              elevation: 0,
                             ),
-                            child: Text(AppLocalizations.of(context).save),
+                            child:
+                                Text(AppLocalizations.of(context).save),
                           ),
                         ),
                       ],
@@ -635,47 +673,6 @@ class _TasksScreenState extends State<TasksScreen> {
     }
   }
 
-  List<Widget> _buildFilterChips(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final chips = <Widget>[];
-    if (_searchQuery.isNotEmpty) {
-      chips.add(_buildFilterChip('${l10n.search}: "$_searchQuery"', () {
-        _searchController.clear();
-        setState(() => _searchQuery = '');
-      }));
-    }
-    if (_selectedPriorities.length != TaskPriority.values.length) {
-      chips.add(_buildFilterChip(
-        '${l10n.sortPriority}: ${_selectedPriorities.map((p) => _priorityLabel(p, context)).join(', ')}',
-        () => setState(() => _selectedPriorities = TaskPriority.values.toSet()),
-      ));
-    }
-    if (_dueDateFilter != _TaskDueDateFilter.all) {
-      chips.add(_buildFilterChip(
-          '${l10n.dueDate}: ${_dueDateFilterLabel(context)}', () {
-        setState(() => _dueDateFilter = _TaskDueDateFilter.all);
-      }));
-    }
-    if (_onlyWithDescription) {
-      chips.add(_buildFilterChip(l10n.onlyWithDescription, () {
-        setState(() => _onlyWithDescription = false);
-      }));
-    }
-    if (_onlyWithProject) {
-      chips.add(_buildFilterChip(l10n.onlyWithProject, () {
-        setState(() => _onlyWithProject = false);
-      }));
-    }
-    if (_selectedProjectId != null) {
-      chips.add(_buildFilterChip(l10n.project, () {
-        setState(() => _selectedProjectId = null);
-      }));
-    }
-    chips.add(_buildFilterChip(
-        '${l10n.sortBy}: ${_sortLabel(context)}', _showAdvancedFilters));
-    return chips;
-  }
-
   int _activeFilterCount() {
     var count = 0;
     if (_searchQuery.isNotEmpty) count++;
@@ -685,76 +682,6 @@ class _TasksScreenState extends State<TasksScreen> {
     if (_onlyWithProject) count++;
     if (_selectedProjectId != null) count++;
     return count;
-  }
-
-  Widget _buildFilterChip(String label, VoidCallback onRemove) {
-    return InputChip(
-      label: Text(label, style: const TextStyle(fontSize: 12)),
-      onDeleted: onRemove,
-      deleteIcon: const Icon(Icons.close, size: 16),
-      backgroundColor: BrainTheme.cardDark,
-      labelStyle: TextStyle(color: BrainTheme.textPrimary),
-      visualDensity: VisualDensity.compact,
-    );
-  }
-
-  Widget _buildTaskAction(Task task, TasksProvider provider) {
-    final availableStatuses =
-        TaskStatus.values.where((s) => s != task.status).toList();
-
-    return PopupMenuButton<TaskStatus>(
-      icon: Icon(Icons.more_horiz, color: BrainTheme.textTertiary, size: 20),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      color: BrainTheme.cardDark,
-      elevation: 8,
-      itemBuilder: (context) => [
-        PopupMenuItem<TaskStatus>(
-          enabled: false,
-          height: 32,
-          child: Text(
-            AppLocalizations.of(context).filterStatus,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: BrainTheme.textTertiary,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-        ...availableStatuses.map((status) {
-          return PopupMenuItem<TaskStatus>(
-            value: status,
-            height: 42,
-            child: Row(
-              children: [
-                Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: _statusColor(status).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Icon(_statusIcon(status),
-                      size: 14, color: _statusColor(status)),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  _statusLabel(status, context),
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: BrainTheme.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
-      ],
-      onSelected: (status) {
-        provider.moveTaskToStatus(task.id, status);
-      },
-    );
   }
 
   IconData _statusIcon(TaskStatus status) {
@@ -772,26 +699,12 @@ class _TasksScreenState extends State<TasksScreen> {
     }
   }
 
-  Color _statusColor(TaskStatus status) {
-    switch (status) {
-      case TaskStatus.pending:
-        return BrainTheme.textTertiary;
-      case TaskStatus.inProgress:
-        return BrainTheme.accentBlue;
-      case TaskStatus.inReview:
-        return BrainTheme.accentOrange;
-      case TaskStatus.completed:
-        return BrainTheme.accentGreen;
-      case TaskStatus.cancelled:
-        return BrainTheme.accentRed;
-    }
-  }
+  Color _statusColor(TaskStatus status) => BrainTheme.statusColor(status);
 
   Widget _buildTaskCard(Task task, TasksProvider provider) {
     return TaskCard(
       task: task,
       enableSlide: false,
-      action: _buildTaskAction(task, provider),
       compact: true,
       onTap: () => Navigator.pushNamed(context, '/task', arguments: task.id),
       onDismissed: () => provider.deleteTask(task.id),
@@ -799,111 +712,434 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 }
 
-// ─── STATS BAR ─────────────────────────────────────────────────────────
+// ─── TODAY SUMMARY BAR ─────────────────────────────────────────────────
 
-class _StatsBar extends StatelessWidget {
+class _TodaySummaryBar extends StatelessWidget {
   final TasksProvider provider;
 
-  const _StatsBar({required this.provider});
+  const _TodaySummaryBar({required this.provider});
 
   @override
   Widget build(BuildContext context) {
-    final total = provider.totalTasks;
+    final now = DateTime.now();
+    final dateStr = DateFormat('dd/MM/yyyy').format(now);
+    final pending = provider.todoTasks.length;
+    final inProgress = provider.inProgressTasks.length;
+    final done = provider.doneTasks.length;
     final overdue = provider.overdueTasks.length;
-    final today = provider.todayTasks.length;
-    final doneToday = provider.completedToday;
+    final cancelled = provider.cancelledTasks.length;
+    final total = provider.totalTasks;
+
+    final l10n = AppLocalizations.of(context);
 
     return Container(
+      width: double.infinity,
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            BrainTheme.accentPurple.withValues(alpha: 0.12),
-            BrainTheme.accentBlue.withValues(alpha: 0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
+        color: BrainTheme.cardDark.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+          color: BrainTheme.borderDark.withValues(alpha: 0.5),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _StatItem(
-            icon: Icons.task_alt,
-            value: '$total',
-            label: AppLocalizations.of(context).totalTasks,
-            color: BrainTheme.accentPurple,
+          Row(
+            children: [
+              Icon(Icons.calendar_month,
+                  size: 13, color: BrainTheme.textTertiary),
+              const SizedBox(width: 6),
+              Text(
+                l10n.today,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: BrainTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                dateStr,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                  color: BrainTheme.textTertiary,
+                ),
+              ),
+            ],
           ),
-          _StatItem(
-            icon: Icons.warning_amber_rounded,
-            value: '$overdue',
-            label: AppLocalizations.of(context).overdueTasks,
-            color: overdue > 0 ? BrainTheme.accentRed : BrainTheme.textTertiary,
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _SummaryChip(
+                  icon: Icons.circle_outlined,
+                  count: pending,
+                  label: l10n.statusPending,
+                  color: BrainTheme.statusColor(TaskStatus.pending)),
+              const SizedBox(width: 8),
+              _SummaryChip(
+                  icon: Icons.play_circle_outline,
+                  count: inProgress,
+                  label: l10n.statusInProgress,
+                  color: BrainTheme.statusColor(TaskStatus.inProgress)),
+              const SizedBox(width: 8),
+              _SummaryChip(
+                  icon: Icons.check_circle,
+                  count: done,
+                  label: l10n.statusCompleted,
+                  color: BrainTheme.statusColor(TaskStatus.completed)),
+            ],
           ),
-          _StatItem(
-            icon: Icons.calendar_today,
-            value: '$today',
-            label: AppLocalizations.of(context).today,
-            color:
-                today > 0 ? BrainTheme.accentOrange : BrainTheme.textTertiary,
-          ),
-          _StatItem(
-            icon: Icons.check_circle,
-            value: '$doneToday',
-            label: AppLocalizations.of(context).completedTasks,
-            color: BrainTheme.accentGreen,
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              _SummaryChip(
+                  icon: Icons.warning_amber_rounded,
+                  count: overdue,
+                  label: l10n.overdueTasks,
+                  color: overdue > 0
+                      ? BrainTheme.statusColor(TaskStatus.cancelled)
+                      : BrainTheme.textTertiary),
+              const SizedBox(width: 8),
+              _SummaryChip(
+                  icon: Icons.cancel_outlined,
+                  count: cancelled,
+                  label: l10n.statusCancelled,
+                  color: cancelled > 0
+                      ? BrainTheme.statusColor(TaskStatus.cancelled)
+                      : BrainTheme.textTertiary),
+              const SizedBox(width: 8),
+              _SummaryChip(
+                  icon: Icons.task_alt,
+                  count: total,
+                  label: l10n.all,
+                  color: BrainTheme.textTertiary),
+            ],
           ),
         ],
       ),
-    )
-        .animate()
-        .fadeIn(duration: 400.ms)
-        .slideY(begin: -0.2, end: 0, curve: Curves.easeOut);
+    );
   }
 }
 
-class _StatItem extends StatelessWidget {
+class _SummaryChip extends StatelessWidget {
   final IconData icon;
-  final String value;
+  final int count;
   final String label;
   final Color color;
 
-  const _StatItem({
+  const _SummaryChip({
     required this.icon,
-    required this.value,
+    required this.count,
     required this.label,
     required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$count',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: color,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w400,
+              color: color,
+              height: 1.1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── PROJECT SELECTOR ──────────────────────────────────────────────────
+
+class _ProjectSelector extends StatelessWidget {
+  final String? selectedProjectId;
+  final String searchQuery;
+  final TextEditingController searchController;
+  final ValueChanged<String> onSearchChanged;
+  final ValueChanged<String?> onProjectChanged;
+
+  const _ProjectSelector({
+    required this.selectedProjectId,
+    required this.searchQuery,
+    required this.searchController,
+    required this.onSearchChanged,
+    required this.onProjectChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ProjectsProvider>(
+      builder: (context, projectsProvider, _) {
+        final projects = projectsProvider.projects;
+        Project? selectedProject;
+        if (selectedProjectId != null) {
+          try {
+            selectedProject =
+                projects.firstWhere((p) => p.id == selectedProjectId);
+          } catch (_) {}
+        }
+
+        return GestureDetector(
+          onTap: () => _showProjectPicker(context, projects),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: BrainTheme.cardDark,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: BrainTheme.borderDark),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.folder_outlined,
+                    size: 16, color: BrainTheme.textTertiary),
+                const SizedBox(width: 8),
+                Expanded(
+                child: Text(
+                  selectedProject != null
+                      ? '${selectedProject.emoji} ${selectedProject.title}'
+                      : 'Todos los proyectos',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: selectedProject != null
+                        ? Color(selectedProject.colorValue)
+                        : BrainTheme.textSecondary,
+                  ),
+                ),
+                ),
+                Icon(Icons.arrow_drop_down,
+                    size: 20, color: BrainTheme.textTertiary),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showProjectPicker(BuildContext context, List<Project> projects) {
+    String localQuery = searchQuery;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: BrainTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setS) {
+            final filtered = localQuery.isEmpty
+                ? projects
+                : projects
+                    .where((p) => p.title
+                        .toLowerCase()
+                        .contains(localQuery.toLowerCase()))
+                    .toList();
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: Container(
+                height: 420,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Seleccionar proyecto',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: BrainTheme.textPrimary,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close,
+                              color: BrainTheme.textSecondary),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      autofocus: true,
+                      onChanged: (v) => setS(() => localQuery = v),
+                      decoration: InputDecoration(
+                        hintText: 'Buscar proyecto...',
+                        prefixIcon:
+                            const Icon(Icons.search, size: 18),
+                        isDense: true,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 10),
+                        filled: true,
+                        fillColor: BrainTheme.cardDark,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide:
+                              BorderSide(color: BrainTheme.borderDark),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          ListTile(
+                            dense: true,
+                            leading: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: BrainTheme.accentPurple
+                                    .withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.folder_off_outlined,
+                                  size: 16,
+                                  color: BrainTheme.accentPurple),
+                            ),
+                            title: Text(
+                              'Todos los proyectos',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight:
+                                    selectedProjectId == null
+                                        ? FontWeight.w700
+                                        : FontWeight.w400,
+                                color: BrainTheme.textPrimary,
+                              ),
+                            ),
+                            trailing: selectedProjectId == null
+                                ? Icon(Icons.check,
+                                    size: 18,
+                                    color: BrainTheme.accentGreen)
+                                : null,
+                            onTap: () {
+                              onProjectChanged(null);
+                              Navigator.pop(ctx);
+                            },
+                          ),
+                          ...filtered.map((project) {
+                            final isSelected =
+                                project.id == selectedProjectId;
+                            return ListTile(
+                              dense: true,
+                              leading: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: Color(project.colorValue)
+                                      .withValues(alpha: 0.1),
+                                  borderRadius:
+                                      BorderRadius.circular(8),
+                                ),
+                                child: Center(
+                                  child: Text(project.emoji,
+                                      style:
+                                          const TextStyle(fontSize: 16)),
+                                ),
+                              ),
+                              title: Text(
+                                project.title,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                  color: BrainTheme.textPrimary,
+                                ),
+                              ),
+                              subtitle: Text(
+                                '${project.taskIds.length} tareas',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: BrainTheme.textTertiary,
+                                ),
+                              ),
+                              trailing: isSelected
+                                  ? Icon(Icons.check,
+                                      size: 18,
+                                      color: BrainTheme.accentGreen)
+                                  : null,
+                              onTap: () {
+                                onProjectChanged(project.id);
+                                Navigator.pop(ctx);
+                              },
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// ─── FILTER SECTION ──────────────────────────────────────────────────────
+
+class _FilterSection extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Widget child;
+
+  const _FilterSection({
+    required this.icon,
+    required this.title,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: color),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: BrainTheme.textPrimary,
-            letterSpacing: -0.5,
-          ),
+        Row(
+          children: [
+            Icon(icon, size: 14, color: BrainTheme.textTertiary),
+            const SizedBox(width: 6),
+            Text(title,
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: BrainTheme.textPrimary)),
+          ],
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: BrainTheme.textTertiary,
-          ),
-        ),
+        const SizedBox(height: 10),
+        child,
       ],
     );
   }
@@ -919,8 +1155,6 @@ class _SearchFilterBar extends StatelessWidget {
   final VoidCallback onToggleSearch;
   final VoidCallback onAdvancedFilters;
   final int activeFilterCount;
-  final String? selectedProjectId;
-  final ValueChanged<String?> onProjectChanged;
 
   const _SearchFilterBar({
     required this.searchQuery,
@@ -930,146 +1164,55 @@ class _SearchFilterBar extends StatelessWidget {
     required this.onToggleSearch,
     required this.onAdvancedFilters,
     required this.activeFilterCount,
-    required this.selectedProjectId,
-    required this.onProjectChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Column(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: searchController,
-                  onChanged: onSearchChanged,
-                  style: const TextStyle(fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context).searchTasks,
-                    prefixIcon: const Icon(Icons.search, size: 20),
-                    suffixIcon: searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, size: 18),
-                            onPressed: () {
-                              searchController.clear();
-                              onSearchChanged('');
-                            },
-                          )
-                        : null,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    filled: true,
-                    fillColor: BrainTheme.surfaceDark,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: BrainTheme.borderDark),
-                    ),
-                  ),
+          Expanded(
+            child: TextField(
+              controller: searchController,
+              onChanged: onSearchChanged,
+              style: const TextStyle(fontSize: 13),
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context).searchTasks,
+                prefixIcon: const Icon(Icons.search, size: 18),
+                suffixIcon: searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 16),
+                        onPressed: () {
+                          searchController.clear();
+                          onSearchChanged('');
+                        },
+                      )
+                    : null,
+                isDense: true,
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 10),
+                filled: true,
+                fillColor: BrainTheme.surfaceDark,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: BrainTheme.borderDark),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: BrainTheme.borderDark),
                 ),
               ),
-              const SizedBox(width: 8),
-              _ActionButton(
-                icon: Icons.filter_list,
-                isActive: activeFilterCount > 0,
-                activeColor: BrainTheme.accentPurple,
-                onTap: onAdvancedFilters,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 36,
-            child: Consumer<ProjectsProvider>(
-              builder: (context, projectsProvider, _) {
-                return ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    _QuickChip(
-                      label: AppLocalizations.of(context).all,
-                      selected:
-                          selectedProjectId == null && activeFilterCount == 0,
-                      color: BrainTheme.accentPurple,
-                      onTap: () => onProjectChanged(null),
-                    ),
-                    const SizedBox(width: 6),
-                    _QuickChip(
-                      label: AppLocalizations.of(context).today,
-                      selected: false,
-                      color: BrainTheme.accentOrange,
-                      onTap: () {},
-                    ),
-                    const SizedBox(width: 6),
-                    _QuickChip(
-                      label: AppLocalizations.of(context).overdueTasks,
-                      selected: false,
-                      color: BrainTheme.accentRed,
-                      onTap: () {},
-                    ),
-                    const SizedBox(width: 6),
-                    ...projectsProvider.projects.take(5).map((project) {
-                      final isSelected = selectedProjectId == project.id;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: _QuickChip(
-                          label: '${project.emoji} ${project.title}',
-                          selected: isSelected,
-                          color: Color(project.colorValue),
-                          onTap: () =>
-                              onProjectChanged(isSelected ? null : project.id),
-                        ),
-                      );
-                    }),
-                  ],
-                );
-              },
             ),
           ),
+          const SizedBox(width: 6),
+          _ActionButton(
+            icon: Icons.filter_list,
+            isActive: activeFilterCount > 0,
+            activeColor: BrainTheme.statusColor(TaskStatus.inProgress),
+            onTap: onAdvancedFilters,
+          ),
         ],
-      ),
-    );
-  }
-}
-
-class _QuickChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _QuickChip({
-    required this.label,
-    required this.selected,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: 250.ms,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.15) : BrainTheme.cardDark,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color:
-                selected ? color.withValues(alpha: 0.4) : BrainTheme.borderDark,
-            width: 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: selected ? color : BrainTheme.textSecondary,
-          ),
-        ),
       ),
     );
   }
@@ -1093,12 +1236,12 @@ class _ActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: isActive
               ? activeColor.withValues(alpha: 0.12)
               : BrainTheme.cardDark,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isActive
                 ? activeColor.withValues(alpha: 0.3)
@@ -1108,7 +1251,7 @@ class _ActionButton extends StatelessWidget {
         ),
         child: Icon(
           icon,
-          size: 20,
+          size: 18,
           color: isActive ? activeColor : BrainTheme.textSecondary,
         ),
       ),
@@ -1133,20 +1276,7 @@ class _TaskBoardColumn extends StatelessWidget {
     required this.taskBuilder,
   });
 
-  Color get _columnColor {
-    switch (status) {
-      case TaskStatus.pending:
-        return BrainTheme.textTertiary;
-      case TaskStatus.inProgress:
-        return BrainTheme.accentBlue;
-      case TaskStatus.inReview:
-        return BrainTheme.accentOrange;
-      case TaskStatus.completed:
-        return BrainTheme.accentGreen;
-      case TaskStatus.cancelled:
-        return BrainTheme.accentRed;
-    }
-  }
+  Color get _columnColor => BrainTheme.statusColor(status);
 
   IconData get _columnIcon {
     switch (status) {
@@ -1165,8 +1295,6 @@ class _TaskBoardColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOverLimit = tasks.length > 15;
-
     return DragTarget<Task>(
       onWillAcceptWithDetails: (details) {
         final task = details.data;
@@ -1176,129 +1304,75 @@ class _TaskBoardColumn extends StatelessWidget {
       builder: (context, candidateData, rejectedData) {
         final isHovered = candidateData.isNotEmpty;
         return Container(
-          width: 270,
-          margin: const EdgeInsets.only(left: 12, right: 12),
-          padding: const EdgeInsets.all(12),
+          width: 260,
+          margin: const EdgeInsets.only(left: 8, right: 8),
           decoration: BoxDecoration(
-            color: BrainTheme.surfaceDark,
-            borderRadius: BorderRadius.circular(20),
+            color: BrainTheme.surfaceDark.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isHovered
-                  ? _columnColor.withValues(alpha: 0.4)
-                  : BrainTheme.borderDark,
-              width: 1.2,
+                  ? _columnColor.withValues(alpha: 0.35)
+                  : BrainTheme.borderDark.withValues(alpha: 0.4),
+              width: isHovered ? 1.5 : 1,
             ),
             boxShadow: [
-              BoxShadow(
-                color: BrainTheme.textTertiary.withValues(alpha: 0.06),
-                blurRadius: 12,
-                spreadRadius: 0,
-                offset: const Offset(0, 6),
-              ),
+              if (isHovered)
+                BoxShadow(
+                  color: _columnColor.withValues(alpha: 0.05),
+                  blurRadius: 12,
+                  spreadRadius: 0,
+                ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 8,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: _columnColor,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(_columnIcon, size: 16, color: _columnColor),
-                  const SizedBox(width: 6),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: BrainTheme.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _columnColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '${tasks.length}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: _columnColor,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  if (isOverLimit) ...[
-                    const SizedBox(width: 4),
-                    Icon(Icons.warning_amber,
-                        size: 14, color: BrainTheme.accentOrange),
-                  ],
-                ],
+              _ColumnHeader(
+                color: _columnColor,
+                icon: _columnIcon,
+                title: title,
+                count: tasks.length,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 4),
               Expanded(
                 child: tasks.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(_columnIcon,
-                                size: 28,
-                                color: BrainTheme.textTertiary
-                                    .withValues(alpha: 0.3)),
-                            const SizedBox(height: 6),
-                            Text(
-                              AppLocalizations.of(context).emptyState,
-                              style: TextStyle(
-                                color: BrainTheme.textTertiary,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
+                    ? _EmptyColumn(icon: _columnIcon, color: _columnColor)
                     : PaginatedList<Task>(
                         items: tasks,
                         pageSize: 20,
                         initialPageSize: 30,
-                        padding: EdgeInsets.zero,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         itemBuilder: (context, task, index) {
                           return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.only(bottom: 6),
                             child: LongPressDraggable<Task>(
                               data: task,
                               feedback: Material(
                                 color: Colors.transparent,
                                 child: SizedBox(
-                                  width: 250,
-                                  child: Card(
-                                    elevation: 8,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(18),
-                                      side: BorderSide(
-                                        color:
-                                            _columnColor.withValues(alpha: 0.4),
-                                        width: 2,
+                                  width: 240,
+                                  child: Transform.scale(
+                                    scale: 1.03,
+                                    child: Card(
+                                      elevation: 6,
+                                      shadowColor:
+                                          _columnColor.withValues(alpha: 0.2),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                        side: BorderSide(
+                                          color: _columnColor
+                                              .withValues(alpha: 0.3),
+                                          width: 1.5,
+                                        ),
                                       ),
+                                      child: taskBuilder(task),
                                     ),
-                                    child: taskBuilder(task),
                                   ),
                                 ),
                               ),
                               childWhenDragging: Opacity(
-                                opacity: 0.4,
+                                opacity: 0.2,
                                 child: taskBuilder(task),
                               ),
                               child: taskBuilder(task),
@@ -1311,6 +1385,95 @@ class _TaskBoardColumn extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _ColumnHeader extends StatelessWidget {
+  final Color color;
+  final IconData icon;
+  final String title;
+  final int count;
+
+  const _ColumnHeader({
+    required this.color,
+    required this.icon,
+    required this.title,
+    required this.count,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 16,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 7),
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 5),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: BrainTheme.textPrimary,
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '$count',
+            style: TextStyle(
+              fontSize: 10,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyColumn extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+
+  const _EmptyColumn({required this.icon, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: color.withValues(alpha: 0.3)),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            AppLocalizations.of(context).emptyState,
+            style: TextStyle(
+              color: BrainTheme.textTertiary.withValues(alpha: 0.5),
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

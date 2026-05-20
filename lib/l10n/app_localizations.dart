@@ -722,6 +722,12 @@ abstract class AppLocalizations {
   /// **'Alphabetical'**
   String get sortAlphabetical;
 
+  /// No description provided for @status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get status;
+
   /// No description provided for @filterPriority.
   ///
   /// In en, this message translates to:
@@ -793,6 +799,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Active'**
   String get active;
+
+  /// No description provided for @paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get paused;
+
+  /// No description provided for @abandoned.
+  ///
+  /// In en, this message translates to:
+  /// **'Abandoned'**
+  String get abandoned;
 
   /// No description provided for @archived.
   ///

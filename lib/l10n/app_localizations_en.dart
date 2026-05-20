@@ -321,6 +321,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sortAlphabetical => 'Alphabetical';
 
   @override
+  String get status => 'Status';
+
+  @override
   String get filterPriority => 'Priority filter';
 
   @override
@@ -355,6 +358,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get active => 'Active';
+
+  @override
+  String get paused => 'Paused';
+
+  @override
+  String get abandoned => 'Abandoned';
 
   @override
   String get archived => 'Archived';

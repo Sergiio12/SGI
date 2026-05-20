@@ -270,7 +270,7 @@ class ProjectCard extends StatelessWidget {
             backgroundColor: BrainTheme.accentBlue.withValues(alpha: 0.2),
             foregroundColor: BrainTheme.accentBlue,
             icon: Icons.swap_horiz,
-            label: AppLocalizations.of(context).filterStatus,
+            label: AppLocalizations.of(context).status,
             borderRadius: BorderRadius.circular(20),
           ),
           SlidableAction(
@@ -394,7 +394,7 @@ class ProjectCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                AppLocalizations.of(context).filterStatus,
+                AppLocalizations.of(context).status,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

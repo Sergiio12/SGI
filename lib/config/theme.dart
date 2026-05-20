@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../models/task.dart';
+
 class BrainTheme {
   static Brightness _brightness = Brightness.dark;
 
@@ -80,9 +82,9 @@ class BrainTheme {
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: accentPurple,
         foregroundColor: Colors.white,
-        elevation: 8,
+        elevation: 4,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20)),
+          borderRadius: BorderRadius.all(Radius.circular(14)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -196,9 +198,9 @@ class BrainTheme {
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: accentPurple,
         foregroundColor: Colors.white,
-        elevation: 8,
+        elevation: 4,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20)),
+          borderRadius: BorderRadius.all(Radius.circular(14)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -269,19 +271,35 @@ class BrainTheme {
     );
   }
 
-  // Colores para prioridades de tareas
+  // Colores para prioridades de tareas (versión sofisticada, baja saturación)
   static Color priorityColor(int index) {
     switch (index) {
       case 0:
-        return accentGreen;
+        return _isLight ? const Color(0xFF6B7280) : const Color(0xFF8B929A);
       case 1:
-        return accentBlue;
+        return _isLight ? const Color(0xFF5B8DEF) : const Color(0xFF6BA3F6);
       case 2:
-        return accentOrange;
+        return _isLight ? const Color(0xFFD48C10) : const Color(0xFFE2A617);
       case 3:
-        return accentRed;
+        return _isLight ? const Color(0xFFDC3636) : const Color(0xFFE55555);
       default:
-        return accentBlue;
+        return _isLight ? const Color(0xFF5B8DEF) : const Color(0xFF6BA3F6);
+    }
+  }
+
+  // Colores de estado (más neutros, estilo SaaS)
+  static Color statusColor(TaskStatus status) {
+    switch (status) {
+      case TaskStatus.pending:
+        return _isLight ? const Color(0xFF6B7280) : const Color(0xFF8B929A);
+      case TaskStatus.inProgress:
+        return _isLight ? const Color(0xFF5B8DEF) : const Color(0xFF6BA3F6);
+      case TaskStatus.inReview:
+        return _isLight ? const Color(0xFFD48C10) : const Color(0xFFE2A617);
+      case TaskStatus.completed:
+        return _isLight ? const Color(0xFF34B97D) : const Color(0xFF45C68B);
+      case TaskStatus.cancelled:
+        return _isLight ? const Color(0xFFDC3636) : const Color(0xFFE55555);
     }
   }
 
@@ -322,10 +340,10 @@ class BrainTheme {
   // Utility para BoxShadow estilo glow
   static List<BoxShadow> get glowShadow => [
         BoxShadow(
-          color: accentPurple.withValues(alpha: 0.15),
-          blurRadius: 20,
-          spreadRadius: -5,
-          offset: const Offset(0, 8),
+          color: accentPurple.withValues(alpha: 0.1),
+          blurRadius: 12,
+          spreadRadius: -4,
+          offset: const Offset(0, 4),
         ),
       ];
 }

@@ -123,6 +123,8 @@
   "sortTitle": "Título",
   "sortAlphabetical": "Alfabético",
 
+  "status": "Estado",
+
   "filterPriority": "Filtrar por prioridad",
   "filterStatus": "Filtrar por estado",
   "filterProject": "Filtrar por proyecto",
@@ -136,6 +138,8 @@
   "onlyWithProject": "Con proyecto",
 
   "active": "Activo",
+  "paused": "Pausado",
+  "abandoned": "Abandonado",
   "archived": "Archivado",
   "allItems": "Todos los elementos",
   "details": "Detalles",
