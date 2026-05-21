@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../config/theme.dart';
+import 'navigation.dart';
 import 'result.dart';
 
 class ErrorBoundary extends StatefulWidget {
@@ -20,55 +21,53 @@ class ErrorBoundary extends StatefulWidget {
 }
 
 class _ErrorBoundaryState extends State<ErrorBoundary> {
-  AppException? _error;
-
   @override
   void initState() {
     super.initState();
+    ErrorWidget.builder = (details) => const SizedBox.shrink();
     FlutterError.onError = (details) {
-      FlutterError.presentError(details);
-      _handleError(
+      widget.onError?.call(
         AppException(
           message: details.exceptionAsString(),
           code: 'FLUTTER_ERROR',
           stackTrace: details.stack,
         ),
       );
+      if (mounted) _showErrorDialog(details.exceptionAsString());
     };
   }
 
-  void _handleError(AppException error) {
-    widget.onError?.call(error);
-    if (mounted) {
-      setState(() => _error = error);
+  void _showErrorDialog(String message) {
+    final navigatorContext = appNavigatorKey.currentState?.context;
+    if (navigatorContext == null || !mounted) {
+      return;
     }
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_error != null) {
-      return widget.fallback ?? _defaultFallback(_error!);
-    }
-    return widget.child;
-  }
-
-  Widget _defaultFallback(AppException error) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
+    showDialog(
+      context: navigatorContext,
+      useRootNavigator: true,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: BrainTheme.cardDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(
+            color: BrainTheme.accentRed.withValues(alpha: 0.3),
+          ),
+        ),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 64,
-              height: 64,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 color: BrainTheme.accentRed.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 Icons.error_outline_rounded,
-                size: 32,
+                size: 28,
                 color: BrainTheme.accentRed,
               ),
             ),
@@ -83,28 +82,38 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
             ),
             const SizedBox(height: 8),
             Text(
-              error.message,
+              message,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
                 color: BrainTheme.textSecondary,
               ),
             ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: () => setState(() => _error = null),
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Reintentar'),
-              style: FilledButton.styleFrom(
-                backgroundColor: BrainTheme.accentPurple,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cerrar'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(ctx),
+            icon: const Icon(Icons.refresh, size: 18),
+            label: const Text('Reintentar'),
+            style: FilledButton.styleFrom(
+              backgroundColor: BrainTheme.accentPurple,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }

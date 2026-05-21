@@ -49,6 +49,12 @@ void main() {
         code: 'UNHANDLED',
         stackTrace: stack,
       ).log();
+      if (FlutterError.onError != null) {
+        FlutterError.onError!(FlutterErrorDetails(
+          exception: error,
+          stack: stack,
+        ));
+      }
     },
   );
 }

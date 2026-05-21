@@ -25,6 +25,7 @@ class SettingsProvider extends ChangeNotifier {
       'default_calendar_reminder_minutes';
   static const _kCloudSyncEnabled = 'cloud_sync_enabled';
   static const _kWidgetEnabled = 'widget_enabled';
+  static const _kAiSuggestionsEnabled = 'ai_suggestions_enabled';
 
   late SharedPreferences _prefs;
   bool _isLoaded = false;
@@ -50,10 +51,12 @@ class SettingsProvider extends ChangeNotifier {
   bool _calendarSyncEnabled = false;
   int _defaultCalendarReminderMinutes = 30;
   bool _cloudSyncEnabled = false;
+  bool _aiSuggestionsEnabled = true;
 
   bool get isLoaded => _isLoaded;
   bool get hapticFeedback => _hapticFeedback;
   bool get widgetEnabled => _widgetEnabled;
+  bool get aiSuggestionsEnabled => _aiSuggestionsEnabled;
   Locale get locale => Locale(_languageCode);
   ThemeMode get themeMode => _themeMode;
   Color get accentColor => _accentColor;
@@ -111,6 +114,7 @@ class SettingsProvider extends ChangeNotifier {
     _defaultCalendarReminderMinutes =
         _prefs.getInt(_kDefaultCalendarReminderMinutes) ?? 30;
     _cloudSyncEnabled = _prefs.getBool(_kCloudSyncEnabled) ?? false;
+    _aiSuggestionsEnabled = _prefs.getBool(_kAiSuggestionsEnabled) ?? true;
 
     _isLoaded = true;
     notifyListeners();
@@ -221,6 +225,12 @@ class SettingsProvider extends ChangeNotifier {
     _cloudSyncEnabled = value;
     notifyListeners();
     await _prefs.setBool(_kCloudSyncEnabled, value);
+  }
+
+  Future<void> setAiSuggestionsEnabled(bool value) async {
+    _aiSuggestionsEnabled = value;
+    notifyListeners();
+    await _prefs.setBool(_kAiSuggestionsEnabled, value);
   }
 
   Future<void> setAccentColor(Color color) async {

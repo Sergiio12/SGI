@@ -185,11 +185,27 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
       final gid = widget.goalId!;
       await context.read<GoalsProvider>().deleteGoal(gid);
       if (mounted) {
-        showUndoSnackBar(context,
-          message: AppLocalizations.of(context).itemDeleted,
-          onUndo: () => context.read<GoalsProvider>().restoreGoal(gid),
-        );
+        final messenger = ScaffoldMessenger.of(context);
+        final l10n = AppLocalizations.of(context);
+        final provider = context.read<GoalsProvider>();
         Navigator.pop(context);
+        messenger.hideCurrentSnackBar();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.itemDeleted, style: TextStyle(color: BrainTheme.textPrimary)),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+            margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            action: SnackBarAction(
+              label: l10n.undo,
+              textColor: BrainTheme.accentPurple,
+              onPressed: () => provider.restoreGoal(gid),
+            ),
+          ),
+        );
       }
     }
   }

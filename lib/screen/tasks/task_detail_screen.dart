@@ -13,6 +13,8 @@ import '../../models/task.dart';
 import '../../providers/tags_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
+import '../../providers/ai_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../providers/notes_provider.dart';
 import '../../widgets/tag_color_picker.dart';
 
@@ -183,6 +185,26 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       final tagsProv = context.read<TagsProvider>();
       if (!tagsProv.isLoaded) tagsProv.loadTags();
     });
+
+    _titleController.addListener(_onTitleChanged);
+    _descController.addListener(_onTitleChanged);
+  }
+
+  void _onTitleChanged() {
+    if (!mounted) return;
+    final title = _titleController.text;
+    if (title.trim().isEmpty) {
+      context.read<AiProvider>().clearTaskSuggestions();
+    } else {
+      final tagsProv = context.read<TagsProvider>();
+      final projectsProv = context.read<ProjectsProvider>();
+      context.read<AiProvider>().suggestForTask(
+            title: title,
+            description: _descController.text,
+            tags: tagsProv.tags,
+            projects: projectsProv.projects,
+          );
+    }
   }
 
   Future<bool> _onWillPop() async {
@@ -472,6 +494,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     maxLines: null,
                     minLines: 2,
                   ),
+                  _buildAiSuggestions(),
                 ],
               ),
             ),
@@ -1363,11 +1386,27 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       final tid = task.id;
       await context.read<TasksProvider>().deleteTask(tid);
       if (mounted) {
-        showUndoSnackBar(context,
-          message: AppLocalizations.of(context).taskDeleted,
-          onUndo: () => context.read<TasksProvider>().restoreTask(tid),
-        );
+        final messenger = ScaffoldMessenger.of(context);
+        final l10n = AppLocalizations.of(context);
+        final provider = context.read<TasksProvider>();
         Navigator.pop(context);
+        messenger.hideCurrentSnackBar();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.taskDeleted, style: TextStyle(color: BrainTheme.textPrimary)),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+            margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            action: SnackBarAction(
+              label: l10n.undo,
+              textColor: BrainTheme.accentPurple,
+              onPressed: () => provider.restoreTask(tid),
+            ),
+          ),
+        );
       }
     }
   }
@@ -1768,6 +1807,104 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       case TaskStatus.cancelled:
         return Icons.cancel_outlined;
     }
+  }
+
+  Widget _buildAiSuggestions() {
+    return Consumer<AiProvider>(
+      builder: (context, ai, _) {
+        if (!context.read<SettingsProvider>().aiSuggestionsEnabled) {
+          return const SizedBox.shrink();
+        }
+
+        final suggestion = ai.taskSuggestion;
+        if (suggestion.isEmpty && !ai.isAnalyzing) {
+          return const SizedBox.shrink();
+        }
+
+        final chips = <Widget>[];
+
+        if (suggestion.suggestedPriority != null) {
+          final color = BrainTheme.priorityColor(suggestion.suggestedPriority!.index);
+          chips.add(_SuggestionChip(
+            icon: Icons.flag,
+            label: 'Prioridad: ${_priorityLabel(suggestion.suggestedPriority!, context)}',
+            color: color,
+            onTap: () => setState(() => _priority = suggestion.suggestedPriority!),
+          ));
+        }
+
+        if (suggestion.suggestedHours != null) {
+          chips.add(_SuggestionChip(
+            icon: Icons.timer_outlined,
+            label: '${suggestion.suggestedHours!.toStringAsFixed(1)}h',
+            color: BrainTheme.accentBlue,
+            onTap: () => _estimatedHoursController.text =
+                suggestion.suggestedHours!.toStringAsFixed(1),
+          ));
+        }
+
+        if (suggestion.suggestedProjectId != null) {
+          chips.add(_SuggestionChip(
+            icon: Icons.folder_outlined,
+            label: 'Proyecto sugerido',
+            color: BrainTheme.accentCyan,
+            onTap: () =>
+                setState(() => _projectId = suggestion.suggestedProjectId),
+          ));
+        }
+
+        if (suggestion.suggestedTags.isNotEmpty) {
+          for (final tagName in suggestion.suggestedTags) {
+            final tagsProv = context.read<TagsProvider>();
+            final tag = tagsProv.tags.where((t) => t.name == tagName).firstOrNull;
+            if (tag != null && !_selectedTags.contains(tag.id)) {
+              chips.add(_SuggestionChip(
+                icon: Icons.label,
+                label: tagName,
+                color: tag.color,
+                onTap: () =>
+                    setState(() => _selectedTags = [..._selectedTags, tag.id]),
+              ));
+            }
+          }
+        }
+
+        if (chips.isEmpty && !ai.isAnalyzing) {
+          return const SizedBox.shrink();
+        }
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.auto_awesome,
+                      size: 14, color: BrainTheme.accentPurple),
+                  const SizedBox(width: 6),
+                  Text(
+                    ai.isAnalyzing ? 'Analizando...' : 'Sugerencias',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: BrainTheme.accentPurple,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: chips,
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   String _priorityLabel(TaskPriority priority, BuildContext context) {
@@ -2842,28 +2979,72 @@ class _TaskNotesTab extends StatelessWidget {
                                 fontWeight: FontWeight.w500,
                                 color: BrainTheme.textPrimary,
                                 fontSize: 14)),
-                        Text(note.notebook,
-                            style: TextStyle(
-                                color: BrainTheme.textTertiary,
-                                fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.link_off,
-                        color: BrainTheme.accentRed, size: 18),
-                    onPressed: () {
-                      final updated = List<String>.from(linkedNoteIds)
-                        ..removeAt(index);
-                      onChanged(updated);
-                    },
-                  ),
-                ],
+                  Text(note.notebook,
+                             style: TextStyle(
+                                 color: BrainTheme.textTertiary,
+                                 fontSize: 12)),
+                       ],
+                     ),
+                   ),
+                   IconButton(
+                     icon: Icon(Icons.link_off,
+                         color: BrainTheme.accentRed, size: 18),
+                     onPressed: () {
+                       final updated = List<String>.from(linkedNoteIds)
+                         ..removeAt(index);
+                       onChanged(updated);
+                     },
+                   ),
+                 ],
+               ),
+             );
+           },
+         );
+       },
+     );
+   }
+}
+
+class _SuggestionChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _SuggestionChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: color,
               ),
-            );
-          },
-        );
-      },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

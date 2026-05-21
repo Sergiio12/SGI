@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'config/theme.dart';
 import 'config/routes.dart';
 import 'core/error_boundary.dart';
+import 'core/navigation.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/settings_provider.dart';
 import 'utils/notification_service_v2.dart';
@@ -23,6 +24,7 @@ class SecondBrainApp extends StatelessWidget {
 
     return MaterialApp(
       key: ValueKey(settings.themeMode),
+      navigatorKey: appNavigatorKey,
       title: 'SGI',
       debugShowCheckedModeBanner: false,
       theme: BrainTheme.lightTheme,

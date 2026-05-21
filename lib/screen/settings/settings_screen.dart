@@ -4,6 +4,7 @@ import 'package:second_brain/l10n/app_localizations.dart';
 import '../../config/theme.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/sync_provider.dart';
+import '../../utils/notification_service_v2.dart';
 import 'appearance_screen.dart';
 import 'debug_screen.dart';
 import 'notifications_screen.dart';
@@ -54,6 +55,7 @@ class SettingsScreen extends StatelessWidget {
               );
             },
           ),
+          _buildAiSection(context),
           Divider(color: BrainTheme.borderDark, indent: 16, endIndent: 16),
           _buildSectionHeader('SISTEMA'),
           _buildSettingItem(
@@ -62,6 +64,7 @@ class SettingsScreen extends StatelessWidget {
             subtitle: 'Exportar, importar y gestionar tus datos',
             onTap: () => Navigator.pushNamed(context, '/data'),
           ),
+          _buildResetSettingsItem(context),
           _buildSyncSection(context),
           _buildSettingItem(
             icon: Icons.bug_report_outlined,
@@ -98,6 +101,212 @@ class SettingsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildAiSection(BuildContext context) {
+    final settings = context.watch<SettingsProvider>();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Container(
+        decoration: BoxDecoration(
+          color: BrainTheme.cardDark,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: BrainTheme.borderDark),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: BrainTheme.surfaceDark,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: BrainTheme.borderDark),
+                    ),
+                    child: Icon(
+                      Icons.auto_awesome,
+                      color: BrainTheme.accentPurple,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Asistente IA',
+                          style: TextStyle(
+                            color: BrainTheme.textPrimary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Sugerencias inteligentes al crear tareas',
+                          style: TextStyle(
+                            color: BrainTheme.textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: settings.aiSuggestionsEnabled,
+                    activeColor: BrainTheme.currentAccent,
+                    onChanged: (value) => settings.setAiSuggestionsEnabled(value),
+                  ),
+                ],
+              ),
+              if (settings.aiSuggestionsEnabled) ...[
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.only(left: 52),
+                  child: Text(
+                    'Las sugerencias se generan localmente en el dispositivo. '
+                    'Ningún dato sale de tu teléfono.',
+                    style: TextStyle(
+                      color: BrainTheme.textTertiary,
+                      fontSize: 12,
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResetSettingsItem(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Container(
+        decoration: BoxDecoration(
+          color: BrainTheme.cardDark,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: BrainTheme.borderDark),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: BrainTheme.surfaceDark,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: BrainTheme.borderDark),
+                    ),
+                    child: Icon(
+                      Icons.settings_backup_restore_rounded,
+                      color: BrainTheme.accentRed,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Restablecer ajustes',
+                          style: TextStyle(
+                            color: BrainTheme.textPrimary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Vuelve a la configuración de fábrica',
+                          style: TextStyle(
+                            color: BrainTheme.textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _confirmReset(context),
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('Restablecer'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: BrainTheme.accentRed,
+                    side: BorderSide(color: BrainTheme.accentRed.withValues(alpha: 0.3)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _confirmReset(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: BrainTheme.cardDark,
+        title: Text('Restablecer ajustes',
+            style: TextStyle(color: BrainTheme.textPrimary)),
+        content: Text(
+          'Se borrarán todas las preferencias guardadas (tema, colores, '
+          'notificaciones, etc.). Los datos de tareas, proyectos, notas y '
+          'objetivos no se verán afectados.',
+          style: TextStyle(color: BrainTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar',
+                style: TextStyle(color: BrainTheme.textSecondary)),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+                backgroundColor: BrainTheme.accentRed,
+                foregroundColor: Colors.white),
+            child: const Text('Restablecer'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && context.mounted) {
+      final settings = context.read<SettingsProvider>();
+      await settings.setThemeMode(ThemeMode.dark);
+      await settings.setAccentColor(BrainTheme.accentPurple);
+      await settings.setAiSuggestionsEnabled(true);
+      await settings.setHapticFeedback(true);
+      await settings.setNotificationsEnabled(true);
+      if (context.mounted) {
+        showSuccessNotification('Ajustes restablecidos');
+      }
+    }
   }
 
   Widget _buildSyncSection(BuildContext context) {

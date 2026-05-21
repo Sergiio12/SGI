@@ -5,11 +5,40 @@ import 'package:provider/provider.dart';
 
 import '../../config/theme.dart';
 import '../../models/task.dart';
+import '../../providers/ai_provider.dart';
 import '../../providers/daily_planner_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../providers/tasks_provider.dart';
 
-class DailyReviewScreen extends StatelessWidget {
+class DailyReviewScreen extends StatefulWidget {
   const DailyReviewScreen({super.key});
+
+  @override
+  State<DailyReviewScreen> createState() => _DailyReviewScreenState();
+}
+
+class _DailyReviewScreenState extends State<DailyReviewScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ai = context.read<AiProvider>();
+      if (context.read<SettingsProvider>().aiSuggestionsEnabled &&
+          ai.dailyIntention.isEmpty) {
+        final tasksProv = context.read<TasksProvider>();
+        final todayTasks = tasksProv.tasks.where((t) {
+          final dueDate = t.dueDate;
+          final now = DateTime.now();
+          return dueDate != null &&
+              dueDate.year == now.year &&
+              dueDate.month == now.month &&
+              dueDate.day == now.day &&
+              t.isActive;
+        }).toList();
+        ai.generateDailyIntention(todayTasks);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +74,101 @@ class DailyReviewScreen extends StatelessWidget {
                 _buildIntentionRecap(context, planner.intention),
                 const SizedBox(height: 20),
               ],
+
+              // AI daily intention
+              Consumer<AiProvider>(
+                builder: (context, ai, _) {
+                  if (!context.read<SettingsProvider>().aiSuggestionsEnabled) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final aiIntention = ai.dailyIntention.dailyIntention;
+                  if (aiIntention == null || aiIntention.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  if (planner.intention.isNotEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: BrainTheme.cardDark.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: BrainTheme.accentPurple.withValues(alpha: 0.15)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.auto_awesome,
+                              size: 18, color: BrainTheme.accentPurple),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Intención sugerida',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: BrainTheme.textTertiary,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  aiIntention,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontStyle: FontStyle.italic,
+                                    color: BrainTheme.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                GestureDetector(
+                                  onTap: () {
+                                    // TODO: set intention via planner
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.add,
+                                            size: 12,
+                                            color: BrainTheme.accentPurple),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Usar como intención',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                            color: BrainTheme.accentPurple,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05),
+                  );
+                },
+              ),
 
               // Completed tasks
               if (completed > 0) ...[
