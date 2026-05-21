@@ -307,12 +307,15 @@ class _HomeScreenState extends State<HomeScreen> {
               appBar: _buildAppBar(context, currentTab, hasSidebar: false),
               drawer: Drawer(
                 backgroundColor: BrainTheme.surfaceDark,
-                child: NavigationSidebar(
-                  currentIndex: _currentIndex,
-                  onItemSelected: (index) {
-                    _onTabChanged(index);
-                    Navigator.pop(context);
-                  },
+                child: SafeArea(
+                  bottom: true,
+                  child: NavigationSidebar(
+                    currentIndex: _currentIndex,
+                    onItemSelected: (index) {
+                      _onTabChanged(index);
+                      Navigator.pop(context);
+                    },
+                  ),
                 ),
               ),
               body: _buildBody(context, tabs),

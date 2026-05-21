@@ -80,7 +80,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   Future<void> _complete() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('accent_color', _accentColors[_selectedAccent].toARGB32());
+    await prefs.setInt(
+        'accent_color', _accentColors[_selectedAccent].toARGB32());
     await OnboardingScreen.markCompleted();
     BrainTheme.updateAccentColor(_accentColors[_selectedAccent]);
     widget.onComplete();
@@ -313,177 +314,179 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   Widget _buildLastPage(_OnboardingPage page) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(flex: 1),
-          AnimatedContainer(
-            duration: 600.ms,
-            curve: Curves.easeOutBack,
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: page.gradientColors,
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 40),
+            AnimatedContainer(
+              duration: 600.ms,
+              curve: Curves.easeOutBack,
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: page.gradientColors,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: page.gradientColors[0].withValues(alpha: 0.3),
+                    blurRadius: 40,
+                    spreadRadius: 5,
+                  ),
+                ],
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: page.gradientColors[0].withValues(alpha: 0.3),
-                  blurRadius: 40,
-                  spreadRadius: 5,
-                ),
-              ],
+              child: const Icon(
+                Icons.palette_outlined,
+                size: 48,
+                color: Colors.white,
+              ),
             ),
-            child: const Icon(
-              Icons.palette_outlined,
-              size: 48,
-              color: Colors.white,
+            const SizedBox(height: 40),
+            Text(
+              'Personaliza tu Experiencia',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: -0.5,
+              ),
             ),
-          ),
-          const SizedBox(height: 40),
-          Text(
-            'Personaliza tu Experiencia',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 36),
-          _GlassCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '¿Cómo te llamas?',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white.withValues(alpha: 0.7),
+            const SizedBox(height: 36),
+            _GlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '¿Cómo te llamas?',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _nameController,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Tu nombre',
-                    hintStyle: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.3),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _nameController,
+                    style: GoogleFonts.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
-                    border: InputBorder.none,
-                    filled: false,
-                    contentPadding: EdgeInsets.zero,
+                    decoration: InputDecoration(
+                      hintText: 'Tu nombre',
+                      hintStyle: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      border: InputBorder.none,
+                      filled: false,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    autofocus: true,
                   ),
-                  autofocus: true,
-                ),
-                const Divider(
-                  color: Colors.white24,
-                  height: 1,
-                ),
-              ],
+                  const Divider(
+                    color: Colors.white24,
+                    height: 1,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          _GlassCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Color de acento',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white.withValues(alpha: 0.7),
+            const SizedBox(height: 12),
+            _GlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Color de acento',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(_accentColors.length, (i) {
-                    final isSelected = i == _selectedAccent;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedAccent = i),
-                      child: AnimatedContainer(
-                        duration: 250.ms,
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: _accentColors[i],
-                          shape: BoxShape.circle,
-                          border: isSelected
-                              ? Border.all(
-                                  color: Colors.white, width: 2.5)
-                              : null,
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: _accentColors[i]
-                                        .withValues(alpha: 0.5),
-                                    blurRadius: 12,
-                                    spreadRadius: 1,
-                                  ),
-                                ]
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(_accentColors.length, (i) {
+                      final isSelected = i == _selectedAccent;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedAccent = i),
+                        child: AnimatedContainer(
+                          duration: 250.ms,
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: _accentColors[i],
+                            shape: BoxShape.circle,
+                            border: isSelected
+                                ? Border.all(color: Colors.white, width: 2.5)
+                                : null,
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: _accentColors[i]
+                                          .withValues(alpha: 0.5),
+                                      blurRadius: 12,
+                                      spreadRadius: 1,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: isSelected
+                              ? const Icon(Icons.check,
+                                  size: 18, color: Colors.white)
                               : null,
                         ),
-                        child: isSelected
-                            ? const Icon(Icons.check,
-                                size: 18, color: Colors.white)
-                            : null,
-                      ),
-                    );
-                  }),
-                ),
-              ],
+                      );
+                    }),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          _GlassCard(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Modo oscuro',
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+            const SizedBox(height: 12),
+            _GlassCard(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Modo oscuro',
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Tema predeterminado',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.5),
+                      Text(
+                        'Tema predeterminado',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                Switch.adaptive(
-                  value: _useDarkMode,
-                  activeTrackColor: _accentColors[_selectedAccent].withValues(alpha: 0.4),
-                  activeThumbColor: _accentColors[_selectedAccent],
-                  onChanged: (v) => setState(() => _useDarkMode = v),
-                ),
-              ],
+                    ],
+                  ),
+                  Switch.adaptive(
+                    value: _useDarkMode,
+                    activeTrackColor:
+                        _accentColors[_selectedAccent].withValues(alpha: 0.4),
+                    activeThumbColor: _accentColors[_selectedAccent],
+                    onChanged: (v) => setState(() => _useDarkMode = v),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Spacer(flex: 2),
-        ],
+            const SizedBox(height: 60),
+          ],
+        ),
       ),
     );
   }
@@ -514,9 +517,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           ],
                         )
                       : null,
-                  color: isActive
-                      ? null
-                      : Colors.white.withValues(alpha: 0.15),
+                  color: isActive ? null : Colors.white.withValues(alpha: 0.15),
                 ),
               );
             }),
@@ -531,15 +532,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 gradient: LinearGradient(
                   colors: [
                     _accentColors[_selectedAccent],
-                    _accentColors[_selectedAccent]
-                        .withValues(alpha: 0.7),
+                    _accentColors[_selectedAccent].withValues(alpha: 0.7),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: _accentColors[_selectedAccent]
-                        .withValues(alpha: 0.3),
+                    color:
+                        _accentColors[_selectedAccent].withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -547,9 +547,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               ),
               child: Center(
                 child: Text(
-                  _currentPage == _pages.length - 1
-                      ? 'Comenzar'
-                      : 'Continuar',
+                  _currentPage == _pages.length - 1 ? 'Comenzar' : 'Continuar',
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
