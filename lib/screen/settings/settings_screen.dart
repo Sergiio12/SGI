@@ -160,8 +160,9 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   Switch(
                     value: settings.aiSuggestionsEnabled,
-                    activeColor: BrainTheme.currentAccent,
-                    onChanged: (value) => settings.setAiSuggestionsEnabled(value),
+                    activeThumbColor: BrainTheme.currentAccent,
+                    onChanged: (value) =>
+                        settings.setAiSuggestionsEnabled(value),
                   ),
                 ],
               ),
@@ -251,7 +252,8 @@ class SettingsScreen extends StatelessWidget {
                   label: const Text('Restablecer'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: BrainTheme.accentRed,
-                    side: BorderSide(color: BrainTheme.accentRed.withValues(alpha: 0.3)),
+                    side: BorderSide(
+                        color: BrainTheme.accentRed.withValues(alpha: 0.3)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -367,7 +369,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   Switch(
                     value: settings.cloudSyncEnabled,
-                    activeColor: BrainTheme.currentAccent,
+                    activeThumbColor: BrainTheme.currentAccent,
                     onChanged: (value) => settings.setCloudSyncEnabled(value),
                   ),
                 ],
@@ -392,7 +394,8 @@ class SettingsScreen extends StatelessWidget {
                   icon: const Icon(Icons.sync, size: 18),
                   label: const Text('Sincronizar ahora'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: BrainTheme.currentAccent.withValues(alpha: 0.15),
+                    backgroundColor:
+                        BrainTheme.currentAccent.withValues(alpha: 0.15),
                     foregroundColor: BrainTheme.currentAccent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

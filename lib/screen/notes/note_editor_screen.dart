@@ -29,6 +29,7 @@ class NoteEditorScreen extends StatefulWidget {
 class _NoteEditorScreenState extends State<NoteEditorScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
+  final _titleFocusNode = FocusNode();
 
   String _emoji = '📝';
   String? _projectId;
@@ -83,6 +84,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   void initState() {
     super.initState();
     _autosaveTimer = Timer.periodic(const Duration(seconds: 30), (_) => _autosave());
+    if (!_isEditing) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _titleFocusNode.requestFocus();
+      });
+    }
     if (_isEditing) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final note = context.read<NotesProvider>().getNoteById(widget.noteId!);
@@ -147,6 +153,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     _autosaveTimer?.cancel();
     _titleController.dispose();
     _contentController.dispose();
+    _titleFocusNode.dispose();
     super.dispose();
   }
 
@@ -619,6 +626,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           Expanded(
             child: TextField(
               controller: _titleController,
+              focusNode: _titleFocusNode,
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
@@ -628,7 +636,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 border: InputBorder.none,
                 filled: false,
               ),
-              autofocus: !_isEditing,
             ),
           ),
         ],

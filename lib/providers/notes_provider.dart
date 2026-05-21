@@ -34,60 +34,77 @@ class NotesProvider extends ChangeNotifier {
 
   NotesProvider({required IStorageService storage}) : _storage = storage;
 
-  List<Note> _pinnedNotes = [];
-  List<Note> _unpinnedNotes = [];
-  List<Note> _recentNotes = [];
-  List<String> _notebooks = ['General'];
-  List<String> _notebookNames = [];
-  Map<String, int> _cachedNotebookCounts = {};
-  Map<String, int> _cachedTagCounts = {};
+  List<Note>? __pinnedNotes;
+  List<Note>? __unpinnedNotes;
+  List<Note>? __recentNotes;
+  List<String>? __notebooks;
+  Map<String, int>? __notebookCounts;
+  Map<String, int>? __tagCounts;
 
   List<Note> get notes => _notes;
   bool get isLoaded => _isLoaded;
 
-  List<Note> get pinnedNotes => _pinnedNotes;
-  List<Note> get unpinnedNotes => _unpinnedNotes;
-  List<Note> get recentNotes => _recentNotes;
-  List<String> get notebooks => _notebooks;
-  Map<String, int> get notebookCounts => _cachedNotebookCounts;
-  Map<String, int> get tagCounts => _cachedTagCounts;
+  List<Note> get pinnedNotes =>
+      __pinnedNotes ??= _notes.where((n) => n.isPinned).toList();
+  List<Note> get unpinnedNotes =>
+      __unpinnedNotes ??= _notes.where((n) => !n.isPinned).toList();
+  List<Note> get recentNotes {
+    if (__recentNotes != null) return __recentNotes!;
+    final sorted = [..._notes]..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    __recentNotes = sorted.take(10).toList();
+    return __recentNotes!;
+  }
+
+  List<String> get notebooks {
+    if (__notebooks != null) return __notebooks!;
+    final derived = _notes.map((n) => n.notebook).toSet();
+    final merged = {...derived, ..._notebookNames.toSet()}.toList()..sort();
+    __notebooks = merged.isEmpty ? ['General'] : merged;
+    return __notebooks!;
+  }
+
+  Map<String, int> get notebookCounts {
+    if (__notebookCounts != null) return __notebookCounts!;
+    __notebookCounts = <String, int>{};
+    for (final n in _notes) {
+      __notebookCounts![n.notebook] =
+          (__notebookCounts![n.notebook] ?? 0) + 1;
+    }
+    return __notebookCounts!;
+  }
+
+  Map<String, int> get tagCounts {
+    if (__tagCounts != null) return __tagCounts!;
+    __tagCounts = <String, int>{};
+    for (final n in _notes) {
+      for (final tag in n.tags) {
+        __tagCounts![tag] = (__tagCounts![tag] ?? 0) + 1;
+      }
+    }
+    return __tagCounts!;
+  }
+
+  List<String> _notebookNames = [];
 
   Future<void> loadNotes() async {
     _notes = await _storage.loadNotes();
     _notebookNames = await _storage.loadNotebookNames();
-    _updateComputedLists();
+    _markDirty();
     _isLoaded = true;
     notifyListeners();
   }
 
-  void _updateComputedLists() {
-    _pinnedNotes = _notes.where((n) => n.isPinned).toList();
-    _unpinnedNotes = _notes.where((n) => !n.isPinned).toList();
-
-    final sorted = [..._notes]
-      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-    _recentNotes = sorted.take(10).toList();
-
-    final derived = _notes.map((n) => n.notebook).toSet();
-    final merged = {...derived, ..._notebookNames.toSet()}.toList()..sort();
-    _notebooks = merged.isEmpty ? ['General'] : merged;
-
-    _cachedNotebookCounts = {};
-    for (final n in _notes) {
-      _cachedNotebookCounts[n.notebook] =
-          (_cachedNotebookCounts[n.notebook] ?? 0) + 1;
-    }
-
-    _cachedTagCounts = {};
-    for (final n in _notes) {
-      for (final tag in n.tags) {
-        _cachedTagCounts[tag] = (_cachedTagCounts[tag] ?? 0) + 1;
-      }
-    }
+  void _markDirty() {
+    __pinnedNotes = null;
+    __unpinnedNotes = null;
+    __recentNotes = null;
+    __notebooks = null;
+    __notebookCounts = null;
+    __tagCounts = null;
   }
 
   void _notifyAndScheduleSave() {
-    _updateComputedLists();
+    _markDirty();
     _pruneOrphanNotebookNames();
     notifyListeners();
     _saveDebouncer.call(() async {
@@ -277,9 +294,9 @@ class NotesProvider extends ChangeNotifier {
 
   Future<void> createNotebook(String name) async {
     final trimmed = name.trim();
-    if (trimmed.isEmpty || _notebooks.contains(trimmed)) return;
+    if (trimmed.isEmpty || notebooks.contains(trimmed)) return;
     _notebookNames.add(trimmed);
-    _updateComputedLists();
+    _markDirty();
     notifyListeners();
     await _storage.saveNotebookNames(_notebookNames);
   }

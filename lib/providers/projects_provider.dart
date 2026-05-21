@@ -18,18 +18,22 @@ class ProjectsProvider extends ChangeNotifier {
 
   ProjectsProvider({required IStorageService storage}) : _storage = storage;
 
-  List<Project> _activeProjects = [];
-  List<Project> _pausedProjects = [];
-  List<Project> _completedProjects = [];
-  List<Project> _abandonedProjects = [];
+  List<Project>? __activeProjects;
+  List<Project>? __pausedProjects;
+  List<Project>? __completedProjects;
+  List<Project>? __abandonedProjects;
 
   List<Project> get projects => _projects;
   bool get isLoaded => _isLoaded;
 
-  List<Project> get activeProjects => _activeProjects;
-  List<Project> get pausedProjects => _pausedProjects;
-  List<Project> get completedProjects => _completedProjects;
-  List<Project> get abandonedProjects => _abandonedProjects;
+  List<Project> get activeProjects =>
+      __activeProjects ??= _projects.where((p) => p.status == ProjectStatus.active).toList();
+  List<Project> get pausedProjects =>
+      __pausedProjects ??= _projects.where((p) => p.status == ProjectStatus.paused).toList();
+  List<Project> get completedProjects =>
+      __completedProjects ??= _projects.where((p) => p.status == ProjectStatus.completed).toList();
+  List<Project> get abandonedProjects =>
+      __abandonedProjects ??= _projects.where((p) => p.status == ProjectStatus.abandoned).toList();
 
   List<Project> getProjectsByGoal(String goalId) =>
       _projects.where((p) => p.goalId == goalId).toList();
@@ -44,24 +48,20 @@ class ProjectsProvider extends ChangeNotifier {
 
   Future<void> loadProjects() async {
     _projects = await _storage.loadProjects();
-    _updateComputedLists();
+    _markDirty();
     _isLoaded = true;
     notifyListeners();
   }
 
-  void _updateComputedLists() {
-    _activeProjects =
-        _projects.where((p) => p.status == ProjectStatus.active).toList();
-    _pausedProjects =
-        _projects.where((p) => p.status == ProjectStatus.paused).toList();
-    _completedProjects =
-        _projects.where((p) => p.status == ProjectStatus.completed).toList();
-    _abandonedProjects =
-        _projects.where((p) => p.status == ProjectStatus.abandoned).toList();
+  void _markDirty() {
+    __activeProjects = null;
+    __pausedProjects = null;
+    __completedProjects = null;
+    __abandonedProjects = null;
   }
 
   void _notifyAndScheduleSave() {
-    _updateComputedLists();
+    _markDirty();
     notifyListeners();
     _saveDebouncer.call(() => _storage.saveProjects(_projects));
   }

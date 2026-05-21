@@ -38,16 +38,20 @@ class _NotesScreenState extends State<NotesScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 300) {
-        context.read<NotesProvider>().loadMore();
-      }
-    });
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      context.read<NotesProvider>().loadMore();
+    }
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _searchDebouncer.dispose();
     _searchController.dispose();
@@ -114,12 +118,17 @@ class _NotesScreenState extends State<NotesScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Mover a cuaderno',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            Text('Mover a cuaderno',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: BrainTheme.textPrimary)),
             const SizedBox(height: 12),
             ...notebooks.map((nb) => ListTile(
-                  leading: const Icon(Icons.folder_outlined),
-                  title: Text(nb),
+                  leading: Icon(Icons.folder_outlined,
+                      color: BrainTheme.textSecondary),
+                  title: Text(nb,
+                      style: TextStyle(color: BrainTheme.textPrimary)),
                   onTap: () async {
                     Navigator.pop(ctx);
                     for (final id in _selectedNoteIds) {
@@ -152,12 +161,14 @@ class _NotesScreenState extends State<NotesScreen> {
             TextButton.icon(
               onPressed: _pinSelected,
               icon: const Icon(Icons.push_pin_outlined, size: 18),
-              label: const Text('Anclar'),
+              label: Text('Anclar',
+                  style: TextStyle(color: BrainTheme.textPrimary)),
             ),
             TextButton.icon(
               onPressed: _showMoveSelectedDialog,
               icon: const Icon(Icons.drive_file_move_outlined, size: 18),
-              label: const Text('Mover'),
+              label: Text('Mover',
+                  style: TextStyle(color: BrainTheme.textPrimary)),
             ),
             TextButton.icon(
               onPressed: _deleteSelected,
@@ -169,7 +180,8 @@ class _NotesScreenState extends State<NotesScreen> {
             TextButton.icon(
               onPressed: _exitSelectionMode,
               icon: const Icon(Icons.close, size: 18),
-              label: const Text('Cancelar'),
+              label: Text('Cancelar',
+                  style: TextStyle(color: BrainTheme.textPrimary)),
             ),
           ],
         ),
@@ -210,13 +222,16 @@ class _NotesScreenState extends State<NotesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(AppLocalizations.of(context).moveToNotebook,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: BrainTheme.textPrimary)),
             const SizedBox(height: 12),
             ...notebooks.map((nb) => ListTile(
                   leading: Icon(Icons.folder_outlined,
                       color: BrainTheme.textSecondary),
-                  title: Text(nb),
+                  title: Text(nb,
+                      style: TextStyle(color: BrainTheme.textPrimary)),
                   onTap: () async {
                     Navigator.pop(ctx);
                     await provider.updateNote(note.copyWith(notebook: nb));
@@ -254,26 +269,63 @@ class _NotesScreenState extends State<NotesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<NotesProvider>(
-      builder: (context, provider, _) {
-        if (!provider.isLoaded) return const SkeletonGrid();
-        return Column(
-          children: [
-            _buildSearchBar(),
-            _buildStatsBar(),
-            _buildFilterRow(),
-            _buildTagFilter(),
-            const SizedBox(height: 8),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => context.read<NotesProvider>().loadNotes(),
-                child: _buildNotesList(),
-              ),
-            ),
-            if (_selectionMode) _buildSelectionToolbar(),
-          ],
-        );
-      },
+    final provider = context.watch<NotesProvider>();
+    if (!provider.isLoaded) {
+      return const SkeletonGrid();
+    }
+
+    final notes = _getFilteredNotes(provider);
+    final pinned = notes.where((n) => n.isPinned).toList();
+    final unpinned = notes.where((n) => !n.isPinned).toList();
+    final sortedNotes = [...pinned, ...unpinned];
+    final total = provider.notes.length;
+    final pinnedCount = provider.pinnedNotes.length;
+    final notebooksCount = provider.notebooks.length;
+
+    return Column(
+      children: [
+        _buildSearchBar(),
+        _buildStatsBar(total, pinnedCount, notebooksCount),
+        _buildFilterRow(provider.notebooks),
+        _buildTagFilter(),
+        const SizedBox(height: 8),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () => provider.loadNotes(),
+            child: sortedNotes.isEmpty
+                ? _buildEmptyState()
+                : _buildNotesList(sortedNotes, provider),
+          ),
+        ),
+        if (_selectionMode) _buildSelectionToolbar(),
+      ],
+    );
+  }
+
+  List<Note> _getFilteredNotes(NotesProvider provider) {
+    return provider.filteredNotes(
+      notebook: _filterNotebook,
+      tags: _filterTagIds.isNotEmpty ? _filterTagIds.toList() : null,
+      searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
+      sortBy: _sortOption,
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return EmptyState(
+      emoji: _searchQuery.isNotEmpty ? '\u{1F50D}' : '\u{1F4DD}',
+      title: _searchQuery.isNotEmpty
+          ? AppLocalizations.of(context).noResults
+          : AppLocalizations.of(context).emptyNotes,
+      subtitle: _searchQuery.isNotEmpty
+          ? 'No hay notas que coincidan con "$_searchQuery"'
+          : AppLocalizations.of(context).emptyNotesSubtitle,
+      actionLabel: _searchQuery.isNotEmpty
+          ? null
+          : AppLocalizations.of(context).createNote,
+      onAction: _searchQuery.isNotEmpty
+          ? null
+          : () => Navigator.pushNamed(context, '/note'),
     );
   }
 
@@ -314,55 +366,45 @@ class _NotesScreenState extends State<NotesScreen> {
     );
   }
 
-  Widget _buildStatsBar() {
-    return Consumer<NotesProvider>(builder: (context, provider, _) {
-      final total = provider.notes.length;
-      final pinned = provider.pinnedNotes.length;
-      final notebooks = provider.notebooks.length;
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: Row(
-          children: [
-            _StatChip(
-              icon: Icons.sticky_note_2_outlined,
-              label: '$total ${AppLocalizations.of(context).notes}',
-            ),
-            const SizedBox(width: 12),
-            _StatChip(
-              icon: Icons.push_pin_outlined,
-              label: '$pinned ${AppLocalizations.of(context).pinned}',
-              color: BrainTheme.accentOrange,
-            ),
-            const SizedBox(width: 12),
-            _StatChip(
-              icon: Icons.folder_outlined,
-              label:
-                  '$notebooks ${AppLocalizations.of(context).notebooksLabel}',
-              color: BrainTheme.accentBlue,
-            ),
-          ],
-        ),
-      );
-    });
+  Widget _buildStatsBar(int total, int pinned, int notebooks) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          _StatChip(
+            icon: Icons.sticky_note_2_outlined,
+            label: '$total ${AppLocalizations.of(context).notes}',
+          ),
+          const SizedBox(width: 12),
+          _StatChip(
+            icon: Icons.push_pin_outlined,
+            label: '$pinned ${AppLocalizations.of(context).pinned}',
+            color: BrainTheme.accentOrange,
+          ),
+          const SizedBox(width: 12),
+          _StatChip(
+            icon: Icons.folder_outlined,
+            label:
+                '$notebooks ${AppLocalizations.of(context).notebooksLabel}',
+            color: BrainTheme.accentBlue,
+          ),
+        ],
+      ),
+    );
   }
 
-  Widget _buildFilterRow() {
-    return Consumer<NotesProvider>(
-      builder: (context, provider, _) {
-        final notebooks = provider.notebooks;
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-          child: Row(
-            children: [
-              Expanded(child: _buildNotebookDropdown(notebooks)),
-              const SizedBox(width: 8),
-              _buildSortDropdown(),
-              const SizedBox(width: 8),
-              _buildViewToggle(),
-            ],
-          ),
-        );
-      },
+  Widget _buildFilterRow(List<String> notebooks) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+      child: Row(
+        children: [
+          Expanded(child: _buildNotebookDropdown(notebooks)),
+          const SizedBox(width: 8),
+          _buildSortDropdown(),
+          const SizedBox(width: 8),
+          _buildViewToggle(),
+        ],
+      ),
     );
   }
 
@@ -386,7 +428,8 @@ class _NotesScreenState extends State<NotesScreen> {
               const SizedBox(width: 8),
               Text(
                 AppLocalizations.of(context).allNotebooks,
-                style: TextStyle(color: BrainTheme.textSecondary, fontSize: 13),
+                style:
+                    TextStyle(color: BrainTheme.textSecondary, fontSize: 13),
               ),
             ],
           ),
@@ -417,7 +460,8 @@ class _NotesScreenState extends State<NotesScreen> {
                   ),
                 )),
           ],
-          onChanged: (String? value) => setState(() => _filterNotebook = value),
+          onChanged: (String? value) =>
+              setState(() => _filterNotebook = value),
           dropdownColor: BrainTheme.cardDark,
           icon: Icon(Icons.expand_more,
               color: BrainTheme.textSecondary, size: 20),
@@ -501,188 +545,123 @@ class _NotesScreenState extends State<NotesScreen> {
   }
 
   Widget _buildTagFilter() {
-    return Consumer<TagsProvider>(builder: (context, tagsProv, _) {
-      final noteTags = tagsProv.getTags(TagType.note);
-      final usedTagIds = context.read<NotesProvider>().tagCounts.keys.toSet();
-      final activeTags =
-          noteTags.where((t) => usedTagIds.contains(t.id)).toList();
+    final tagsProv = context.watch<TagsProvider>();
+    final noteTags = tagsProv.getTags(TagType.note);
+    final usedTagIds = context.read<NotesProvider>().tagCounts.keys.toSet();
+    final activeTags =
+        noteTags.where((t) => usedTagIds.contains(t.id)).toList();
 
-      if (activeTags.isEmpty) return const SizedBox.shrink();
+    if (activeTags.isEmpty) return const SizedBox.shrink();
 
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-        child: SizedBox(
-          height: 34,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: activeTags.map((tag) {
-              final isSelected = _filterTagIds.contains(tag.id);
-              return Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: GestureDetector(
-                  onTap: () => _toggleTagFilter(tag.id),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? tag.color.withValues(alpha: 0.2)
-                          : BrainTheme.surfaceDark,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isSelected ? tag.color : BrainTheme.borderDark,
-                        width: isSelected ? 1.5 : 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: tag.color,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          tag.name,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isSelected
-                                ? tag.color
-                                : BrainTheme.textSecondary,
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                          ),
-                        ),
-                      ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+      child: SizedBox(
+        height: 34,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: activeTags.map((tag) {
+            final isSelected = _filterTagIds.contains(tag.id);
+            return Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: GestureDetector(
+                onTap: () => _toggleTagFilter(tag.id),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? tag.color.withValues(alpha: 0.2)
+                        : BrainTheme.surfaceDark,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected ? tag.color : BrainTheme.borderDark,
+                      width: isSelected ? 1.5 : 1,
                     ),
                   ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: tag.color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        tag.name,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isSelected
+                              ? tag.color
+                              : BrainTheme.textSecondary,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              );
-            }).toList(),
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _buildNotesList() {
-    return Consumer<NotesProvider>(
-      builder: (context, provider, _) {
-        var notes = provider.filteredNotes(
-          notebook: _filterNotebook,
-          tags: _filterTagIds.isNotEmpty ? _filterTagIds.toList() : null,
-          searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
-          sortBy: _sortOption,
-        );
-
-        final pinned = notes.where((n) => n.isPinned).toList();
-        final unpinned = notes.where((n) => !n.isPinned).toList();
-        notes = [...pinned, ...unpinned];
-
-        if (notes.isEmpty) {
-          return EmptyState(
-            emoji: _searchQuery.isNotEmpty ? '🔍' : '📝',
-            title: _searchQuery.isNotEmpty
-                ? AppLocalizations.of(context).noResults
-                : AppLocalizations.of(context).emptyNotes,
-            subtitle: _searchQuery.isNotEmpty
-                ? 'No hay notas que coincidan con "$_searchQuery"'
-                : AppLocalizations.of(context).emptyNotesSubtitle,
-            actionLabel: _searchQuery.isNotEmpty
-                ? null
-                : AppLocalizations.of(context).createNote,
-            onAction: _searchQuery.isNotEmpty
-                ? null
-                : () => Navigator.pushNamed(context, '/note'),
-          );
-        }
-
-        if (_isGridView) {
-          return NotificationListener<ScrollNotification>(
-            onNotification: (notification) {
-              if (notification is ScrollUpdateNotification &&
-                  notification.metrics.pixels >=
-                      notification.metrics.maxScrollExtent - 300) {
-                provider.loadMore();
-              }
-              return false;
-            },
-            child: MasonryGridView.count(
-              key: ValueKey('notes_grid_${notes.length}_${pinned.length}'),
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-              crossAxisCount: 2,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              itemCount: notes.length,
-              itemBuilder: (context, index) {
-                final note = notes[index];
-                return NoteCard(
-                  note: note,
-                  searchQuery: _searchQuery,
-                  isSelected: _selectedNoteIds.contains(note.id),
-                  onSelect:
-                      _selectionMode ? (v) => _toggleSelection(note.id) : null,
-                  onTap: _selectionMode
-                      ? () => _toggleSelection(note.id)
-                      : () => Navigator.pushNamed(context, '/note',
-                          arguments: note.id),
-                  onDelete: _selectionMode
-                      ? null
-                      : () => _deleteNoteWithUndo(context, provider, note),
-                  onTogglePin:
-                      _selectionMode ? null : () => provider.togglePin(note.id),
-                  onCopyContent:
-                      _selectionMode ? null : () => _copyNoteContent(note),
-                  onShare: _selectionMode ? null : () => _shareNote(note),
-                  onMoveToNotebook: _selectionMode
-                      ? null
-                      : () => _showMoveSingleDialog(context, provider, note),
-                );
-              },
-            ),
-          );
-        }
-
-        return ListView.builder(
-          key: ValueKey('notes_list_${notes.length}_${pinned.length}'),
-          controller: _scrollController,
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-          itemCount: notes.length,
-          itemBuilder: (context, index) {
-            final note = notes[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: NoteCard(
-                note: note,
-                searchQuery: _searchQuery,
-                isSelected: _selectedNoteIds.contains(note.id),
-                onSelect:
-                    _selectionMode ? (v) => _toggleSelection(note.id) : null,
-                onTap: _selectionMode
-                    ? () => _toggleSelection(note.id)
-                    : () => Navigator.pushNamed(context, '/note',
-                        arguments: note.id),
-                onDelete: _selectionMode
-                    ? null
-                    : () => _deleteNoteWithUndo(context, provider, note),
-                onTogglePin:
-                    _selectionMode ? null : () => provider.togglePin(note.id),
-                onCopyContent:
-                    _selectionMode ? null : () => _copyNoteContent(note),
-                onShare: _selectionMode ? null : () => _shareNote(note),
-                onMoveToNotebook: _selectionMode
-                    ? null
-                    : () => _showMoveSingleDialog(context, provider, note),
               ),
             );
-          },
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotesList(List<Note> notes, NotesProvider provider) {
+    if (_isGridView) {
+      return MasonryGridView.count(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+        crossAxisCount: 2,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        itemCount: notes.length,
+        itemBuilder: (context, index) {
+          final note = notes[index];
+          return _buildNoteCard(note, provider);
+        },
+      );
+    }
+
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+      itemCount: notes.length,
+      itemBuilder: (context, index) {
+        final note = notes[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: _buildNoteCard(note, provider),
         );
       },
+    );
+  }
+
+  Widget _buildNoteCard(Note note, NotesProvider provider) {
+    return NoteCard(
+      note: note,
+      searchQuery: _searchQuery,
+      isSelected: _selectedNoteIds.contains(note.id),
+      onSelect: _selectionMode ? (v) => _toggleSelection(note.id) : null,
+      onTap: _selectionMode
+          ? () => _toggleSelection(note.id)
+          : () => Navigator.pushNamed(context, '/note', arguments: note.id),
+      onDelete: _selectionMode
+          ? null
+          : () => _deleteNoteWithUndo(context, provider, note),
+      onTogglePin:
+          _selectionMode ? null : () => provider.togglePin(note.id),
+      onCopyContent:
+          _selectionMode ? null : () => _copyNoteContent(note),
+      onShare: _selectionMode ? null : () => _shareNote(note),
+      onMoveToNotebook: _selectionMode
+          ? null
+          : () => _showMoveSingleDialog(context, provider, note),
     );
   }
 }

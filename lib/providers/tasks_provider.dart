@@ -41,54 +41,35 @@ class TasksProvider extends ChangeNotifier {
 
   TasksProvider({required IStorageService storage}) : _storage = storage;
 
-  List<Task> _todoTasks = [];
-  List<Task> _inProgressTasks = [];
-  List<Task> _inReviewTasks = [];
-  List<Task> _doneTasks = [];
-  List<Task> _overdueTasks = [];
-  List<Task> _urgentTasks = [];
-  List<Task> _todayTasks = [];
-  List<Task> _focusTasks = [];
+  List<Task>? __todoTasks;
+  List<Task>? __inProgressTasks;
+  List<Task>? __inReviewTasks;
+  List<Task>? __doneTasks;
+  List<Task>? __overdueTasks;
+  List<Task>? __urgentTasks;
+  List<Task>? __todayTasks;
+  List<Task>? __focusTasks;
+  List<Task>? __cancelledTasks;
 
   List<Task> get tasks => _tasks;
   bool get isLoaded => _isLoaded;
 
-  List<Task> get todoTasks => _todoTasks;
-  List<Task> get inProgressTasks => _inProgressTasks;
-  List<Task> get inReviewTasks => _inReviewTasks;
-  List<Task> get doneTasks => _doneTasks;
-  List<Task> get overdueTasks => _overdueTasks;
-  List<Task> get urgentTasks => _urgentTasks;
-  List<Task> get todayTasks => _todayTasks;
-  List<Task> get focusTasks => _focusTasks;
-
-  List<Task> get cancelledTasks =>
-      _tasks.where((t) => t.status == TaskStatus.cancelled).toList();
-
-  Future<void> loadTasks() async {
-    _tasks = await _storage.loadTasks();
-    _page = 1;
-    _updateComputedLists();
-    _isLoaded = true;
-    notifyListeners();
-    _updateWidget();
-  }
-
-  void _updateComputedLists() {
+  List<Task> get todoTasks =>
+      __todoTasks ??= _tasks.where((t) => t.status == TaskStatus.pending).toList();
+  List<Task> get inProgressTasks =>
+      __inProgressTasks ??= _tasks.where((t) => t.status == TaskStatus.inProgress).toList();
+  List<Task> get inReviewTasks =>
+      __inReviewTasks ??= _tasks.where((t) => t.status == TaskStatus.inReview).toList();
+  List<Task> get doneTasks =>
+      __doneTasks ??= _tasks.where((t) => t.status == TaskStatus.completed).toList();
+  List<Task> get overdueTasks =>
+      __overdueTasks ??= _tasks.where((t) => t.isOverdue).toList();
+  List<Task> get urgentTasks =>
+      __urgentTasks ??= _tasks.where((t) => t.priority == TaskPriority.urgent && t.isActive).toList();
+  List<Task> get todayTasks {
+    if (__todayTasks != null) return __todayTasks!;
     final now = DateTime.now();
-    final nextWeek = now.add(const Duration(days: 7));
-
-    _todoTasks = _tasks.where((t) => t.status == TaskStatus.pending).toList();
-    _inProgressTasks =
-        _tasks.where((t) => t.status == TaskStatus.inProgress).toList();
-    _inReviewTasks =
-        _tasks.where((t) => t.status == TaskStatus.inReview).toList();
-    _doneTasks = _tasks.where((t) => t.status == TaskStatus.completed).toList();
-    _overdueTasks = _tasks.where((t) => t.isOverdue).toList();
-    _urgentTasks = _tasks
-        .where((t) => t.priority == TaskPriority.urgent && t.isActive)
-        .toList();
-    _todayTasks = _tasks.where((t) {
+    __todayTasks = _tasks.where((t) {
       final dueDate = t.dueDate;
       return dueDate != null &&
           dueDate.year == now.year &&
@@ -96,7 +77,14 @@ class TasksProvider extends ChangeNotifier {
           dueDate.day == now.day &&
           t.isActive;
     }).toList();
-    _focusTasks = _tasks.where((task) {
+    return __todayTasks!;
+  }
+
+  List<Task> get focusTasks {
+    if (__focusTasks != null) return __focusTasks!;
+    final now = DateTime.now();
+    final nextWeek = now.add(const Duration(days: 7));
+    __focusTasks = _tasks.where((task) {
       if (!task.isActive) return false;
       if (task.status == TaskStatus.inProgress) return true;
       if (task.priority == TaskPriority.urgent) return true;
@@ -107,16 +95,41 @@ class TasksProvider extends ChangeNotifier {
       }
       return false;
     }).toList();
-    _focusTasks.sort((a, b) {
+    __focusTasks!.sort((a, b) {
       final priorityCompare = b.priority.index.compareTo(a.priority.index);
       if (priorityCompare != 0) return priorityCompare;
       return (a.dueDate ?? DateTime(9999))
           .compareTo(b.dueDate ?? DateTime(9999));
     });
+    return __focusTasks!;
+  }
+
+  List<Task> get cancelledTasks =>
+      __cancelledTasks ??= _tasks.where((t) => t.status == TaskStatus.cancelled).toList();
+
+  Future<void> loadTasks() async {
+    _tasks = await _storage.loadTasks();
+    _page = 1;
+    _markDirty();
+    _isLoaded = true;
+    notifyListeners();
+    _updateWidget();
+  }
+
+  void _markDirty() {
+    __todoTasks = null;
+    __inProgressTasks = null;
+    __inReviewTasks = null;
+    __doneTasks = null;
+    __overdueTasks = null;
+    __urgentTasks = null;
+    __todayTasks = null;
+    __focusTasks = null;
+    __cancelledTasks = null;
   }
 
   void _notifyAndScheduleSave() {
-    _updateComputedLists();
+    _markDirty();
     notifyListeners();
     _saveDebouncer.call(() => _storage.saveTasks(_tasks));
   }
@@ -481,10 +494,12 @@ class TasksProvider extends ChangeNotifier {
   }
 
   void _updateWidget() {
+    final done = doneTasks;
+    final overdue = overdueTasks;
     HomeWidgetService.updateTodayWidget(
       totalTasks: _tasks.length,
-      completedTasks: _doneTasks.length,
-      overdueTasks: _overdueTasks.length,
+      completedTasks: done.length,
+      overdueTasks: overdue.length,
     );
   }
 
@@ -545,6 +560,6 @@ class TasksProvider extends ChangeNotifier {
 
   double get completionRate {
     if (_tasks.isEmpty) return 0;
-    return _doneTasks.length / _tasks.length;
+    return doneTasks.length / _tasks.length;
   }
 }

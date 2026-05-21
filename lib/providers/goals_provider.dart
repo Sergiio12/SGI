@@ -17,15 +17,19 @@ class GoalsProvider extends ChangeNotifier {
 
   GoalsProvider({required IStorageService storage}) : _storage = storage;
 
+  List<Goal>? __monthlyGoals;
+  List<Goal>? __quarterlyGoals;
+  List<Goal>? __yearlyGoals;
+
   List<Goal> get goals => _goals;
   bool get isLoaded => _isLoaded;
 
   List<Goal> get monthlyGoals =>
-      _goals.where((g) => g.horizon == GoalHorizon.monthly).toList();
+      __monthlyGoals ??= _goals.where((g) => g.horizon == GoalHorizon.monthly).toList();
   List<Goal> get quarterlyGoals =>
-      _goals.where((g) => g.horizon == GoalHorizon.quarterly).toList();
+      __quarterlyGoals ??= _goals.where((g) => g.horizon == GoalHorizon.quarterly).toList();
   List<Goal> get yearlyGoals =>
-      _goals.where((g) => g.horizon == GoalHorizon.yearly).toList();
+      __yearlyGoals ??= _goals.where((g) => g.horizon == GoalHorizon.yearly).toList();
 
   Goal? getGoalById(String id) {
     try {
@@ -48,11 +52,19 @@ class GoalsProvider extends ChangeNotifier {
 
   Future<void> loadGoals() async {
     _goals = await _storage.loadGoals();
+    _markDirty();
     _isLoaded = true;
     notifyListeners();
   }
 
+  void _markDirty() {
+    __monthlyGoals = null;
+    __quarterlyGoals = null;
+    __yearlyGoals = null;
+  }
+
   void _notifyAndScheduleSave() {
+    _markDirty();
     notifyListeners();
     _saveDebouncer.call(() => _storage.saveGoals(_goals));
   }

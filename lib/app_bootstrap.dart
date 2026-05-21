@@ -75,25 +75,13 @@ class AppBootstrap {
           return controller;
         }),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
-        ChangeNotifierProxyProvider2<TasksProvider, ProjectsProvider,
-            DashboardProvider>(
+        ChangeNotifierProvider<DashboardProvider>(
           create: (context) => DashboardProvider(
             tasksProvider: context.read<TasksProvider>(),
             projectsProvider: context.read<ProjectsProvider>(),
+            notesProvider: context.read<NotesProvider>(),
+            goalsProvider: context.read<GoalsProvider>(),
           ),
-          update: (context, tasks, projects, previous) {
-            if (previous == null) {
-              return DashboardProvider(
-                tasksProvider: tasks,
-                projectsProvider: projects,
-              );
-            }
-            previous.updateProviders(
-              tasksProvider: tasks,
-              projectsProvider: projects,
-            );
-            return previous;
-          },
         ),
         ChangeNotifierProvider.value(value: dailyPlannerProvider),
         ChangeNotifierProvider.value(value: aiProvider),
