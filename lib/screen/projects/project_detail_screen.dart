@@ -129,7 +129,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
   @override
   Widget build(BuildContext context) {
     final project = _isEditing
-        ? context.watch<ProjectsProvider>().getProjectById(widget.projectId!)
+        ? context.select<ProjectsProvider, Project?>((p) => p.getProjectById(widget.projectId!))
         : null;
 
     return Scaffold(

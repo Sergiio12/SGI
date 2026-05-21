@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/result.dart';
+import '../models/recurrence_rule.dart';
 import '../models/task.dart';
+import '../services/calendar_integration_service.dart';
+import '../services/home_widget_service.dart';
 import '../services/notification_service.dart';
 import '../services/interfaces/storage_service_interface.dart';
 import '../utils/debouncer.dart';
@@ -66,6 +71,7 @@ class TasksProvider extends ChangeNotifier {
     _updateComputedLists();
     _isLoaded = true;
     notifyListeners();
+    _updateWidget();
   }
 
   void _updateComputedLists() {
@@ -115,6 +121,58 @@ class TasksProvider extends ChangeNotifier {
     _saveDebouncer.call(() => _storage.saveTasks(_tasks));
   }
 
+  void _syncCalendarForTask(Task task) {
+    if (task.dueDate == null || !task.isActive) {
+      if (task.calendarEventId != null) {
+        unawaited(
+          CalendarIntegrationService.removeTaskEvent(
+            task.id,
+            task.calendarEventId,
+          ).then((_) {
+            final idx = _tasks.indexWhere((t) => t.id == task.id);
+            if (idx != -1) {
+              _tasks[idx] =
+                  _tasks[idx].copyWith(clearCalendarEventId: true);
+              _notifyAndScheduleSave();
+            }
+          }),
+        );
+      }
+      return;
+    }
+    if (task.calendarEventId != null) {
+      unawaited(
+        CalendarIntegrationService.updateTaskEvent(
+          task.id,
+          calendarEventId: task.calendarEventId,
+          title: task.title,
+          description: task.description,
+          dueDate: task.dueDate,
+          reminderMinutes: task.reminderMinutesBefore,
+        ),
+      );
+    } else {
+      unawaited(
+        CalendarIntegrationService.addTaskEvent(
+          taskId: task.id,
+          title: task.title,
+          description: task.description,
+          dueDate: task.dueDate!,
+          reminderMinutes: task.reminderMinutesBefore,
+        ).then((eventId) {
+          if (eventId != null) {
+            final idx = _tasks.indexWhere((t) => t.id == task.id);
+            if (idx != -1) {
+              _tasks[idx] =
+                  _tasks[idx].copyWith(calendarEventId: eventId);
+              _notifyAndScheduleSave();
+            }
+          }
+        }),
+      );
+    }
+  }
+
   List<Task> getTasksByProject(String projectId) =>
       _tasks.where((t) => t.projectId == projectId).toList();
 
@@ -152,6 +210,8 @@ class TasksProvider extends ChangeNotifier {
     List<String> tags = const [],
     List<SubTask> subtasks = const [],
     List<String> linkedNoteIds = const [],
+    RecurrenceRule? recurrence,
+    String? sourceTaskId,
   }) async {
     try {
       final task = Task(
@@ -167,12 +227,23 @@ class TasksProvider extends ChangeNotifier {
         subtasks: subtasks,
         linkedNoteIds: linkedNoteIds,
         tags: tags,
+        recurrence: recurrence,
+        sourceTaskId: sourceTaskId,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
       _tasks.add(task);
       _notifyAndScheduleSave();
+      _syncCalendarForTask(task);
       await NotificationService.scheduleTaskReminders(task);
+      if (task.recurrence != null && task.dueDate != null) {
+        await NotificationService.scheduleRecurringReminders(
+          task.recurrence!,
+          task.id,
+          task.title,
+          task.dueDate!,
+        );
+      }
       HapticHelper.light();
       showSuccessNotification('Tarea creada: ${task.title}');
       return Result.success(task);
@@ -194,6 +265,7 @@ class TasksProvider extends ChangeNotifier {
       if (index != -1) {
         _tasks[index] = task;
         _notifyAndScheduleSave();
+        _syncCalendarForTask(task);
         await NotificationService.scheduleTaskReminders(task);
         showSuccessNotification('Tarea actualizada');
       }
@@ -218,10 +290,13 @@ class TasksProvider extends ChangeNotifier {
         _tasks[index] = updated;
         _notifyAndScheduleSave();
         if (newStatus == TaskStatus.completed) {
+          _syncCalendarForTask(updated);
           await NotificationService.cancelTaskReminders(taskId);
+          await _generateNextRecurrence(task);
           HapticHelper.light();
           showSuccessNotification('Tarea completada');
         } else {
+          _syncCalendarForTask(updated);
           await NotificationService.scheduleTaskReminders(updated);
           HapticHelper.light();
           showSuccessNotification('Tarea reabierta');
@@ -239,14 +314,19 @@ class TasksProvider extends ChangeNotifier {
       if (index == -1) return;
       final task = _tasks[index];
       if (task.status == status) return;
+      final isBeingCompleted = status == TaskStatus.completed && task.status != TaskStatus.completed;
       final updated = task.copyWith(
         status: status,
         lastActivityAt: DateTime.now(),
       );
       _tasks[index] = updated;
       _notifyAndScheduleSave();
+      _syncCalendarForTask(updated);
       if (status == TaskStatus.completed || status == TaskStatus.cancelled) {
         await NotificationService.cancelTaskReminders(taskId);
+        if (isBeingCompleted) {
+          await _generateNextRecurrence(task);
+        }
       } else {
         await NotificationService.scheduleTaskReminders(updated);
       }
@@ -312,7 +392,16 @@ class TasksProvider extends ChangeNotifier {
     try {
       final index = _tasks.indexWhere((t) => t.id == taskId);
       if (index == -1) return;
-      final task = _tasks.removeAt(index);
+      final task = _tasks[index];
+      if (task.calendarEventId != null) {
+        unawaited(
+          CalendarIntegrationService.removeTaskEvent(
+            task.id,
+            task.calendarEventId,
+          ),
+        );
+      }
+      _tasks.removeAt(index);
       final trash = await _storage.loadTrashTasks();
       trash.add(task);
       await _storage.saveTrashTasks(trash);
@@ -353,6 +442,54 @@ class TasksProvider extends ChangeNotifier {
     } catch (e, s) {
       AppException(message: 'Error al eliminar tarea permanentemente', code: 'PERM_DELETE_TASK', stackTrace: s).log();
       showErrorNotification('Error al eliminar tarea');
+    }
+  }
+
+  void _updateWidget() {
+    HomeWidgetService.updateTodayWidget(
+      totalTasks: _tasks.length,
+      completedTasks: _doneTasks.length,
+      overdueTasks: _overdueTasks.length,
+    );
+  }
+
+  Future<void> _generateNextRecurrence(Task completedTask) async {
+    final rule = completedTask.recurrence;
+    if (rule == null) return;
+    if (completedTask.dueDate == null) return;
+
+    final nextDue = rule.nextOccurrence(completedTask.dueDate!);
+    if (nextDue == null) return;
+
+    final nextTask = Task(
+      id: _uuid.v4(),
+      title: completedTask.title,
+      description: completedTask.description,
+      priority: completedTask.priority,
+      status: TaskStatus.pending,
+      dueDate: nextDue,
+      estimatedHours: completedTask.estimatedHours,
+      reminderMinutesBefore: completedTask.reminderMinutesBefore,
+      projectId: completedTask.projectId,
+      subtasks: completedTask.subtasks,
+      linkedNoteIds: completedTask.linkedNoteIds,
+      tags: completedTask.tags,
+      recurrence: rule,
+      sourceTaskId: completedTask.sourceTaskId ?? completedTask.id,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    _tasks.add(nextTask);
+    _notifyAndScheduleSave();
+    _syncCalendarForTask(nextTask);
+    await NotificationService.scheduleTaskReminders(nextTask);
+    if (nextTask.recurrence != null && nextTask.dueDate != null) {
+      await NotificationService.scheduleRecurringReminders(
+        nextTask.recurrence!,
+        nextTask.id,
+        nextTask.title,
+        nextTask.dueDate!,
+      );
     }
   }
 

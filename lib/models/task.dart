@@ -1,4 +1,5 @@
 import 'brain_item.dart';
+import 'recurrence_rule.dart';
 
 enum TaskPriority { low, medium, high, urgent }
 
@@ -17,6 +18,9 @@ class Task extends BrainItem {
   final String? projectId;
   final List<SubTask> subtasks;
   final List<String> linkedNoteIds;
+  final RecurrenceRule? recurrence;
+  final String? sourceTaskId;
+  final String? calendarEventId;
 
   Task({
     required super.id,
@@ -32,6 +36,9 @@ class Task extends BrainItem {
     this.projectId,
     this.subtasks = const [],
     this.linkedNoteIds = const [],
+    this.recurrence,
+    this.sourceTaskId,
+    this.calendarEventId,
     super.tags = const [],
     required super.createdAt,
     required super.updatedAt,
@@ -66,11 +73,17 @@ class Task extends BrainItem {
     List<SubTask>? subtasks,
     List<String>? linkedNoteIds,
     List<String>? tags,
+    RecurrenceRule? recurrence,
+    String? sourceTaskId,
+    String? calendarEventId,
     bool clearDueDate = false,
     bool clearActualHours = false,
     bool clearReminder = false,
     bool clearLastActivity = false,
     bool clearProjectId = false,
+    bool clearRecurrence = false,
+    bool clearSourceTaskId = false,
+    bool clearCalendarEventId = false,
   }) {
     return Task(
       id: id,
@@ -90,6 +103,12 @@ class Task extends BrainItem {
       subtasks: subtasks ?? this.subtasks,
       linkedNoteIds: linkedNoteIds ?? this.linkedNoteIds,
       tags: tags ?? this.tags,
+      recurrence: clearRecurrence ? null : (recurrence ?? this.recurrence),
+      sourceTaskId:
+          clearSourceTaskId ? null : (sourceTaskId ?? this.sourceTaskId),
+      calendarEventId: clearCalendarEventId
+          ? null
+          : (calendarEventId ?? this.calendarEventId),
       createdAt: createdAt,
       updatedAt: DateTime.now(),
     );
@@ -113,6 +132,9 @@ class Task extends BrainItem {
         'tags': tags,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
+        if (recurrence != null) 'recurrence': recurrence!.toJson(),
+        if (sourceTaskId != null) 'sourceTaskId': sourceTaskId,
+        if (calendarEventId != null) 'calendarEventId': calendarEventId,
       };
 
   factory Task.fromJson(Map<String, dynamic> json) => Task(
@@ -136,6 +158,11 @@ class Task extends BrainItem {
             [],
         linkedNoteIds: List<String>.from(json['linkedNoteIds'] ?? []),
         tags: List<String>.from(json['tags'] ?? []),
+        recurrence: json['recurrence'] != null
+            ? RecurrenceRule.fromJson(json['recurrence'])
+            : null,
+        sourceTaskId: json['sourceTaskId'],
+        calendarEventId: json['calendarEventId'],
         createdAt: DateTime.parse(json['createdAt']),
         updatedAt: DateTime.parse(json['updatedAt']),
       );

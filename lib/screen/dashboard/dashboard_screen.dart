@@ -28,6 +28,8 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   late DateTime _selectedDate;
   late List<DateTime> _weekDays;
+  final _scrollController = ScrollController();
+  double _scrollOffset = 0;
 
   @override
   void initState() {
@@ -35,6 +37,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final today = DateTime.now();
     _selectedDate = DateTime(today.year, today.month, today.day);
     _weekDays = _getCurrentWeek();
+    _scrollController.addListener(() {
+      setState(() => _scrollOffset = _scrollController.offset);
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(() {});
+    _scrollController.dispose();
+    super.dispose();
   }
 
   List<DateTime> _getCurrentWeek() {
@@ -179,18 +191,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
             notes.loadNotes(),
             goals.loadGoals(),
           ]),
+          displacement: 80,
+          edgeOffset: 20,
           child: SingleChildScrollView(
+          controller: _scrollController,
           padding: ResponsiveHelper.getResponsivePadding(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. HEADER: INTELLIGENT GREETING + INTENTION + RADIAL PROGRESS
-              _buildMindGreetingHeader(
-                context,
-                todayProgress,
-                completedUpcomingTasks,
-                totalUpcomingTasks,
-                planner,
+              Transform.translate(
+                offset: Offset(0, -_scrollOffset * 0.15),
+                child: _buildMindGreetingHeader(
+                  context,
+                  todayProgress,
+                  completedUpcomingTasks,
+                  totalUpcomingTasks,
+                  planner,
+                ),
               ),
 
               const SizedBox(height: 20),

@@ -1,14 +1,12 @@
 import 'dart:async';
-import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../../config/routes.dart';
 import '../../config/theme.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../providers/daily_planner_provider.dart';
 import '../../providers/goals_provider.dart';
@@ -17,9 +15,14 @@ import '../../providers/projects_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../providers/trash_provider.dart';
+import '../home_screen.dart';
 
 import '../../services/notification_service.dart';
 import '../../services/interfaces/storage_service_interface.dart';
+
+import '../../widgets/loading_animation.dart';
+import '../../widgets/loading_glow_orb.dart';
+import '../../widgets/loading_progress_footer.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -37,7 +40,7 @@ class _LoadingScreenState extends State<LoadingScreen>
   double _targetProgress = 0;
   double _displayProgress = 0;
 
-  String _statusText = 'Inicializando sistema';
+  String _statusText = '';
 
   late final AnimationController _orbitalController;
 
@@ -111,31 +114,32 @@ class _LoadingScreenState extends State<LoadingScreen>
       final notesProvider = context.read<NotesProvider>();
       final goalsProvider = context.read<GoalsProvider>();
 
+      final l10n = AppLocalizations.of(context);
       _steps.addAll([
         _InitStep(
           progress: 0.12,
-          label: 'Inicializando almacenamiento seguro',
+          label: l10n.loadingInitStorage,
           action: () async {
             await context.read<IStorageService>().init();
           },
         ),
         _InitStep(
           progress: 0.28,
-          label: 'Cargando tareas prioritarias',
+          label: l10n.loadingTasks,
           action: () async {
             await tasksProvider.loadTasks();
           },
         ),
         _InitStep(
           progress: 0.45,
-          label: 'Reconstruyendo proyectos',
+          label: l10n.loadingProjects,
           action: () async {
             await projectsProvider.loadProjects();
           },
         ),
         _InitStep(
           progress: 0.64,
-          label: 'Preparando entorno visual',
+          label: l10n.loadingVisual,
           action: () async {
             await Future.delayed(
               const Duration(milliseconds: 350),
@@ -144,7 +148,7 @@ class _LoadingScreenState extends State<LoadingScreen>
         ),
         _InitStep(
           progress: 0.82,
-          label: 'Optimizando experiencia',
+          label: l10n.loadingReady,
           action: () async {
             await Future.delayed(
               const Duration(milliseconds: 250),
@@ -180,7 +184,7 @@ class _LoadingScreenState extends State<LoadingScreen>
 
       _updateProgress(
         0.92,
-        'Sincronizando sesión',
+        l10n.loadingSession,
       );
 
       // Tiempo visual mínimo
@@ -194,7 +198,7 @@ class _LoadingScreenState extends State<LoadingScreen>
 
       _updateProgress(
         1.0,
-        'Todo listo',
+        l10n.loadingReady,
       );
 
       await Future.delayed(
@@ -203,9 +207,45 @@ class _LoadingScreenState extends State<LoadingScreen>
 
       if (!mounted) return;
 
-      Navigator.pushReplacementNamed(
+      Navigator.pushReplacement(
         context,
-        AppRoutes.home,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const HomeScreen(),
+          transitionDuration: const Duration(milliseconds: 600),
+          reverseTransitionDuration: const Duration(milliseconds: 400),
+          transitionsBuilder: (_, animation, __, child) {
+            return Stack(
+              children: [
+                FadeTransition(
+                  opacity: Tween<double>(begin: 1, end: 0).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: const Interval(0, 0.4, curve: Curves.easeOut),
+                    ),
+                  ),
+                  child: const SizedBox(),
+                ),
+                FadeTransition(
+                  opacity: Tween<double>(begin: 0, end: 1).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: const Interval(0.2, 1, curve: Curves.easeOut),
+                    ),
+                  ),
+                  child: ScaleTransition(
+                    scale: Tween<double>(begin: 1.05, end: 1).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: const Interval(0.2, 1, curve: Curves.easeOutCubic),
+                      ),
+                    ),
+                    child: child,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       );
     } catch (e) {
       _updateProgress(
@@ -283,7 +323,7 @@ class _LoadingScreenState extends State<LoadingScreen>
           Positioned(
             top: -180,
             left: -120,
-            child: _GlowOrb(
+            child: LoadingGlowOrb(
               size: 320,
               color: BrainTheme.accentPurple.withValues(
                 alpha: 0.16,
@@ -310,7 +350,7 @@ class _LoadingScreenState extends State<LoadingScreen>
           Positioned(
             bottom: -220,
             right: -180,
-            child: _GlowOrb(
+            child: LoadingGlowOrb(
               size: 420,
               color: BrainTheme.accentBlue.withValues(
                 alpha: 0.12,
@@ -393,7 +433,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                                 ),
                             const SizedBox(width: 8),
                             Text(
-                              'Inicializando',
+                              AppLocalizations.of(context).loadingInit,
                               style: GoogleFonts.inter(
                                 color: Colors.white.withValues(alpha: 0.8),
                                 fontSize: 12,
@@ -421,166 +461,9 @@ class _LoadingScreenState extends State<LoadingScreen>
                   // =========================================
 
                   Expanded(
-                    child: Center(
-                      child: SizedBox(
-                        width: 240,
-                        height: 240,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Órbita exterior con partícula brillante que viaja
-                            RotationTransition(
-                              turns: _orbitalController,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Container(
-                                    width: 230,
-                                    height: 230,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.04,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  // Partícula brillante en órbita
-                                  Positioned(
-                                    top: 0,
-                                    child: Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: BrainTheme.accentBlue,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: BrainTheme.accentBlue,
-                                            blurRadius: 6,
-                                            spreadRadius: 2,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // Órbita media con partícula girando en sentido inverso
-                            RotationTransition(
-                              turns: Tween<double>(
-                                begin: 0,
-                                end: -1,
-                              ).animate(
-                                CurvedAnimation(
-                                  parent: _orbitalController,
-                                  curve: Curves.linear,
-                                ),
-                              ),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Container(
-                                    width: 180,
-                                    height: 180,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: BrainTheme.accentPurple.withValues(
-                                          alpha: 0.08,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  // Partícula brillante en órbita interna
-                                  Positioned(
-                                    bottom: 0,
-                                    child: Container(
-                                      width: 5,
-                                      height: 5,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: BrainTheme.accentPurple,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: BrainTheme.accentPurple,
-                                            blurRadius: 5,
-                                            spreadRadius: 1.5,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // CARD CENTRAL - Glassmorphism con halo reactivo dinámico
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(34),
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                child: Container(
-                                  width: 118,
-                                  height: 118,
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(34),
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Colors.white.withValues(
-                                          alpha: 0.07,
-                                        ),
-                                        Colors.white.withValues(
-                                          alpha: 0.02,
-                                        ),
-                                      ],
-                                    ),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.12,
-                                      ),
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Color.lerp(
-                                          BrainTheme.accentPurple,
-                                          BrainTheme.accentBlue,
-                                          _displayProgress.clamp(0.0, 1.0),
-                                        )!.withValues(alpha: 0.22),
-                                        blurRadius: 40 + (10 * _displayProgress),
-                                        spreadRadius: 1 + _displayProgress,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Image.asset(
-                                    'assets/app_icon.png',
-                                  ),
-                                ),
-                              ),
-                            )
-                                .animate(
-                                  onPlay: (controller) => controller.repeat(
-                                    reverse: true,
-                                  ),
-                                )
-                                .scale(
-                                  begin: const Offset(1, 1),
-                                  end: const Offset(
-                                    1.03,
-                                    1.03,
-                                  ),
-                                  duration: 2000.ms,
-                                  curve: Curves.easeInOut,
-                                ),
-                          ],
-                        ),
-                      ),
+                    child: LoadingAnimation(
+                      controller: _orbitalController,
+                      progress: _displayProgress,
                     ),
                   ),
 
@@ -588,117 +471,10 @@ class _LoadingScreenState extends State<LoadingScreen>
                   // FOOTER
                   // =========================================
 
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Estado
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 400),
-                        child: Text(
-                          _statusText,
-                          key: ValueKey(_statusText),
-                          style: GoogleFonts.inter(
-                            color: Colors.white.withValues(alpha: 0.92),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // Barra
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(999),
-                        child: Container(
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(
-                              alpha: 0.06,
-                            ),
-                          ),
-                          child: Stack(
-                            children: [
-                              FractionallySizedBox(
-                                widthFactor: _displayProgress.clamp(0.0, 1.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        BrainTheme.accentPurple,
-                                        BrainTheme.accentBlue,
-                                      ],
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            BrainTheme.accentPurple.withValues(
-                                          alpha: 0.4,
-                                        ),
-                                        blurRadius: 14,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Info inferior
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${(_displayProgress * 100).toInt()}%',
-                            style: GoogleFonts.inter(
-                              color: BrainTheme.accentPurple,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            _estimatedTime(),
-                            style: GoogleFonts.inter(
-                              color: Colors.white.withValues(
-                                alpha: 0.35,
-                              ),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Center(
-                        child: Text(
-                          'Creado por Sergio Asensio',
-                          style: GoogleFonts.inter(
-                            color: Colors.white.withValues(
-                              alpha: 0.25,
-                            ),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                      .animate()
-                      .fadeIn(
-                        delay: 300.ms,
-                        duration: 700.ms,
-                      )
-                      .slideY(
-                        begin: 0.15,
-                        end: 0,
-                        curve: Curves.easeOutCubic,
-                      ),
+                  LoadingProgressFooter(
+                    progress: _displayProgress,
+                    statusText: _statusText,
+                  ),
                 ],
               ),
             ),
@@ -708,15 +484,6 @@ class _LoadingScreenState extends State<LoadingScreen>
     );
   }
 
-  String _estimatedTime() {
-    final remaining = max(0, ((1 - _displayProgress) * 3).ceil());
-
-    if (remaining <= 1) {
-      return 'Casi listo';
-    }
-
-    return '~${remaining}s';
-  }
 }
 
 // ===========================================================
@@ -733,37 +500,4 @@ class _InitStep {
     required this.label,
     required this.action,
   });
-}
-
-// ===========================================================
-// GLOW
-// ===========================================================
-
-class _GlowOrb extends StatelessWidget {
-  final double size;
-  final Color color;
-
-  const _GlowOrb({
-    required this.size,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              color,
-              Colors.transparent,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

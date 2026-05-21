@@ -43,6 +43,13 @@ class AppearanceScreen extends StatelessWidget {
                 onTap: () => settings.setThemeMode(ThemeMode.system),
               ),
               const SizedBox(height: 24),
+              const _SectionHeader(title: 'COLOR DE ACENTO'),
+              const SizedBox(height: 12),
+              _AccentColorPicker(
+                selectedColor: settings.accentColor,
+                onColorSelected: (color) => settings.setAccentColor(color),
+              ),
+              const SizedBox(height: 24),
               const _SectionHeader(title: 'VISTA PREVIA'),
               const SizedBox(height: 12),
               Container(
@@ -108,6 +115,58 @@ class AppearanceScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class _AccentColorPicker extends StatelessWidget {
+  final Color selectedColor;
+  final ValueChanged<Color> onColorSelected;
+
+  const _AccentColorPicker({
+    required this.selectedColor,
+    required this.onColorSelected,
+  });
+
+  static const _colors = [
+    Color(0xFF9D4EDD),
+    Color(0xFF3B82F6),
+    Color(0xFF10B981),
+    Color(0xFFF59E0B),
+    Color(0xFFEF4444),
+    Color(0xFFEC4899),
+    Color(0xFF06B6D4),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: _colors.map((color) {
+        final isSelected = selectedColor == color;
+        return GestureDetector(
+          onTap: () => onColorSelected(color),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border: isSelected
+                  ? Border.all(color: Colors.white, width: 3)
+                  : null,
+              boxShadow: isSelected
+                  ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 12, spreadRadius: 1)]
+                  : null,
+            ),
+            child: isSelected
+                ? const Icon(Icons.check, color: Colors.white, size: 22)
+                : null,
+          ),
+        );
+      }).toList(),
     );
   }
 }

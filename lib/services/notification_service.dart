@@ -5,6 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../models/recurrence_rule.dart';
 import '../models/task.dart';
 
 const _kChannelId = 'brain_task_reminders';
@@ -221,6 +222,47 @@ class NotificationService {
   static Future<void> cancelAll() async {
     if (!_initialized) return;
     await _plugin.cancelAll();
+  }
+
+  static Future<void> scheduleRecurringReminders(
+    RecurrenceRule rule,
+    String taskId,
+    String title,
+    DateTime dueDate,
+  ) async {
+    if (!_initialized) return;
+    if (!_settings.notificationsEnabled) return;
+    await cancelRecurringReminders(taskId);
+
+    final now = tz.TZDateTime.now(tz.local);
+    const maxOccurrences = 20;
+
+    DateTime? current = rule.nextOccurrence(dueDate);
+    int idx = 0;
+
+    while (current != null && idx < maxOccurrences) {
+      final tzCurrent = tz.TZDateTime.from(current, tz.local);
+      if (tzCurrent.isAfter(now) && !_isQuietTime(tzCurrent)) {
+        await _schedule(
+          id: _notificationId('${taskId}_recur_$idx'),
+          title: '🔄 $title',
+          body: 'Vence el ${_formatDate(current)}.',
+          scheduledDate: tzCurrent,
+          payload: taskId,
+        );
+        idx++;
+      }
+      current = rule.nextOccurrence(current);
+    }
+  }
+
+  static Future<void> cancelRecurringReminders(String taskId) async {
+    if (!_initialized) return;
+    await Future.wait(
+      List.generate(20, (i) => _plugin.cancel(
+        id: _notificationId('${taskId}_recur_$i'),
+      )),
+    );
   }
 
   static Future<void> rescheduleAll(List<Task> tasks) async {

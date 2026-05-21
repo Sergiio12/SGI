@@ -1465,6 +1465,384 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New task · {status}'**
   String newTaskWithStatus(Object status);
+
+  /// No description provided for @onboardingTitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Second Brain'**
+  String get onboardingTitle1;
+
+  /// No description provided for @onboardingSubtitle1.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize your ideas, projects and tasks in one place. Your mind deserves clarity.'**
+  String get onboardingSubtitle1;
+
+  /// No description provided for @onboardingTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Tasks'**
+  String get onboardingTitle2;
+
+  /// No description provided for @onboardingSubtitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Prioritize, plan and execute with our contextual organization system.'**
+  String get onboardingSubtitle2;
+
+  /// No description provided for @onboardingTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals & Projects'**
+  String get onboardingTitle3;
+
+  /// No description provided for @onboardingSubtitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Define ambitious goals and break them down into achievable projects.'**
+  String get onboardingSubtitle3;
+
+  /// No description provided for @onboardingTitle4.
+  ///
+  /// In en, this message translates to:
+  /// **'Powerful Notes'**
+  String get onboardingTitle4;
+
+  /// No description provided for @onboardingSubtitle4.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture ideas on the fly and connect them with your tasks and projects.'**
+  String get onboardingSubtitle4;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get onboardingContinue;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get onboardingStart;
+
+  /// No description provided for @onboardingWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'All set!'**
+  String get onboardingWelcome;
+
+  /// No description provided for @onboardingWelcomeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize your experience to get started'**
+  String get onboardingWelcomeDesc;
+
+  /// No description provided for @onboardingYourName.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name'**
+  String get onboardingYourName;
+
+  /// No description provided for @onboardingAccentColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent color'**
+  String get onboardingAccentColor;
+
+  /// No description provided for @onboardingDarkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark mode'**
+  String get onboardingDarkMode;
+
+  /// No description provided for @loadingInitSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Initializing system'**
+  String get loadingInitSystem;
+
+  /// No description provided for @loadingInitStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Initializing secure storage'**
+  String get loadingInitStorage;
+
+  /// No description provided for @loadingTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading priority tasks'**
+  String get loadingTasks;
+
+  /// No description provided for @loadingProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuilding projects'**
+  String get loadingProjects;
+
+  /// No description provided for @loadingVisual.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing visual environment'**
+  String get loadingVisual;
+
+  /// No description provided for @loadingSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing session'**
+  String get loadingSession;
+
+  /// No description provided for @loadingReady.
+  ///
+  /// In en, this message translates to:
+  /// **'All ready'**
+  String get loadingReady;
+
+  /// No description provided for @loadingInit.
+  ///
+  /// In en, this message translates to:
+  /// **'Initializing'**
+  String get loadingInit;
+
+  /// No description provided for @notificationTaskCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Task created: {title}'**
+  String notificationTaskCreated(Object title);
+
+  /// No description provided for @notificationTaskUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Task updated'**
+  String get notificationTaskUpdated;
+
+  /// No description provided for @notificationTaskCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Task completed'**
+  String get notificationTaskCompleted;
+
+  /// No description provided for @notificationTaskReopened.
+  ///
+  /// In en, this message translates to:
+  /// **'Task reopened'**
+  String get notificationTaskReopened;
+
+  /// No description provided for @notificationTaskCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Task cancelled'**
+  String get notificationTaskCancelled;
+
+  /// No description provided for @notificationTaskMovedToTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'Task moved to trash'**
+  String get notificationTaskMovedToTrash;
+
+  /// No description provided for @notificationTaskRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Task restored'**
+  String get notificationTaskRestored;
+
+  /// No description provided for @notificationTaskPermanentlyDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Task permanently deleted'**
+  String get notificationTaskPermanentlyDeleted;
+
+  /// No description provided for @notificationProjectCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Project created: {title}'**
+  String notificationProjectCreated(Object title);
+
+  /// No description provided for @notificationProjectUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Project updated'**
+  String get notificationProjectUpdated;
+
+  /// No description provided for @notificationProjectMovedToTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'Project moved to trash'**
+  String get notificationProjectMovedToTrash;
+
+  /// No description provided for @notificationGoalCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal created: {title}'**
+  String notificationGoalCreated(Object title);
+
+  /// No description provided for @notificationGoalUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal updated'**
+  String get notificationGoalUpdated;
+
+  /// No description provided for @notificationGoalMovedToTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal moved to trash'**
+  String get notificationGoalMovedToTrash;
+
+  /// No description provided for @notificationNoteCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Note created: {title}'**
+  String notificationNoteCreated(Object title);
+
+  /// No description provided for @notificationNoteUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Note updated'**
+  String get notificationNoteUpdated;
+
+  /// No description provided for @notificationNotePinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Note pinned'**
+  String get notificationNotePinned;
+
+  /// No description provided for @notificationNoteUnpinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Note unpinned'**
+  String get notificationNoteUnpinned;
+
+  /// No description provided for @notificationNoteMovedToTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'Note moved to trash'**
+  String get notificationNoteMovedToTrash;
+
+  /// No description provided for @notificationTrashEmptied.
+  ///
+  /// In en, this message translates to:
+  /// **'Trash emptied'**
+  String get notificationTrashEmptied;
+
+  /// No description provided for @notificationErrorTaskCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Error creating task'**
+  String get notificationErrorTaskCreate;
+
+  /// No description provided for @notificationErrorTaskUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating task'**
+  String get notificationErrorTaskUpdate;
+
+  /// No description provided for @notificationErrorTaskToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Error changing task status'**
+  String get notificationErrorTaskToggle;
+
+  /// No description provided for @notificationErrorTaskMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Error moving task'**
+  String get notificationErrorTaskMove;
+
+  /// No description provided for @notificationErrorTaskDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Error deleting task'**
+  String get notificationErrorTaskDelete;
+
+  /// No description provided for @notificationErrorTaskRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Error restoring task'**
+  String get notificationErrorTaskRestore;
+
+  /// No description provided for @notificationErrorTaskPermanentDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Error permanently deleting task'**
+  String get notificationErrorTaskPermanentDelete;
+
+  /// No description provided for @weekdayMonday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get weekdayMonday;
+
+  /// No description provided for @weekdayTuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get weekdayTuesday;
+
+  /// No description provided for @weekdayWednesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get weekdayWednesday;
+
+  /// No description provided for @weekdayThursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get weekdayThursday;
+
+  /// No description provided for @weekdayFriday.
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get weekdayFriday;
+
+  /// No description provided for @weekdaySaturday.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get weekdaySaturday;
+
+  /// No description provided for @weekdaySunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get weekdaySunday;
+
+  /// No description provided for @greetingMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get greetingMorning;
+
+  /// No description provided for @greetingAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get greetingAfternoon;
+
+  /// No description provided for @greetingEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get greetingEvening;
+
+  /// No description provided for @dailyIntention.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily intention'**
+  String get dailyIntention;
+
+  /// No description provided for @weeklyCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Calendar'**
+  String get weeklyCalendar;
 }
 
 class _AppLocalizationsDelegate

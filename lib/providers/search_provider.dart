@@ -182,9 +182,7 @@ class SearchProvider extends ChangeNotifier {
       return;
     }
 
-    if (_invertedIndex.isEmpty) {
-      _rebuildIndex(tasks: tasks, projects: projects, notes: notes, goals: goals);
-    }
+    _rebuildIndex(tasks: tasks, projects: projects, notes: notes, goals: goals);
 
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 150), () {

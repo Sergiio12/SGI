@@ -12,6 +12,7 @@ import '../screen/projects/project_detail_screen.dart';
 import '../screen/stats/stats_screen.dart';
 import '../screen/search/search_screen.dart';
 import '../screen/settings/settings_screen.dart';
+import '../screen/settings/widgets_screen.dart';
 import '../screen/tasks/task_detail_screen.dart';
 import '../screen/today/daily_review_screen.dart';
 import '../screen/today/today_screen.dart';
@@ -34,6 +35,7 @@ class AppRoutes {
   static const String trash = '/trash';
   static const String stats = '/stats';
   static const String dailyReview = '/daily-review';
+  static const String widgets = '/widgets';
 
   static Map<String, WidgetBuilder> get routes => {
         loading: (_) => const LoadingScreen(),
@@ -47,44 +49,52 @@ class AppRoutes {
         settings: (_) => const SettingsScreen(),
         trash: (_) => const TrashScreen(),
         stats: (_) => const StatsScreen(),
+        widgets: (_) => const WidgetsScreen(),
       };
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case home:
-        return PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const HomeScreen(),
-          transitionDuration: const Duration(milliseconds: 300),
-          transitionsBuilder: (_, animation, __, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-        );
+        return _buildSlideFadeRoute(const HomeScreen());
       case taskDetail:
         final taskId = _safeStringArg(settings.arguments);
-        return MaterialPageRoute(
-          builder: (_) => TaskDetailScreen(taskId: taskId),
-        );
+        return _buildSlideFadeRoute(TaskDetailScreen(taskId: taskId));
       case projectDetail:
         final projectId = _safeStringArg(settings.arguments);
-        return MaterialPageRoute(
-          builder: (_) => ProjectDetailScreen(projectId: projectId),
-        );
+        return _buildSlideFadeRoute(ProjectDetailScreen(projectId: projectId));
       case goalDetail:
         final goalId = _safeStringArg(settings.arguments);
-        return MaterialPageRoute(
-          builder: (_) => GoalDetailScreen(goalId: goalId),
-        );
+        return _buildSlideFadeRoute(GoalDetailScreen(goalId: goalId));
       case noteEditor:
         final noteId = _safeStringArg(settings.arguments);
-        return MaterialPageRoute(
-          builder: (_) => NoteEditorScreen(noteId: noteId),
-        );
+        return _buildSlideFadeRoute(NoteEditorScreen(noteId: noteId));
       default:
-        return MaterialPageRoute(builder: (_) => const HomeScreen());
+        return _buildSlideFadeRoute(const HomeScreen());
     }
+  }
+
+  static PageRouteBuilder _buildSlideFadeRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (_, __, ___) => page,
+      transitionDuration: const Duration(milliseconds: 350),
+      reverseTransitionDuration: const Duration(milliseconds: 300),
+      transitionsBuilder: (_, animation, __, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.08, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          )),
+          child: FadeTransition(
+            opacity: Tween<double>(begin: 0.5, end: 1).animate(animation),
+            child: child,
+          ),
+        );
+      },
+    );
   }
 
   static String? _safeStringArg(Object? arg) {

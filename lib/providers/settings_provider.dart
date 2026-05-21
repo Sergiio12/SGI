@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config/theme.dart';
 import '../services/notification_service.dart';
 
 class SettingsProvider extends ChangeNotifier {
@@ -18,6 +19,12 @@ class SettingsProvider extends ChangeNotifier {
   static const _kNotifyOnOverdue = 'notify_on_overdue';
   static const _kHapticFeedback = 'haptic_feedback';
   static const _kLanguageCode = 'language_code';
+  static const _kAccentColor = 'accent_color';
+  static const _kCalendarSyncEnabled = 'calendar_sync_enabled';
+  static const _kDefaultCalendarReminderMinutes =
+      'default_calendar_reminder_minutes';
+  static const _kCloudSyncEnabled = 'cloud_sync_enabled';
+  static const _kWidgetEnabled = 'widget_enabled';
 
   late SharedPreferences _prefs;
   bool _isLoaded = false;
@@ -25,6 +32,7 @@ class SettingsProvider extends ChangeNotifier {
   VoidCallback? onNotificationSettingsChanged;
 
   ThemeMode _themeMode = ThemeMode.dark;
+  Color _accentColor = BrainTheme.accentPurple;
   bool _notificationsEnabled = true;
   bool _remind24h = true;
   bool _remind1h = true;
@@ -37,12 +45,18 @@ class SettingsProvider extends ChangeNotifier {
   bool _notifyOnComplete = true;
   bool _notifyOnOverdue = true;
   bool _hapticFeedback = true;
+  bool _widgetEnabled = true;
   String _languageCode = 'es';
+  bool _calendarSyncEnabled = false;
+  int _defaultCalendarReminderMinutes = 30;
+  bool _cloudSyncEnabled = false;
 
   bool get isLoaded => _isLoaded;
   bool get hapticFeedback => _hapticFeedback;
+  bool get widgetEnabled => _widgetEnabled;
   Locale get locale => Locale(_languageCode);
   ThemeMode get themeMode => _themeMode;
+  Color get accentColor => _accentColor;
   bool get notificationsEnabled => _notificationsEnabled;
   bool get remind24h => _remind24h;
   bool get remind1h => _remind1h;
@@ -54,6 +68,9 @@ class SettingsProvider extends ChangeNotifier {
   int get quietEndMinute => _quietEndMinute;
   bool get notifyOnComplete => _notifyOnComplete;
   bool get notifyOnOverdue => _notifyOnOverdue;
+  bool get calendarSyncEnabled => _calendarSyncEnabled;
+  int get defaultCalendarReminderMinutes => _defaultCalendarReminderMinutes;
+  bool get cloudSyncEnabled => _cloudSyncEnabled;
 
   TimeOfDay get quietStart => TimeOfDay(hour: _quietStartHour, minute: _quietStartMinute);
   TimeOfDay get quietEnd => TimeOfDay(hour: _quietEndHour, minute: _quietEndMinute);
@@ -87,7 +104,13 @@ class SettingsProvider extends ChangeNotifier {
     _notifyOnComplete = _prefs.getBool(_kNotifyOnComplete) ?? true;
     _notifyOnOverdue = _prefs.getBool(_kNotifyOnOverdue) ?? true;
     _hapticFeedback = _prefs.getBool(_kHapticFeedback) ?? true;
+    _widgetEnabled = _prefs.getBool(_kWidgetEnabled) ?? true;
     _languageCode = _prefs.getString(_kLanguageCode) ?? 'es';
+    _accentColor = Color(_prefs.getInt(_kAccentColor) ?? BrainTheme.accentPurple.toARGB32());
+    _calendarSyncEnabled = _prefs.getBool(_kCalendarSyncEnabled) ?? false;
+    _defaultCalendarReminderMinutes =
+        _prefs.getInt(_kDefaultCalendarReminderMinutes) ?? 30;
+    _cloudSyncEnabled = _prefs.getBool(_kCloudSyncEnabled) ?? false;
 
     _isLoaded = true;
     notifyListeners();
@@ -170,10 +193,41 @@ class SettingsProvider extends ChangeNotifier {
     await _prefs.setBool(_kHapticFeedback, value);
   }
 
+  Future<void> setWidgetEnabled(bool value) async {
+    _widgetEnabled = value;
+    notifyListeners();
+    await _prefs.setBool(_kWidgetEnabled, value);
+  }
+
+  Future<void> setCalendarSyncEnabled(bool value) async {
+    _calendarSyncEnabled = value;
+    notifyListeners();
+    await _prefs.setBool(_kCalendarSyncEnabled, value);
+  }
+
+  Future<void> setDefaultCalendarReminderMinutes(int minutes) async {
+    _defaultCalendarReminderMinutes = minutes;
+    notifyListeners();
+    await _prefs.setInt(_kDefaultCalendarReminderMinutes, minutes);
+  }
+
   Future<void> setLocale(Locale locale) async {
     _languageCode = locale.languageCode;
     notifyListeners();
     await _prefs.setString(_kLanguageCode, locale.languageCode);
+  }
+
+  Future<void> setCloudSyncEnabled(bool value) async {
+    _cloudSyncEnabled = value;
+    notifyListeners();
+    await _prefs.setBool(_kCloudSyncEnabled, value);
+  }
+
+  Future<void> setAccentColor(Color color) async {
+    _accentColor = color;
+    BrainTheme.updateAccentColor(color);
+    notifyListeners();
+    await _prefs.setInt(_kAccentColor, color.toARGB32());
   }
 
   void _syncNotificationService() {

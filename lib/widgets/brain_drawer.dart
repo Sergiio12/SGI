@@ -128,7 +128,7 @@ class _CountBadge extends StatelessWidget {
 
   _CountBadge({
     required this.count,
-    this.color = BrainTheme.accentPurple,
+    this.color = const Color(0xFF9D4EDD),
   });
 
   @override

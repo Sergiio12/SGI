@@ -8,6 +8,7 @@ import '../providers/projects_provider.dart';
 import '../providers/notes_provider.dart';
 import '../providers/goals_provider.dart';
 import '../utils/notification_service_v2.dart';
+import '../utils/haptic_helper.dart';
 import '../widgets/navigation_sidebar.dart';
 import '../widgets/quick_capture_fab.dart';
 import 'dashboard/dashboard_screen.dart';
@@ -106,6 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ];
 
   void _onTabChanged(int index) {
+    HapticHelper.selection();
     setState(() => _currentIndex = index);
   }
 
@@ -245,10 +247,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tasksLoaded = context.watch<TasksProvider>().isLoaded;
-    final projectsLoaded = context.watch<ProjectsProvider>().isLoaded;
-    final notesLoaded = context.watch<NotesProvider>().isLoaded;
-    final goalsLoaded = context.watch<GoalsProvider>().isLoaded;
+    final tasksLoaded = context.select<TasksProvider, bool>((p) => p.isLoaded);
+    final projectsLoaded = context.select<ProjectsProvider, bool>((p) => p.isLoaded);
+    final notesLoaded = context.select<NotesProvider, bool>((p) => p.isLoaded);
+    final goalsLoaded = context.select<GoalsProvider, bool>((p) => p.isLoaded);
 
     if (!tasksLoaded || !projectsLoaded || !notesLoaded || !goalsLoaded) {
       return const _LoadingScreen();
@@ -363,18 +365,43 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
       title: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  BrainTheme.accentPurple,
-                  BrainTheme.accentPurple.withValues(alpha: 0.7),
-                ],
+          Hero(
+            tag: 'app_logo',
+            flightShuttleBuilder: (
+              flightContext,
+              animation,
+              flightDirection,
+              fromHeroContext,
+              toHeroContext,
+            ) {
+              return Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      BrainTheme.accentPurple,
+                      BrainTheme.accentPurple.withValues(alpha: 0.7),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(currentTab.icon,
+                    size: 18, color: Colors.white),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    BrainTheme.accentPurple,
+                    BrainTheme.accentPurple.withValues(alpha: 0.7),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(8),
               ),
-              borderRadius: BorderRadius.circular(8),
+              child: Icon(currentTab.icon, size: 18, color: Colors.white),
             ),
-            child: Icon(currentTab.icon, size: 18, color: Colors.white),
           ),
           const SizedBox(width: 12),
           Text(

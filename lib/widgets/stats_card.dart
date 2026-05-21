@@ -15,7 +15,7 @@ class StatsCard extends StatelessWidget {
     required this.title,
     required this.value,
     required this.icon,
-    this.color = BrainTheme.accentPurple,
+    this.color = const Color(0xFF9D4EDD),
     this.subtitle,
     this.onTap,
   });

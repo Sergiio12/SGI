@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../config/theme.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/haptic_helper.dart';
 
 class QuickCaptureFAB extends StatefulWidget {
   final Function(String type) onCapture;
@@ -35,6 +36,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
   }
 
   void _toggle() {
+    HapticHelper.light();
     setState(() {
       _isOpen = !_isOpen;
       if (_isOpen) {
@@ -65,6 +67,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
                 label: AppLocalizations.of(context).note,
                 color: BrainTheme.accentGreen,
                 onTap: () {
+                  HapticHelper.medium();
                   _toggle();
                   widget.onCapture('note');
                 },
@@ -75,6 +78,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
                 label: AppLocalizations.of(context).task,
                 color: BrainTheme.accentBlue,
                 onTap: () {
+                  HapticHelper.medium();
                   _toggle();
                   widget.onCapture('task');
                 },
@@ -85,6 +89,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
                 label: AppLocalizations.of(context).project,
                 color: BrainTheme.accentOrange,
                 onTap: () {
+                  HapticHelper.medium();
                   _toggle();
                   widget.onCapture('project');
                 },
@@ -95,6 +100,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
                 label: AppLocalizations.of(context).goal,
                 color: BrainTheme.accentPurple,
                 onTap: () {
+                  HapticHelper.medium();
                   _toggle();
                   widget.onCapture('goal');
                 },
@@ -140,41 +146,45 @@ class _MiniFAB extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: BrainTheme.surfaceDark.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-            boxShadow: BrainTheme.glowShadow,
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: BrainTheme.textPrimary,
+    return Semantics(
+      label: label,
+      button: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: BrainTheme.surfaceDark.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              boxShadow: BrainTheme.glowShadow,
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: BrainTheme.textPrimary,
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        FloatingActionButton.small(
-          heroTag: label,
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          elevation: 3,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          onPressed: onTap,
-          child: Icon(icon, size: 18),
-        ),
-      ],
-    )
-        .animate()
-        .fade(duration: 200.ms)
-        .slideX(begin: 0.5, end: 0, curve: Curves.easeOut);
+          const SizedBox(width: 12),
+          FloatingActionButton.small(
+            heroTag: label,
+            backgroundColor: color,
+            foregroundColor: Colors.white,
+            elevation: 3,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            onPressed: onTap,
+            child: Icon(icon, size: 18),
+          ),
+        ],
+      )
+          .animate()
+          .fade(duration: 200.ms)
+          .slideX(begin: 0.5, end: 0, curve: Curves.easeOut),
+    );
   }
 }

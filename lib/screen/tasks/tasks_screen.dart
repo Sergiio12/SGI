@@ -9,14 +9,16 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/task.dart';
-import '../../models/project.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../providers/daily_planner_provider.dart';
 import '../../utils/undo_helper.dart';
-import '../../widgets/paginated_list.dart';
 import '../../widgets/skeleton_card.dart';
 import '../../widgets/task_card.dart';
+import '../../widgets/task_board_column.dart';
+import '../../widgets/task_filter_bar.dart';
+import '../../widgets/task_project_selector.dart';
+import '../../widgets/task_today_summary.dart';
 
 enum _TaskSortOption { priority, dueDate, createdAt, title }
 
@@ -215,11 +217,18 @@ class _TasksScreenState extends State<TasksScreen> {
         if (!provider.isLoaded) return const SkeletonList();
         return Column(
           children: [
-            _TodaySummaryBar(provider: provider)
+            TaskTodaySummary(
+              pending: provider.todoTasks.length,
+              inProgress: provider.inProgressTasks.length,
+              done: provider.doneTasks.length,
+              overdue: provider.overdueTasks.length,
+              cancelled: provider.cancelledTasks.length,
+              total: provider.totalTasks,
+            )
                 .animate()
                 .fadeIn(duration: 400.ms)
                 .slideY(begin: -0.2, end: 0, curve: Curves.easeOut),
-            _SearchFilterBar(
+            TaskFilterBar(
               searchQuery: _searchQuery,
               searchController: _searchController,
               onSearchChanged: (v) {
@@ -228,23 +237,31 @@ class _TasksScreenState extends State<TasksScreen> {
                   setState(() => _searchQuery = v.toLowerCase());
                 });
               },
-              onAdvancedFilters: _showAdvancedFilters,
+              onClearSearch: () {
+                _searchController.clear();
+                setState(() => _searchQuery = '');
+              },
+              onToggleFilters: _showAdvancedFilters,
               activeFilterCount: _activeFilterCount(),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-              child: _ProjectSelector(
-                selectedProjectId: _selectedProjectId,
-                searchQuery: _projectSearchQuery,
-                searchController: _projectSearchController,
-                onSearchChanged: (v) =>
-                    setState(() => _projectSearchQuery = v),
-                onProjectChanged: (v) {
-                  setState(() {
-                    _selectedProjectId = v;
-                    _projectSearchQuery = '';
-                    _projectSearchController.clear();
-                  });
+              child: Consumer<ProjectsProvider>(
+                builder: (context, projectsProvider, _) {
+                  return TaskProjectSelector(
+                    projects: projectsProvider.projects,
+                    selectedProjectId: _selectedProjectId,
+                    searchQuery: _projectSearchQuery,
+                    onSelected: (v) {
+                      setState(() {
+                        _selectedProjectId = v;
+                        _projectSearchQuery = '';
+                        _projectSearchController.clear();
+                      });
+                    },
+                    onSearchChanged: (v) =>
+                        setState(() => _projectSearchQuery = v),
+                  );
                 },
               ),
             ),
@@ -393,13 +410,15 @@ class _TasksScreenState extends State<TasksScreen> {
                             final colTasks = columns[status]!;
                             final overWip = _wipLimit > 0 &&
                                 colTasks.length > _wipLimit;
-                            return _TaskBoardColumn(
+                            return TaskBoardColumn(
                               status: status,
                               title: _statusLabel(status, context),
+                              icon: _statusIcon(status),
+                              color: _statusColor(status),
                               tasks: colTasks,
                               overWip: overWip,
-                              onTaskMoved: (task) =>
-                                  provider.moveTaskToStatus(task.id, status),
+                              onTaskDropped: (task, s) =>
+                                  provider.moveTaskToStatus(task.id, s),
                               onCreateTask: () =>
                                   _showInlineCreateTask(context, status, provider),
                               taskBuilder: (task) =>
@@ -1002,403 +1021,6 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 }
 
-// ─── TODAY SUMMARY BAR ─────────────────────────────────────────────────
-
-class _TodaySummaryBar extends StatelessWidget {
-  final TasksProvider provider;
-
-  const _TodaySummaryBar({required this.provider});
-
-  @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final dateStr = DateFormat('dd/MM/yyyy').format(now);
-    final pending = provider.todoTasks.length;
-    final inProgress = provider.inProgressTasks.length;
-    final done = provider.doneTasks.length;
-    final overdue = provider.overdueTasks.length;
-    final cancelled = provider.cancelledTasks.length;
-    final total = provider.totalTasks;
-
-    final l10n = AppLocalizations.of(context);
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      decoration: BoxDecoration(
-        color: BrainTheme.cardDark.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: BrainTheme.borderDark.withValues(alpha: 0.5),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.calendar_month,
-                  size: 13, color: BrainTheme.textTertiary),
-              const SizedBox(width: 6),
-              Text(
-                l10n.today,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: BrainTheme.textPrimary,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                dateStr,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: BrainTheme.textTertiary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              _SummaryChip(
-                  icon: Icons.circle_outlined,
-                  count: pending,
-                  label: l10n.statusPending,
-                  color: BrainTheme.statusColor(TaskStatus.pending)),
-              const SizedBox(width: 8),
-              _SummaryChip(
-                  icon: Icons.play_circle_outline,
-                  count: inProgress,
-                  label: l10n.statusInProgress,
-                  color: BrainTheme.statusColor(TaskStatus.inProgress)),
-              const SizedBox(width: 8),
-              _SummaryChip(
-                  icon: Icons.check_circle,
-                  count: done,
-                  label: l10n.statusCompleted,
-                  color: BrainTheme.statusColor(TaskStatus.completed)),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              _SummaryChip(
-                  icon: Icons.warning_amber_rounded,
-                  count: overdue,
-                  label: l10n.overdueTasks,
-                  color: overdue > 0
-                      ? BrainTheme.statusColor(TaskStatus.cancelled)
-                      : BrainTheme.textTertiary),
-              const SizedBox(width: 8),
-              _SummaryChip(
-                  icon: Icons.cancel_outlined,
-                  count: cancelled,
-                  label: l10n.statusCancelled,
-                  color: cancelled > 0
-                      ? BrainTheme.statusColor(TaskStatus.cancelled)
-                      : BrainTheme.textTertiary),
-              const SizedBox(width: 8),
-              _SummaryChip(
-                  icon: Icons.task_alt,
-                  count: total,
-                  label: l10n.all,
-                  color: BrainTheme.textTertiary),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SummaryChip extends StatelessWidget {
-  final IconData icon;
-  final int count;
-  final String label;
-  final Color color;
-
-  const _SummaryChip({
-    required this.icon,
-    required this.count,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '$count',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: color,
-              height: 1.1,
-            ),
-          ),
-          const SizedBox(width: 3),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w400,
-              color: color,
-              height: 1.1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── PROJECT SELECTOR ──────────────────────────────────────────────────
-
-class _ProjectSelector extends StatelessWidget {
-  final String? selectedProjectId;
-  final String searchQuery;
-  final TextEditingController searchController;
-  final ValueChanged<String> onSearchChanged;
-  final ValueChanged<String?> onProjectChanged;
-
-  const _ProjectSelector({
-    required this.selectedProjectId,
-    required this.searchQuery,
-    required this.searchController,
-    required this.onSearchChanged,
-    required this.onProjectChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<ProjectsProvider>(
-      builder: (context, projectsProvider, _) {
-        final projects = projectsProvider.projects;
-        Project? selectedProject;
-        if (selectedProjectId != null) {
-          try {
-            selectedProject =
-                projects.firstWhere((p) => p.id == selectedProjectId);
-          } catch (_) {}
-        }
-
-        return GestureDetector(
-          onTap: () => _showProjectPicker(context, projects),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: BrainTheme.cardDark,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: BrainTheme.borderDark),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.folder_outlined,
-                    size: 16, color: BrainTheme.textTertiary),
-                const SizedBox(width: 8),
-                Expanded(
-                child: Text(
-                  selectedProject != null
-                      ? '${selectedProject.emoji} ${selectedProject.title}'
-                      : 'Todos los proyectos',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: selectedProject != null
-                        ? Color(selectedProject.colorValue)
-                        : BrainTheme.textSecondary,
-                  ),
-                ),
-                ),
-                Icon(Icons.arrow_drop_down,
-                    size: 20, color: BrainTheme.textTertiary),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showProjectPicker(BuildContext context, List<Project> projects) {
-    String localQuery = searchQuery;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: BrainTheme.surfaceDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setS) {
-            final filtered = localQuery.isEmpty
-                ? projects
-                : projects
-                    .where((p) => p.title
-                        .toLowerCase()
-                        .contains(localQuery.toLowerCase()))
-                    .toList();
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(ctx).viewInsets.bottom,
-              ),
-              child: Container(
-                height: 420,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Seleccionar proyecto',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: BrainTheme.textPrimary,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.close,
-                              color: BrainTheme.textSecondary),
-                          onPressed: () => Navigator.pop(ctx),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      autofocus: true,
-                      onChanged: (v) => setS(() => localQuery = v),
-                      decoration: InputDecoration(
-                        hintText: 'Buscar proyecto...',
-                        prefixIcon:
-                            const Icon(Icons.search, size: 18),
-                        isDense: true,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 10),
-                        filled: true,
-                        fillColor: BrainTheme.cardDark,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              BorderSide(color: BrainTheme.borderDark),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: ListView(
-                        children: [
-                          ListTile(
-                            dense: true,
-                            leading: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: BrainTheme.accentPurple
-                                    .withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(Icons.folder_off_outlined,
-                                  size: 16,
-                                  color: BrainTheme.accentPurple),
-                            ),
-                            title: Text(
-                              'Todos los proyectos',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight:
-                                    selectedProjectId == null
-                                        ? FontWeight.w700
-                                        : FontWeight.w400,
-                                color: BrainTheme.textPrimary,
-                              ),
-                            ),
-                            trailing: selectedProjectId == null
-                                ? Icon(Icons.check,
-                                    size: 18,
-                                    color: BrainTheme.accentGreen)
-                                : null,
-                            onTap: () {
-                              onProjectChanged(null);
-                              Navigator.pop(ctx);
-                            },
-                          ),
-                          ...filtered.map((project) {
-                            final isSelected =
-                                project.id == selectedProjectId;
-                            return ListTile(
-                              dense: true,
-                              leading: Container(
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: Color(project.colorValue)
-                                      .withValues(alpha: 0.1),
-                                  borderRadius:
-                                      BorderRadius.circular(8),
-                                ),
-                                child: Center(
-                                  child: Text(project.emoji,
-                                      style:
-                                          const TextStyle(fontSize: 16)),
-                                ),
-                              ),
-                              title: Text(
-                                project.title,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w400,
-                                  color: BrainTheme.textPrimary,
-                                ),
-                              ),
-                              subtitle: Text(
-                                '${project.taskIds.length} tareas',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: BrainTheme.textTertiary,
-                                ),
-                              ),
-                              trailing: isSelected
-                                  ? Icon(Icons.check,
-                                      size: 18,
-                                      color: BrainTheme.accentGreen)
-                                  : null,
-                              onTap: () {
-                                onProjectChanged(project.id);
-                                Navigator.pop(ctx);
-                              },
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
 // ─── FILTER SECTION ──────────────────────────────────────────────────────
 
 class _FilterSection extends StatelessWidget {
@@ -1431,366 +1053,6 @@ class _FilterSection extends StatelessWidget {
         const SizedBox(height: 10),
         child,
       ],
-    );
-  }
-}
-
-// ─── SEARCH + FILTER BAR ───────────────────────────────────────────────
-
-class _SearchFilterBar extends StatelessWidget {
-  final String searchQuery;
-  final TextEditingController searchController;
-  final ValueChanged<String> onSearchChanged;
-  final VoidCallback onAdvancedFilters;
-  final int activeFilterCount;
-
-  const _SearchFilterBar({
-    required this.searchQuery,
-    required this.searchController,
-    required this.onSearchChanged,
-    required this.onAdvancedFilters,
-    required this.activeFilterCount,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: searchController,
-              onChanged: onSearchChanged,
-              style: const TextStyle(fontSize: 13),
-              decoration: InputDecoration(
-                hintText: AppLocalizations.of(context).searchTasks,
-                prefixIcon: const Icon(Icons.search, size: 18),
-                suffixIcon: searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, size: 16),
-                        onPressed: () {
-                          searchController.clear();
-                          onSearchChanged('');
-                        },
-                      )
-                    : null,
-                isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 10),
-                filled: true,
-                fillColor: BrainTheme.surfaceDark,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: BrainTheme.borderDark),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: BrainTheme.borderDark),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 6),
-          _ActionButton(
-            icon: Icons.filter_list,
-            isActive: activeFilterCount > 0,
-            activeColor: BrainTheme.statusColor(TaskStatus.inProgress),
-            onTap: onAdvancedFilters,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final bool isActive;
-  final Color activeColor;
-  final VoidCallback onTap;
-
-  const _ActionButton({
-    required this.icon,
-    required this.isActive,
-    required this.activeColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: isActive
-              ? activeColor.withValues(alpha: 0.12)
-              : BrainTheme.cardDark,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isActive
-                ? activeColor.withValues(alpha: 0.3)
-                : BrainTheme.borderDark,
-            width: 1,
-          ),
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: isActive ? activeColor : BrainTheme.textSecondary,
-        ),
-      ),
-    );
-  }
-}
-
-// ─── BOARD COLUMN ──────────────────────────────────────────────────────
-
-class _TaskBoardColumn extends StatelessWidget {
-  final TaskStatus status;
-  final String title;
-  final List<Task> tasks;
-  final bool overWip;
-  final ValueChanged<Task> onTaskMoved;
-  final VoidCallback onCreateTask;
-  final Widget Function(Task) taskBuilder;
-
-  const _TaskBoardColumn({
-    required this.status,
-    required this.title,
-    required this.tasks,
-    this.overWip = false,
-    required this.onTaskMoved,
-    required this.onCreateTask,
-    required this.taskBuilder,
-  });
-
-  Color get _columnColor => BrainTheme.statusColor(status);
-
-  IconData get _columnIcon {
-    switch (status) {
-      case TaskStatus.pending:
-        return Icons.circle_outlined;
-      case TaskStatus.inProgress:
-        return Icons.play_circle_outline;
-      case TaskStatus.inReview:
-        return Icons.rate_review_outlined;
-      case TaskStatus.completed:
-        return Icons.check_circle;
-      case TaskStatus.cancelled:
-        return Icons.cancel_outlined;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DragTarget<Task>(
-      onWillAcceptWithDetails: (details) {
-        final task = details.data;
-        return task.status != status;
-      },
-      onAcceptWithDetails: (details) => onTaskMoved(details.data),
-      builder: (context, candidateData, rejectedData) {
-        final isHovered = candidateData.isNotEmpty;
-        return Container(
-          width: 290,
-          margin: const EdgeInsets.only(left: 8, right: 8),
-          decoration: BoxDecoration(
-            color: BrainTheme.surfaceDark.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isHovered
-                  ? _columnColor.withValues(alpha: 0.35)
-                  : BrainTheme.borderDark.withValues(alpha: 0.4),
-              width: isHovered ? 1.5 : 1,
-            ),
-            boxShadow: [
-              if (isHovered)
-                BoxShadow(
-                  color: _columnColor.withValues(alpha: 0.05),
-                  blurRadius: 12,
-                  spreadRadius: 0,
-                ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _ColumnHeader(
-                color: _columnColor,
-                icon: _columnIcon,
-                title: title,
-                count: tasks.length,
-                overWip: overWip,
-                onCreateTask: onCreateTask,
-              ),
-              const SizedBox(height: 4),
-              Expanded(
-                child: tasks.isEmpty
-                    ? _EmptyColumn(icon: _columnIcon, color: _columnColor)
-                    : PaginatedList<Task>(
-                        items: tasks,
-                        pageSize: 30,
-                        initialPageSize: 40,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        itemBuilder: (context, task, index) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
-                            child: LongPressDraggable<Task>(
-                              data: task,
-                              feedback: Material(
-                                color: Colors.transparent,
-                                child: SizedBox(
-                                  width: 270,
-                                  child: Transform.scale(
-                                    scale: 1.03,
-                                    child: Card(
-                                      elevation: 6,
-                                      shadowColor:
-                                          _columnColor.withValues(alpha: 0.2),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10),
-                                        side: BorderSide(
-                                          color: _columnColor
-                                              .withValues(alpha: 0.3),
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      child: taskBuilder(task),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              childWhenDragging: Opacity(
-                                opacity: 0.2,
-                                child: taskBuilder(task),
-                              ),
-                              child: taskBuilder(task),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _ColumnHeader extends StatelessWidget {
-  final Color color;
-  final IconData icon;
-  final String title;
-  final int count;
-  final bool overWip;
-  final VoidCallback onCreateTask;
-
-  const _ColumnHeader({
-    required this.color,
-    required this.icon,
-    required this.title,
-    required this.count,
-    this.overWip = false,
-    required this.onCreateTask,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(10, 8, 6, 6),
-      child: Row(
-        children: [
-          Container(
-            width: 3,
-            height: 16,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(width: 7),
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 5),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: BrainTheme.textPrimary,
-              letterSpacing: -0.2,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-            decoration: BoxDecoration(
-              color: overWip
-                  ? BrainTheme.accentRed.withValues(alpha: 0.15)
-                  : color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              '$count',
-              style: TextStyle(
-                fontSize: 10,
-                color: overWip ? BrainTheme.accentRed : color,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const Spacer(),
-          GestureDetector(
-            onTap: onCreateTask,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Icon(Icons.add, size: 13, color: color),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptyColumn extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-
-  const _EmptyColumn({required this.icon, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 16, color: color.withValues(alpha: 0.3)),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            AppLocalizations.of(context).emptyState,
-            style: TextStyle(
-              color: BrainTheme.textTertiary.withValues(alpha: 0.5),
-              fontSize: 10,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

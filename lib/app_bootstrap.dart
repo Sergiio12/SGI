@@ -9,10 +9,14 @@ import 'providers/notes_provider.dart';
 import 'providers/projects_provider.dart';
 import 'providers/search_provider.dart';
 import 'providers/settings_provider.dart';
+import 'providers/sync_provider.dart';
 import 'providers/tags_provider.dart';
 import 'providers/tasks_provider.dart';
 import 'providers/trash_provider.dart';
+import 'services/cloud/firebase_sync_service.dart';
+import 'services/cloud/local_first_storage_service.dart';
 import 'services/interfaces/storage_service_interface.dart';
+import 'services/home_widget_service.dart';
 import 'services/notification_service.dart';
 import 'services/storage_service.dart';
 import 'utils/haptic_helper.dart';
@@ -20,11 +24,22 @@ import 'utils/notification_service_v2.dart';
 
 class AppBootstrap {
   static Future<Widget> build() async {
-    final storageService = HiveStorageService();
+    final localStorage = HiveStorageService();
+    final firebaseSync = FirebaseSyncService();
+    await firebaseSync.init();
+
+    final storageService = LocalFirstStorageService(localStorage, firebaseSync);
+
+    await HomeWidgetService.init();
 
     final settingsProvider = SettingsProvider();
     await settingsProvider.load();
     setHapticSettings(settingsProvider);
+
+    final syncProvider = SyncProvider(
+      syncService: firebaseSync,
+      storage: storageService,
+    );
 
     final tasksProvider = TasksProvider(storage: storageService);
     settingsProvider.onNotificationSettingsChanged =
@@ -44,6 +59,7 @@ class AppBootstrap {
       providers: [
         Provider<IStorageService>.value(value: storageService),
         ChangeNotifierProvider.value(value: settingsProvider),
+        ChangeNotifierProvider.value(value: syncProvider),
         ChangeNotifierProvider.value(value: tasksProvider),
         ChangeNotifierProvider.value(value: projectsProvider),
         ChangeNotifierProvider.value(value: notesProvider),

@@ -1,123 +1,64 @@
 import 'package:flutter/material.dart';
 
-class PaginatedList<T> extends StatefulWidget {
-  final List<T> items;
-  final Widget Function(BuildContext context, T item, int index) itemBuilder;
-  final int pageSize;
-  final int initialPageSize;
+class PaginatedList extends StatelessWidget {
+  final int itemCount;
+  final IndexedWidgetBuilder itemBuilder;
+  final ScrollController controller;
+  final bool hasMore;
+  final VoidCallback onLoadMore;
   final EdgeInsetsGeometry? padding;
-  final ScrollController? scrollController;
+  final Widget? loadingIndicator;
   final Widget? emptyWidget;
-  final Widget Function(BuildContext)? loadingIndicator;
 
   const PaginatedList({
     super.key,
-    required this.items,
+    required this.itemCount,
     required this.itemBuilder,
-    this.pageSize = 30,
-    this.initialPageSize = 40,
+    required this.controller,
+    required this.hasMore,
+    required this.onLoadMore,
     this.padding,
-    this.scrollController,
-    this.emptyWidget,
     this.loadingIndicator,
+    this.emptyWidget,
   });
 
   @override
-  State<PaginatedList<T>> createState() => _PaginatedListState<T>();
-}
-
-class _PaginatedListState<T> extends State<PaginatedList<T>> {
-  late ScrollController _scrollController;
-  late int _visibleCount;
-  bool _isLoadingMore = false;
-
-  static const double _scrollThreshold = 400;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = widget.scrollController ?? ScrollController();
-    _visibleCount = widget.initialPageSize.clamp(0, widget.items.length);
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void didUpdateWidget(PaginatedList<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.items != widget.items) {
-      _visibleCount = widget.initialPageSize.clamp(0, widget.items.length);
-      _isLoadingMore = false;
-    }
-  }
-
-  @override
-  void dispose() {
-    if (widget.scrollController == null) {
-      _scrollController.dispose();
-    }
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (!_scrollController.hasClients || _isLoadingMore) return;
-    if (_visibleCount >= widget.items.length) return;
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - _scrollThreshold) {
-      _loadMore();
-    }
-  }
-
-  void _loadMore() {
-    if (_isLoadingMore || _visibleCount >= widget.items.length) return;
-    setState(() => _isLoadingMore = true);
-    Future.delayed(const Duration(milliseconds: 50), () {
-      if (!mounted) return;
-      setState(() {
-        _visibleCount =
-            (_visibleCount + widget.pageSize).clamp(0, widget.items.length);
-        _isLoadingMore = false;
-      });
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final count = widget.items.length;
-    if (count == 0) {
-      return widget.emptyWidget ?? const SizedBox.shrink();
+    if (itemCount == 0 && emptyWidget != null) {
+      return emptyWidget!;
     }
 
-    final displayCount = _visibleCount.clamp(0, count);
-    final hasMore = displayCount < count;
-
-    return ListView.builder(
-      controller: _scrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: widget.padding,
-      itemCount: displayCount + (hasMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= displayCount) {
-          return _buildLoadingIndicator();
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification is ScrollEndNotification &&
+            hasMore &&
+            controller.position.pixels >=
+                controller.position.maxScrollExtent - 200) {
+          onLoadMore();
         }
-        return widget.itemBuilder(context, widget.items[index], index);
+        return false;
       },
-    );
-  }
-
-  Widget _buildLoadingIndicator() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      child: widget.loadingIndicator?.call(context) ??
-          Center(
-            child: SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white.withValues(alpha: 0.3),
-              ),
-            ),
-          ),
+      child: ListView.builder(
+        controller: controller,
+        padding: padding,
+        itemCount: itemCount + (hasMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= itemCount) {
+            return loadingIndicator ??
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                );
+          }
+          return itemBuilder(context, index);
+        },
+      ),
     );
   }
 }

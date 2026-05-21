@@ -49,32 +49,37 @@ class TimelineAgenda extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(Icons.schedule_rounded,
-                color: BrainTheme.accentBlue, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              'Agenda para $dateString',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: BrainTheme.textPrimary,
-                letterSpacing: -0.3,
-              ),
-            ),
-            const Spacer(),
-            if (totalBlocks > 0)
-              Text(
-                '$completedBlocks/$totalBlocks',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: BrainTheme.textSecondary,
-                  fontWeight: FontWeight.w600,
+          Row(
+            children: [
+              Icon(Icons.schedule_rounded,
+                  color: BrainTheme.accentBlue, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Agenda para $dateString',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: BrainTheme.textPrimary,
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
-          ],
-        ),
+              if (totalBlocks > 0) ...[
+                const SizedBox(width: 8),
+                Text(
+                  '$completedBlocks/$totalBlocks',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: BrainTheme.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ],
+          ),
         const SizedBox(height: 12),
         if (blocks.isEmpty && unscheduledTasks.isEmpty)
           _emptyAgenda(context)
@@ -492,11 +497,15 @@ class ProductivitySparkline extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                '${l10n.last7Days} · ${dailyCounts.reduce((a, b) => a + b)} ${l10n.completedTasks.toLowerCase()}',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: BrainTheme.textTertiary,
+              Flexible(
+                child: Text(
+                  '${l10n.last7Days} · ${dailyCounts.reduce((a, b) => a + b)} ${l10n.completedTasks.toLowerCase()}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: BrainTheme.textTertiary,
+                  ),
                 ),
               ),
             ],
@@ -651,11 +660,15 @@ class WeeklyHeatmap extends StatelessWidget {
               ),
               const Spacer(),
               if (dailyCounts.isNotEmpty)
-                Text(
-                  '${dailyCounts.reduce((a, b) => a + b)} ${l10n.completedTasks.toLowerCase()}',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: BrainTheme.textTertiary,
+                Flexible(
+                  child: Text(
+                    '${dailyCounts.reduce((a, b) => a + b)} ${l10n.completedTasks.toLowerCase()}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: BrainTheme.textTertiary,
+                    ),
                   ),
                 ),
             ],

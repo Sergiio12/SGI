@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:second_brain/l10n/app_localizations.dart';
 import '../../config/theme.dart';
+import '../../l10n/app_localizations.dart';
 import '../../providers/goals_provider.dart';
 import '../../providers/notes_provider.dart';
 import '../../providers/projects_provider.dart';

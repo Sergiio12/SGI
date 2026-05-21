@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:second_brain/l10n/app_localizations.dart';
 import '../../config/theme.dart';
+import '../../providers/settings_provider.dart';
+import '../../providers/sync_provider.dart';
 import 'appearance_screen.dart';
 import 'debug_screen.dart';
 import 'notifications_screen.dart';
+import 'widgets_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -39,6 +43,17 @@ class SettingsScreen extends StatelessWidget {
               );
             },
           ),
+          _buildSettingItem(
+            icon: Icons.widgets_rounded,
+            title: 'Widgets',
+            subtitle: 'Widget de tareas en la pantalla de inicio',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const WidgetsScreen()),
+              );
+            },
+          ),
           Divider(color: BrainTheme.borderDark, indent: 16, endIndent: 16),
           _buildSectionHeader('SISTEMA'),
           _buildSettingItem(
@@ -47,6 +62,7 @@ class SettingsScreen extends StatelessWidget {
             subtitle: 'Exportar, importar y gestionar tus datos',
             onTap: () => Navigator.pushNamed(context, '/data'),
           ),
+          _buildSyncSection(context),
           _buildSettingItem(
             icon: Icons.bug_report_outlined,
             title: AppLocalizations.of(context).debug,
@@ -82,6 +98,140 @@ class SettingsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildSyncSection(BuildContext context) {
+    final sync = context.watch<SyncProvider>();
+    final settings = context.watch<SettingsProvider>();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Container(
+        decoration: BoxDecoration(
+          color: BrainTheme.cardDark,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: BrainTheme.borderDark),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: BrainTheme.surfaceDark,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: BrainTheme.borderDark),
+                    ),
+                    child: Icon(
+                      Icons.sync_rounded,
+                      color: _statusColor(sync.status),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Sincronización en la nube',
+                          style: TextStyle(
+                            color: BrainTheme.textPrimary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _statusText(sync.status),
+                          style: TextStyle(
+                            color: _statusColor(sync.status),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: settings.cloudSyncEnabled,
+                    activeColor: BrainTheme.currentAccent,
+                    onChanged: (value) => settings.setCloudSyncEnabled(value),
+                  ),
+                ],
+              ),
+              if (sync.lastSync != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Última sincronización: ${_formatLastSync(sync.lastSync!)}',
+                  style: TextStyle(
+                    color: BrainTheme.textTertiary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: settings.cloudSyncEnabled
+                      ? () => sync.triggerSync()
+                      : null,
+                  icon: const Icon(Icons.sync, size: 18),
+                  label: const Text('Sincronizar ahora'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BrainTheme.currentAccent.withValues(alpha: 0.15),
+                    foregroundColor: BrainTheme.currentAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _statusColor(SyncStatus status) {
+    switch (status) {
+      case SyncStatus.synced:
+        return BrainTheme.accentGreen;
+      case SyncStatus.syncing:
+        return BrainTheme.accentBlue;
+      case SyncStatus.error:
+        return BrainTheme.accentRed;
+      case SyncStatus.disconnected:
+        return BrainTheme.textTertiary;
+    }
+  }
+
+  String _statusText(SyncStatus status) {
+    switch (status) {
+      case SyncStatus.synced:
+        return 'Conectado';
+      case SyncStatus.syncing:
+        return 'Sincronizando...';
+      case SyncStatus.error:
+        return 'Error de sincronización';
+      case SyncStatus.disconnected:
+        return 'Desconectado';
+    }
+  }
+
+  String _formatLastSync(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+    if (diff.inSeconds < 60) return 'ahora mismo';
+    if (diff.inMinutes < 60) return 'hace ${diff.inMinutes} min';
+    if (diff.inHours < 24) return 'hace ${diff.inHours} h';
+    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   Widget _buildSectionHeader(String title) {

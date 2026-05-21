@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../config/theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/project.dart';
 import '../models/task.dart';
 import '../providers/projects_provider.dart';
-import 'package:provider/provider.dart';
+import '../utils/haptic_helper.dart';
 
 class TaskCard extends StatelessWidget {
   final Task task;
@@ -59,110 +60,116 @@ class TaskCard extends StatelessWidget {
       button: true,
       onTapHint: onTap != null ? l10n.details : null,
       child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: ShapeDecoration(
-          color: BrainTheme.cardDark.withValues(alpha: isDimmed ? 0.5 : 0.9),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: BorderSide(color: borderColor, width: 1),
+        onTap: () {
+          HapticHelper.light();
+          onTap?.call();
+        },
+        child: Hero(
+          tag: 'task_${task.id}',
+          child: Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: ShapeDecoration(
+            color: BrainTheme.cardDark.withValues(alpha: isDimmed ? 0.5 : 0.9),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: borderColor, width: 1),
+            ),
+            shadows: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
           ),
-          shadows: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          children: [
-            Positioned(
-              left: 0, top: 0, bottom: 0,
-              child: Container(width: 4, color: stripColor),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(15, 11, 11, 11),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          task.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.3,
-                            height: 1.2,
-                            color: isDimmed
-                                ? BrainTheme.textTertiary
-                                : BrainTheme.textPrimary,
-                            decoration: isDone ? TextDecoration.lineThrough : null,
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0, top: 0, bottom: 0,
+                child: Container(width: 4, color: stripColor),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(15, 11, 11, 11),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            task.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.3,
+                              height: 1.2,
+                              color: isDimmed
+                                  ? BrainTheme.textTertiary
+                                  : BrainTheme.textPrimary,
+                              decoration: isDone ? TextDecoration.lineThrough : null,
+                            ),
                           ),
+                        ),
+                      ],
+                    ),
+                    if (task.description.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        task.description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDimmed
+                              ? BrainTheme.textTertiary.withValues(alpha: 0.6)
+                              : BrainTheme.textSecondary,
+                          height: 1.2,
                         ),
                       ),
                     ],
-                  ),
-                  if (task.description.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Text(
-                      task.description,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDimmed
-                            ? BrainTheme.textTertiary.withValues(alpha: 0.6)
-                            : BrainTheme.textSecondary,
-                        height: 1.2,
-                      ),
+                    const SizedBox(height: 8),
+                    _MetadataRow(
+                      task: task,
+                      isDimmed: isDimmed,
+                      priColor: priColor,
+                      hasSubtasks: hasSubtasks,
+                      subtaskProgress: subtaskProgress,
                     ),
-                  ],
-                  const SizedBox(height: 8),
-                  _MetadataRow(
-                    task: task,
-                    isDimmed: isDimmed,
-                    priColor: priColor,
-                    hasSubtasks: hasSubtasks,
-                    subtaskProgress: subtaskProgress,
-                  ),
-                  if (hasSubtasks) ...[
-                    const SizedBox(height: 7),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(2),
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0, end: subtaskProgress),
-                        duration: 600.ms,
-                        curve: Curves.easeOutCubic,
-                        builder: (context, value, _) {
-                          return LinearProgressIndicator(
-                            value: value,
-                            minHeight: 3,
-                            backgroundColor:
-                                BrainTheme.borderDark.withValues(alpha: 0.4),
-                            valueColor: AlwaysStoppedAnimation(
-                              subtaskProgress >= 1.0
-                                  ? BrainTheme.accentGreen
-                                  : BrainTheme.accentPurple,
-                            ),
-                          );
-                        },
+                    if (hasSubtasks) ...[
+                      const SizedBox(height: 7),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(2),
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0, end: subtaskProgress),
+                          duration: 600.ms,
+                          curve: Curves.easeOutCubic,
+                          builder: (context, value, _) {
+                            return LinearProgressIndicator(
+                              value: value,
+                              minHeight: 3,
+                              backgroundColor:
+                                  BrainTheme.borderDark.withValues(alpha: 0.4),
+                              valueColor: AlwaysStoppedAnimation(
+                                subtaskProgress >= 1.0
+                                    ? BrainTheme.accentGreen
+                                    : BrainTheme.accentPurple,
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
+        ),
       ),
     ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.03, end: 0);
 
@@ -211,65 +218,68 @@ class _MetadataRow extends StatelessWidget {
         ? BrainTheme.textTertiary.withValues(alpha: 0.6)
         : BrainTheme.textTertiary;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 6, height: 6,
-          decoration: BoxDecoration(
-            color: priColor,
-            shape: BoxShape.circle,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6, height: 6,
+            decoration: BoxDecoration(
+              color: priColor,
+              shape: BoxShape.circle,
+            ),
           ),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          _priorityLabel(task.priority, context),
-          style: TextStyle(
-            fontSize: 11,
-            color: priColor,
-            fontWeight: FontWeight.w600,
-            height: 1.2,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Icon(Icons.calendar_today, size: 10, color: textColor),
-        const SizedBox(width: 3),
-        Text(
-          DateFormat('dd/MM/yy').format(task.createdAt),
-          style: TextStyle(fontSize: 11, color: textColor, height: 1.2),
-        ),
-        if (task.dueDate != null) ...[
-          const SizedBox(width: 10),
-          Icon(
-            task.isOverdue ? Icons.error_outline : Icons.event,
-            size: 10,
-            color: task.isOverdue ? BrainTheme.accentRed : textColor,
-          ),
-          const SizedBox(width: 3),
+          const SizedBox(width: 4),
           Text(
-            DateFormat('dd/MM/yy').format(task.dueDate!),
+            _priorityLabel(task.priority, context),
             style: TextStyle(
               fontSize: 11,
-              color: task.isOverdue ? BrainTheme.accentRed : textColor,
-              fontWeight: task.isOverdue ? FontWeight.w600 : FontWeight.w400,
+              color: priColor,
+              fontWeight: FontWeight.w600,
               height: 1.2,
             ),
           ),
-        ],
-        if (hasSubtasks) ...[
           const SizedBox(width: 10),
-          Icon(Icons.checklist, size: 10, color: textColor),
+          Icon(Icons.calendar_today, size: 10, color: textColor),
           const SizedBox(width: 3),
           Text(
-            '${task.subtasks.where((s) => s.isDone).length}/${task.subtasks.length}',
+            DateFormat('dd/MM/yy').format(task.createdAt),
             style: TextStyle(fontSize: 11, color: textColor, height: 1.2),
           ),
+          if (task.dueDate != null) ...[
+            const SizedBox(width: 10),
+            Icon(
+              task.isOverdue ? Icons.error_outline : Icons.event,
+              size: 10,
+              color: task.isOverdue ? BrainTheme.accentRed : textColor,
+            ),
+            const SizedBox(width: 3),
+            Text(
+              DateFormat('dd/MM/yy').format(task.dueDate!),
+              style: TextStyle(
+                fontSize: 11,
+                color: task.isOverdue ? BrainTheme.accentRed : textColor,
+                fontWeight: task.isOverdue ? FontWeight.w600 : FontWeight.w400,
+                height: 1.2,
+              ),
+            ),
+          ],
+          if (hasSubtasks) ...[
+            const SizedBox(width: 10),
+            Icon(Icons.checklist, size: 10, color: textColor),
+            const SizedBox(width: 3),
+            Text(
+              '${task.subtasks.where((s) => s.isDone).length}/${task.subtasks.length}',
+              style: TextStyle(fontSize: 11, color: textColor, height: 1.2),
+            ),
+          ],
+          if (task.projectId != null) ...[
+            const SizedBox(width: 10),
+            _ProjectBadgeCompact(projectId: task.projectId!),
+          ],
         ],
-        if (task.projectId != null) ...[
-          const SizedBox(width: 10),
-          _ProjectBadgeCompact(projectId: task.projectId!),
-        ],
-      ],
+      ),
     );
   }
 

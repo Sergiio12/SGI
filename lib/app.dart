@@ -19,6 +19,7 @@ class SecondBrainApp extends StatelessWidget {
             ? WidgetsBinding.instance.platformDispatcher.platformBrightness
             : Brightness.dark;
     BrainTheme.updateBrightness(brightness);
+    BrainTheme.updateAccentColor(settings.accentColor);
 
     return MaterialApp(
       key: ValueKey(settings.themeMode),

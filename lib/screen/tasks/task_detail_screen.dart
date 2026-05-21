@@ -8,6 +8,7 @@ import '../../config/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/notification_service_v2.dart';
 import '../../utils/undo_helper.dart';
+import '../../models/recurrence_rule.dart';
 import '../../models/task.dart';
 import '../../providers/tags_provider.dart';
 import '../../providers/projects_provider.dart';
@@ -42,6 +43,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   List<String> _selectedTags = [];
   bool _showForm = false;
 
+  // Recurrence state
+  RecurrenceFrequency? _recurrenceFrequency;
+  final _recurrenceIntervalController = TextEditingController(text: '1');
+  int _recurrenceEndCondition = 0; // 0=never, 1=after N, 2=date
+  final _recurrenceCountController = TextEditingController();
+  DateTime? _recurrenceEndDate;
+
   // Initial values for discard-changes detection
   String _initialTitle = '';
   String _initialDesc = '';
@@ -55,6 +63,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   List<SubTask> _initialSubtasks = [];
   List<String> _initialLinkedNoteIds = [];
   List<String> _initialSelectedTags = [];
+  RecurrenceFrequency? _initialRecurrenceFrequency;
+  String _initialRecurrenceInterval = '1';
+  int _initialRecurrenceEndCondition = 0;
+  String _initialRecurrenceCount = '';
+  DateTime? _initialRecurrenceEndDate;
 
   bool get _isEditing => widget.taskId != null;
 
@@ -71,7 +84,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
           _reminderController.text != _initialReminder ||
           !_listEquals(_subtasks, _initialSubtasks) ||
           !_listEquals(_linkedNoteIds, _initialLinkedNoteIds) ||
-          !_listEquals(_selectedTags, _initialSelectedTags);
+          !_listEquals(_selectedTags, _initialSelectedTags) ||
+          _recurrenceFrequency != _initialRecurrenceFrequency ||
+          _recurrenceIntervalController.text != _initialRecurrenceInterval ||
+          _recurrenceEndCondition != _initialRecurrenceEndCondition ||
+          _recurrenceCountController.text != _initialRecurrenceCount ||
+          _recurrenceEndDate != _initialRecurrenceEndDate;
     }
     return _titleController.text.isNotEmpty ||
         _descController.text.isNotEmpty ||
@@ -135,6 +153,25 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             _initialSubtasks = List.from(task.subtasks);
             _initialSelectedTags = List.from(task.tags);
             _initialLinkedNoteIds = List.from(task.linkedNoteIds);
+            _recurrenceFrequency = task.recurrence?.frequency;
+            _recurrenceIntervalController.text =
+                (task.recurrence?.interval ?? 1).toString();
+            if (task.recurrence?.count != null) {
+              _recurrenceEndCondition = 1;
+              _recurrenceCountController.text =
+                  task.recurrence!.count.toString();
+            } else if (task.recurrence?.endDate != null) {
+              _recurrenceEndCondition = 2;
+              _recurrenceEndDate = task.recurrence!.endDate;
+            } else {
+              _recurrenceEndCondition = 0;
+            }
+            _initialRecurrenceFrequency = task.recurrence?.frequency;
+            _initialRecurrenceInterval =
+                (task.recurrence?.interval ?? 1).toString();
+            _initialRecurrenceEndCondition = _recurrenceEndCondition;
+            _initialRecurrenceCount = _recurrenceCountController.text;
+            _initialRecurrenceEndDate = task.recurrence?.endDate;
           });
         }
       });
@@ -181,8 +218,27 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     _estimatedHoursController.dispose();
     _actualHoursController.dispose();
     _reminderController.dispose();
+    _recurrenceIntervalController.dispose();
+    _recurrenceCountController.dispose();
     _tabController.dispose();
     super.dispose();
+  }
+
+  RecurrenceRule? _buildRecurrence() {
+    if (_recurrenceFrequency == null) return null;
+    int? count;
+    DateTime? endDate;
+    if (_recurrenceEndCondition == 1) {
+      count = _readNullableInt(_recurrenceCountController.text);
+    } else if (_recurrenceEndCondition == 2) {
+      endDate = _recurrenceEndDate;
+    }
+    return RecurrenceRule(
+      frequency: _recurrenceFrequency!,
+      interval: _readNullableInt(_recurrenceIntervalController.text) ?? 1,
+      count: count,
+      endDate: endDate,
+    );
   }
 
   Future<void> _save() async {
@@ -195,6 +251,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     final estimatedHours = _readDouble(_estimatedHoursController.text, 1);
     final actualHours = _readNullableDouble(_actualHoursController.text);
     final reminderMinutes = _readNullableInt(_reminderController.text);
+    final recurrence = _buildRecurrence();
 
     if (_isEditing) {
       final task = provider.getTaskById(widget.taskId!);
@@ -216,6 +273,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
           subtasks: _subtasks,
           linkedNoteIds: _linkedNoteIds,
           tags: _selectedTags,
+          recurrence: recurrence,
+          clearRecurrence: recurrence == null,
         ));
       }
     } else {
@@ -231,6 +290,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         tags: _selectedTags,
         linkedNoteIds: _linkedNoteIds,
         subtasks: _subtasks,
+        recurrence: recurrence,
       );
     }
 
@@ -249,6 +309,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       _initialSubtasks = List.from(_subtasks);
       _initialSelectedTags = List.from(_selectedTags);
       _initialLinkedNoteIds = List.from(_linkedNoteIds);
+      _initialRecurrenceFrequency = _recurrenceFrequency;
+      _initialRecurrenceInterval = _recurrenceIntervalController.text;
+      _initialRecurrenceEndCondition = _recurrenceEndCondition;
+      _initialRecurrenceCount = _recurrenceCountController.text;
+      _initialRecurrenceEndDate = _recurrenceEndDate;
       Navigator.pop(context);
     }
   }
@@ -256,7 +321,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   @override
   Widget build(BuildContext context) {
     final task = _isEditing
-        ? context.watch<TasksProvider>().getTaskById(widget.taskId!)
+        ? context.select<TasksProvider, Task?>((p) => p.getTaskById(widget.taskId!))
         : null;
 
     if (_isEditing && task == null && !_showForm) {
@@ -462,6 +527,14 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     ),
                   ],
                 ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _FormSection(
+              title: 'Repetir',
+              icon: Icons.repeat,
+              children: [
+                _buildRecurrenceSelector(),
               ],
             ),
             const SizedBox(height: 12),
@@ -1021,6 +1094,246 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         ),
       ],
     );
+  }
+
+  Widget _buildRecurrenceSelector() {
+    final freqLabels = <RecurrenceFrequency?, String>{
+      null: 'No repetir',
+      RecurrenceFrequency.daily: 'Diario',
+      RecurrenceFrequency.weekly: 'Semanal',
+      RecurrenceFrequency.monthly: 'Mensual',
+      RecurrenceFrequency.yearly: 'Anual',
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.repeat, size: 16, color: BrainTheme.textTertiary),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 70,
+              child: Text(
+                'Repetir',
+                style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: BrainTheme.surfaceDark,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: BrainTheme.borderDark),
+                ),
+                child: DropdownButton<RecurrenceFrequency?>(
+                  value: _recurrenceFrequency,
+                  dropdownColor: BrainTheme.cardDark,
+                  underline: const SizedBox.shrink(),
+                  isExpanded: true,
+                  items: [
+                    null,
+                    ...RecurrenceFrequency.values,
+                  ].map((f) => DropdownMenuItem(
+                        value: f,
+                        child: Text(
+                          freqLabels[f]!,
+                          style: TextStyle(color: BrainTheme.textPrimary),
+                        ),
+                      )).toList(),
+                  onChanged: (value) => setState(() {
+                    _recurrenceFrequency = value;
+                    if (value == null) {
+                      _recurrenceEndCondition = 0;
+                    }
+                  }),
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (_recurrenceFrequency != null) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Text(
+                'Cada',
+                style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 60,
+                child: TextField(
+                  controller: _recurrenceIntervalController,
+                  keyboardType: TextInputType.number,
+                  style: TextStyle(color: BrainTheme.textPrimary, fontSize: 14),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: BrainTheme.borderDark),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: BrainTheme.borderDark),
+                    ),
+                    filled: true,
+                    fillColor: BrainTheme.surfaceDark,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _intervalUnitLabel(),
+                style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.stop_circle_outlined, size: 16, color: BrainTheme.textTertiary),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 70,
+                child: Text(
+                  'Finaliza',
+                  style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: BrainTheme.surfaceDark,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: BrainTheme.borderDark),
+                  ),
+                  child: DropdownButton<int>(
+                    value: _recurrenceEndCondition,
+                    dropdownColor: BrainTheme.cardDark,
+                    underline: const SizedBox.shrink(),
+                    isExpanded: true,
+                    items: const [
+                      DropdownMenuItem(value: 0, child: Text('Nunca')),
+                      DropdownMenuItem(value: 1, child: Text('Después de N ocurrencias')),
+                      DropdownMenuItem(value: 2, child: Text('Fecha específica')),
+                    ],
+                    onChanged: (value) => setState(() => _recurrenceEndCondition = value!),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_recurrenceEndCondition == 1) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const SizedBox(width: 102),
+                SizedBox(
+                  width: 80,
+                  child: TextField(
+                    controller: _recurrenceCountController,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: BrainTheme.textPrimary, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'N',
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: BrainTheme.borderDark),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: BrainTheme.borderDark),
+                      ),
+                      filled: true,
+                      fillColor: BrainTheme.surfaceDark,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'ocurrencias',
+                  style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+                ),
+              ],
+            ),
+          ],
+          if (_recurrenceEndCondition == 2) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const SizedBox(width: 102),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: _recurrenceEndDate ?? DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
+                      );
+                      if (date != null) setState(() => _recurrenceEndDate = date);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: BrainTheme.surfaceDark,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: BrainTheme.borderDark),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.event, size: 14, color: BrainTheme.textSecondary),
+                          const SizedBox(width: 6),
+                          Text(
+                            _recurrenceEndDate != null
+                                ? DateFormat('dd MMM yyyy').format(_recurrenceEndDate!)
+                                : 'Seleccionar fecha',
+                            style: TextStyle(color: BrainTheme.textPrimary),
+                          ),
+                          if (_recurrenceEndDate != null) ...[
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: () => setState(() => _recurrenceEndDate = null),
+                              child: Icon(Icons.close, size: 14, color: BrainTheme.textTertiary),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ],
+    );
+  }
+
+  String _intervalUnitLabel() {
+    switch (_recurrenceFrequency) {
+      case RecurrenceFrequency.daily:
+        return 'días';
+      case RecurrenceFrequency.weekly:
+        return 'semanas';
+      case RecurrenceFrequency.monthly:
+        return 'meses';
+      case RecurrenceFrequency.yearly:
+        return 'años';
+      default:
+        return '';
+    }
   }
 
   Future<void> _deleteTask(Task task) async {

@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/tasks_provider.dart';
 import '../providers/trash_provider.dart';
 import '../models/task.dart';
+import '../utils/haptic_helper.dart';
 
 class NavigationSidebar extends StatelessWidget {
   final int currentIndex;
@@ -104,7 +105,10 @@ class NavigationSidebar extends StatelessWidget {
               icon: item.icon,
               label: item.label,
               isActive: active,
-              onTap: () => onItemSelected(item.index),
+              onTap: () {
+                HapticHelper.selection();
+                onItemSelected(item.index);
+              },
             );
           }),
 
@@ -119,25 +123,37 @@ class NavigationSidebar extends StatelessWidget {
             icon: Icons.today_rounded,
             label: l10n.todayView,
             isActive: false,
-            onTap: () => Navigator.pushNamed(context, '/today'),
+            onTap: () {
+              HapticHelper.selection();
+              Navigator.pushNamed(context, '/today');
+            },
           ),
           _SidebarNavItem(
             icon: Icons.calendar_month_outlined,
             label: l10n.calendar,
             isActive: false,
-            onTap: () => Navigator.pushNamed(context, '/calendar'),
+            onTap: () {
+              HapticHelper.selection();
+              Navigator.pushNamed(context, '/calendar');
+            },
           ),
           _SidebarNavItem(
             icon: Icons.center_focus_strong_outlined,
             label: l10n.focusMode,
             isActive: false,
-            onTap: () => Navigator.pushNamed(context, '/focus'),
+            onTap: () {
+              HapticHelper.selection();
+              Navigator.pushNamed(context, '/focus');
+            },
           ),
           _SidebarNavItem(
             icon: Icons.bar_chart_outlined,
             label: l10n.statistics,
             isActive: false,
-            onTap: () => Navigator.pushNamed(context, '/stats'),
+            onTap: () {
+              HapticHelper.selection();
+              Navigator.pushNamed(context, '/stats');
+            },
           ),
 
           const Spacer(),
@@ -200,12 +216,18 @@ class NavigationSidebar extends StatelessWidget {
                     ),
                   )
                 : null,
-            onTap: () => Navigator.pushNamed(context, '/trash'),
+            onTap: () {
+              HapticHelper.selection();
+              Navigator.pushNamed(context, '/trash');
+            },
           ),
           _SidebarNavItem(
             icon: Icons.settings_outlined,
             label: l10n.settings,
-            onTap: () => Navigator.pushNamed(context, '/settings'),
+            onTap: () {
+              HapticHelper.selection();
+              Navigator.pushNamed(context, '/settings');
+            },
           ),
           const SizedBox(height: 12),
         ],
@@ -263,13 +285,17 @@ class _SidebarNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(10),
+    return Semantics(
+      label: label,
+      button: true,
+      selected: isActive,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(10),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
@@ -312,8 +338,9 @@ class _SidebarNavItem extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _StatDot extends StatelessWidget {

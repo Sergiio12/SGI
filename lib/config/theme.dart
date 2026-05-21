@@ -5,10 +5,17 @@ import '../models/task.dart';
 
 class BrainTheme {
   static Brightness _brightness = Brightness.dark;
+  static Color _accentColor = const Color(0xFF9D4EDD);
 
   static void updateBrightness(Brightness brightness) {
     _brightness = brightness;
   }
+
+  static void updateAccentColor(Color color) {
+    _accentColor = color;
+  }
+
+  static Color get currentAccent => _accentColor;
 
   static bool get _isLight => _brightness == Brightness.light;
 
@@ -23,7 +30,7 @@ class BrainTheme {
       _isLight ? const Color(0xFFE4E4E7) : const Color(0xFF27272A);
 
   // Acentos Neon/Vibrantes
-  static const Color accentPurple = Color(0xFF9D4EDD);
+  static Color get accentPurple => const Color(0xFF9D4EDD);
   static const Color accentBlue = Color(0xFF3B82F6);
   static const Color accentGreen = Color(0xFF10B981);
   static const Color accentOrange = Color(0xFFF59E0B);
@@ -47,14 +54,14 @@ class BrainTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: const Color(0xFF09090B),
       textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
-      colorScheme: const ColorScheme.dark(
-        primary: accentPurple,
+      colorScheme: ColorScheme.dark(
+        primary: _accentColor,
         secondary: accentBlue,
-        surface: Color(0xFF141416),
+        surface: const Color(0xFF141416),
         error: accentRed,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
-        onSurface: Color(0xFFFAFAFA),
+        onSurface: const Color(0xFFFAFAFA),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: const Color(0xFF09090B).withValues(alpha: 0.8),
@@ -79,11 +86,11 @@ class BrainTheme {
               BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1),
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: accentPurple,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: _accentColor,
         foregroundColor: Colors.white,
         elevation: 4,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(14)),
         ),
       ),
@@ -100,7 +107,7 @@ class BrainTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: accentPurple, width: 1.5),
+          borderSide: BorderSide(color: _accentColor, width: 1.5),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -115,20 +122,20 @@ class BrainTheme {
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color(0xFF09090B),
-        selectedItemColor: accentPurple,
-        unselectedItemColor: Color(0xFF71717A),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: const Color(0xFF09090B),
+        selectedItemColor: _accentColor,
+        unselectedItemColor: const Color(0xFF71717A),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: const Color(0xFF09090B),
-        indicatorColor: accentPurple.withValues(alpha: 0.15),
+        indicatorColor: _accentColor.withValues(alpha: 0.15),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
-                fontSize: 12, fontWeight: FontWeight.w700, color: accentPurple);
+            return TextStyle(
+                fontSize: 12, fontWeight: FontWeight.w700, color: _accentColor);
           }
           return const TextStyle(
               fontSize: 12,
@@ -163,14 +170,14 @@ class BrainTheme {
       brightness: Brightness.light,
       scaffoldBackgroundColor: const Color(0xFFF8F9FA),
       textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
-      colorScheme: const ColorScheme.light(
-        primary: accentPurple,
+      colorScheme: ColorScheme.light(
+        primary: _accentColor,
         secondary: accentBlue,
-        surface: Color(0xFFFFFFFF),
+        surface: const Color(0xFFFFFFFF),
         error: accentRed,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
-        onSurface: Color(0xFF18181B),
+        onSurface: const Color(0xFF18181B),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: const Color(0xFFFFFFFF).withValues(alpha: 0.8),
@@ -195,11 +202,11 @@ class BrainTheme {
               BorderSide(color: Colors.black.withValues(alpha: 0.05), width: 1),
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: accentPurple,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: _accentColor,
         foregroundColor: Colors.white,
         elevation: 4,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(14)),
         ),
       ),
@@ -216,7 +223,7 @@ class BrainTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: accentPurple, width: 1.5),
+          borderSide: BorderSide(color: _accentColor, width: 1.5),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -231,20 +238,20 @@ class BrainTheme {
           side: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color(0xFFFFFFFF),
-        selectedItemColor: accentPurple,
-        unselectedItemColor: Color(0xFFA1A1AA),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: const Color(0xFFFFFFFF),
+        selectedItemColor: _accentColor,
+        unselectedItemColor: const Color(0xFFA1A1AA),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: const Color(0xFFFFFFFF),
-        indicatorColor: accentPurple.withValues(alpha: 0.15),
+        indicatorColor: _accentColor.withValues(alpha: 0.15),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
-                fontSize: 12, fontWeight: FontWeight.w700, color: accentPurple);
+            return TextStyle(
+                fontSize: 12, fontWeight: FontWeight.w700, color: _accentColor);
           }
           return const TextStyle(
               fontSize: 12,
@@ -340,7 +347,7 @@ class BrainTheme {
   // Utility para BoxShadow estilo glow
   static List<BoxShadow> get glowShadow => [
         BoxShadow(
-          color: accentPurple.withValues(alpha: 0.1),
+          color: _accentColor.withValues(alpha: 0.1),
           blurRadius: 12,
           spreadRadius: -4,
           offset: const Offset(0, 4),

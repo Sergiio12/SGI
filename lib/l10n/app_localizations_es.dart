@@ -699,4 +699,207 @@ class AppLocalizationsEs extends AppLocalizations {
   String newTaskWithStatus(Object status) {
     return 'Nueva tarea · $status';
   }
+
+  @override
+  String get onboardingTitle1 => 'Tu Segundo Cerebro';
+
+  @override
+  String get onboardingSubtitle1 =>
+      'Organiza tus ideas, proyectos y tareas en un solo lugar. Tu mente merece claridad.';
+
+  @override
+  String get onboardingTitle2 => 'Tareas Inteligentes';
+
+  @override
+  String get onboardingSubtitle2 =>
+      'Prioriza, planifica y ejecuta con nuestro sistema de organización contextual.';
+
+  @override
+  String get onboardingTitle3 => 'Metas y Proyectos';
+
+  @override
+  String get onboardingSubtitle3 =>
+      'Define objetivos ambiciosos y divídelos en proyectos alcanzables.';
+
+  @override
+  String get onboardingTitle4 => 'Notas con Poder';
+
+  @override
+  String get onboardingSubtitle4 =>
+      'Captura ideas al vuelo y conéctalas con tus tareas y proyectos.';
+
+  @override
+  String get onboardingSkip => 'Saltar';
+
+  @override
+  String get onboardingContinue => 'Continuar';
+
+  @override
+  String get onboardingStart => 'Comenzar';
+
+  @override
+  String get onboardingWelcome => '¡Todo listo!';
+
+  @override
+  String get onboardingWelcomeDesc => 'Personaliza tu experiencia para empezar';
+
+  @override
+  String get onboardingYourName => 'Tu nombre';
+
+  @override
+  String get onboardingAccentColor => 'Color de acento';
+
+  @override
+  String get onboardingDarkMode => 'Modo oscuro';
+
+  @override
+  String get loadingInitSystem => 'Inicializando sistema';
+
+  @override
+  String get loadingInitStorage => 'Inicializando almacenamiento seguro';
+
+  @override
+  String get loadingTasks => 'Cargando tareas prioritarias';
+
+  @override
+  String get loadingProjects => 'Reconstruyendo proyectos';
+
+  @override
+  String get loadingVisual => 'Preparando entorno visual';
+
+  @override
+  String get loadingSession => 'Sincronizando sesión';
+
+  @override
+  String get loadingReady => 'Todo listo';
+
+  @override
+  String get loadingInit => 'Inicializando';
+
+  @override
+  String notificationTaskCreated(Object title) {
+    return 'Tarea creada: $title';
+  }
+
+  @override
+  String get notificationTaskUpdated => 'Tarea actualizada';
+
+  @override
+  String get notificationTaskCompleted => 'Tarea completada';
+
+  @override
+  String get notificationTaskReopened => 'Tarea reabierta';
+
+  @override
+  String get notificationTaskCancelled => 'Tarea anulada';
+
+  @override
+  String get notificationTaskMovedToTrash => 'Tarea movida a la papelera';
+
+  @override
+  String get notificationTaskRestored => 'Tarea restaurada';
+
+  @override
+  String get notificationTaskPermanentlyDeleted =>
+      'Tarea eliminada permanentemente';
+
+  @override
+  String notificationProjectCreated(Object title) {
+    return 'Proyecto creado: $title';
+  }
+
+  @override
+  String get notificationProjectUpdated => 'Proyecto actualizado';
+
+  @override
+  String get notificationProjectMovedToTrash => 'Proyecto movido a la papelera';
+
+  @override
+  String notificationGoalCreated(Object title) {
+    return 'Objetivo creado: $title';
+  }
+
+  @override
+  String get notificationGoalUpdated => 'Objetivo actualizado';
+
+  @override
+  String get notificationGoalMovedToTrash => 'Objetivo movido a la papelera';
+
+  @override
+  String notificationNoteCreated(Object title) {
+    return 'Nota creada: $title';
+  }
+
+  @override
+  String get notificationNoteUpdated => 'Nota actualizada';
+
+  @override
+  String get notificationNotePinned => 'Nota anclada';
+
+  @override
+  String get notificationNoteUnpinned => 'Nota desanclada';
+
+  @override
+  String get notificationNoteMovedToTrash => 'Nota movida a la papelera';
+
+  @override
+  String get notificationTrashEmptied => 'Papelera vaciada';
+
+  @override
+  String get notificationErrorTaskCreate => 'Error al crear tarea';
+
+  @override
+  String get notificationErrorTaskUpdate => 'Error al actualizar tarea';
+
+  @override
+  String get notificationErrorTaskToggle => 'Error al cambiar estado de tarea';
+
+  @override
+  String get notificationErrorTaskMove => 'Error al mover tarea';
+
+  @override
+  String get notificationErrorTaskDelete => 'Error al eliminar tarea';
+
+  @override
+  String get notificationErrorTaskRestore => 'Error al restaurar tarea';
+
+  @override
+  String get notificationErrorTaskPermanentDelete =>
+      'Error al eliminar tarea permanentemente';
+
+  @override
+  String get weekdayMonday => 'Lunes';
+
+  @override
+  String get weekdayTuesday => 'Martes';
+
+  @override
+  String get weekdayWednesday => 'Miércoles';
+
+  @override
+  String get weekdayThursday => 'Jueves';
+
+  @override
+  String get weekdayFriday => 'Viernes';
+
+  @override
+  String get weekdaySaturday => 'Sábado';
+
+  @override
+  String get weekdaySunday => 'Domingo';
+
+  @override
+  String get greetingMorning => 'Buenos días';
+
+  @override
+  String get greetingAfternoon => 'Buenas tardes';
+
+  @override
+  String get greetingEvening => 'Buenas noches';
+
+  @override
+  String get dailyIntention => 'Intención del día';
+
+  @override
+  String get weeklyCalendar => 'Calendario Semanal';
 }

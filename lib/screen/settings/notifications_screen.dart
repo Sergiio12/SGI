@@ -4,6 +4,8 @@ import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../../config/theme.dart';
 import '../../providers/settings_provider.dart';
+import '../../providers/tasks_provider.dart';
+import '../../services/calendar_integration_service.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -135,6 +137,88 @@ class NotificationsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 24),
+              const _SectionHeader(title: 'CALENDARIO'),
+              const SizedBox(height: 8),
+              Column(
+                children: [
+                  _SettingsSwitch(
+                    icon: Icons.calendar_month_rounded,
+                    title: 'Sincronizar tareas con calendario',
+                    subtitle: 'Crear eventos en el calendario del dispositivo',
+                    value: settings.calendarSyncEnabled,
+                    onChanged: (v) => settings.setCalendarSyncEnabled(v),
+                  ),
+                  const SizedBox(height: 4),
+                  _ReminderMinutesPicker(
+                    minutes: settings.defaultCalendarReminderMinutes,
+                    onChanged: (v) =>
+                        settings.setDefaultCalendarReminderMinutes(v),
+                  ),
+                  const SizedBox(height: 12),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () {
+                        final tasksProvider = Provider.of<TasksProvider>(
+                          context,
+                          listen: false,
+                        );
+                        CalendarIntegrationService.syncAllTasks(
+                          tasksProvider.tasks,
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Sincronización iniciada en segundo plano',
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Theme.of(context).dividerColor,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: BrainTheme.accentBlue
+                                    .withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.sync_rounded,
+                                size: 20,
+                                color: BrainTheme.accentBlue,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Text(
+                              'Sincronizar todas las tareas ahora',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: BrainTheme.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ),
               const SizedBox(height: 32),
               Container(
