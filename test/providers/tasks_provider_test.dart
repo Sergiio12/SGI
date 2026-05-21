@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:second_brain/models/recurrence_rule.dart';
 import 'package:second_brain/models/task.dart';
 import 'package:second_brain/providers/tasks_provider.dart';
 
@@ -101,6 +102,38 @@ void main() {
       final task = result.unwrap();
       await provider.moveTaskToStatus(task.id, TaskStatus.pending);
       expect(provider.getTaskById(task.id)?.status, TaskStatus.pending);
+    });
+
+    test('moveTaskToStatus to cancelled does not duplicate task', () async {
+      final result = await provider.addTask(title: 'Cancel me');
+      final task = result.unwrap();
+      expect(provider.tasks.length, 1);
+      expect(provider.todoTasks.length, 1);
+
+      await provider.moveTaskToStatus(task.id, TaskStatus.cancelled);
+      
+      expect(provider.getTaskById(task.id)?.status, TaskStatus.cancelled);
+      expect(provider.tasks.length, 1);
+      expect(provider.todoTasks.length, 0);
+      expect(provider.cancelledTasks.length, 1);
+    });
+
+    test('moveTaskToStatus to cancelled for recurring task does not duplicate task', () async {
+      final result = await provider.addTask(
+        title: 'Cancel recurring',
+        dueDate: DateTime.now(),
+        recurrence: const RecurrenceRule(
+          frequency: RecurrenceFrequency.daily,
+          interval: 1,
+        ),
+      );
+      final task = result.unwrap();
+      expect(provider.tasks.length, 1);
+      
+      await provider.moveTaskToStatus(task.id, TaskStatus.cancelled);
+      
+      expect(provider.getTaskById(task.id)?.status, TaskStatus.cancelled);
+      expect(provider.tasks.length, 1);
     });
   });
 
