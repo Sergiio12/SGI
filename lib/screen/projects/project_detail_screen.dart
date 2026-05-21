@@ -13,7 +13,6 @@ import '../../providers/notes_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../utils/notification_service_v2.dart';
-import '../../utils/undo_helper.dart';
 import '../../widgets/note_card.dart';
 import '../../widgets/task_card.dart';
 
@@ -129,7 +128,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
   @override
   Widget build(BuildContext context) {
     final project = _isEditing
-        ? context.select<ProjectsProvider, Project?>((p) => p.getProjectById(widget.projectId!))
+        ? context.select<ProjectsProvider, Project?>(
+            (p) => p.getProjectById(widget.projectId!))
         : null;
 
     return Scaffold(
@@ -373,26 +373,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
       final pid = project.id;
       await context.read<ProjectsProvider>().deleteProject(pid);
       if (mounted) {
-        final messenger = ScaffoldMessenger.of(context);
         final l10n = AppLocalizations.of(context);
         final provider = context.read<ProjectsProvider>();
         Navigator.pop(context);
-        messenger.hideCurrentSnackBar();
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.itemDeleted, style: TextStyle(color: BrainTheme.textPrimary)),
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
-            margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            action: SnackBarAction(
-              label: l10n.undo,
-              textColor: BrainTheme.accentPurple,
-              onPressed: () => provider.restoreProject(pid),
-            ),
-          ),
+        showSuccessNotification(
+          l10n.itemDeleted,
+          actionLabel: l10n.undo,
+          onAction: () => provider.restoreProject(pid),
         );
       }
     }

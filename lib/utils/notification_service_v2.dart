@@ -242,13 +242,13 @@ class NotificationWrapper extends StatelessWidget {
       children: [
         child,
         Positioned(
-          bottom: 0,
+          top: 0,
           left: 0,
           right: 0,
           child: SafeArea(
-            top: false,
+            bottom: false,
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.only(top: 16),
               child: Consumer<NotificationController>(
                 builder: (context, controller, _) {
                   final notifications = controller.activeNotifications;
@@ -257,7 +257,6 @@ class NotificationWrapper extends StatelessWidget {
                   }
                   return Column(
                     mainAxisSize: MainAxisSize.min,
-                    verticalDirection: VerticalDirection.up,
                     children: [
                       for (int i = 0; i < notifications.length; i++)
                         _NotificationCard(

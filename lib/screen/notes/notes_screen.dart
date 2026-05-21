@@ -13,6 +13,7 @@ import '../../utils/debouncer.dart';
 import '../../widgets/note_card.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/skeleton_card.dart';
+import '../../utils/notification_service_v2.dart';
 
 class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key});
@@ -38,7 +39,8 @@ class _NotesScreenState extends State<NotesScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 300) {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 300) {
         context.read<NotesProvider>().loadMore();
       }
     });
@@ -78,7 +80,7 @@ class _NotesScreenState extends State<NotesScreen> {
     }
     _exitSelectionMode();
     if (mounted) {
-      _showBottomSnackBar(
+      _showTopNotification(
         '${ids.length} ${AppLocalizations.of(context).notesDeleted}',
         actionLabel: AppLocalizations.of(context).undo,
         onAction: () {
@@ -159,8 +161,10 @@ class _NotesScreenState extends State<NotesScreen> {
             ),
             TextButton.icon(
               onPressed: _deleteSelected,
-              icon: Icon(Icons.delete_outline, size: 18, color: BrainTheme.accentRed),
-              label: Text('Eliminar', style: TextStyle(color: BrainTheme.accentRed)),
+              icon: Icon(Icons.delete_outline,
+                  size: 18, color: BrainTheme.accentRed),
+              label: Text('Eliminar',
+                  style: TextStyle(color: BrainTheme.accentRed)),
             ),
             TextButton.icon(
               onPressed: _exitSelectionMode,
@@ -173,36 +177,29 @@ class _NotesScreenState extends State<NotesScreen> {
     );
   }
 
-  void _showBottomSnackBar(String message, {String? actionLabel, VoidCallback? onAction}) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
-    final paddingBottom = MediaQuery.of(context).padding.bottom;
-    messenger.showSnackBar(SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 2),
-      behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.only(bottom: paddingBottom, left: 0, right: 0),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      shape: const RoundedRectangleBorder(),
-      action: actionLabel != null && onAction != null
-          ? SnackBarAction(label: actionLabel, textColor: BrainTheme.accentPurple, onPressed: onAction)
-          : null,
-    ));
+  void _showTopNotification(String message,
+      {String? actionLabel, VoidCallback? onAction}) {
+    showSuccessNotification(
+      message,
+      actionLabel: actionLabel,
+      onAction: onAction,
+    );
   }
 
   void _copyNoteContent(Note note) {
     final text = '${note.title}\n\n${note.content}';
     Clipboard.setData(ClipboardData(text: text));
-    _showBottomSnackBar('Contenido copiado al portapapeles');
+    _showTopNotification('Contenido copiado al portapapeles');
   }
 
   void _shareNote(Note note) {
     final text = '${note.title}\n\n${note.content}';
     Clipboard.setData(ClipboardData(text: text));
-    _showBottomSnackBar('Contenido copiado para compartir');
+    _showTopNotification('Contenido copiado para compartir');
   }
 
-  void _showMoveSingleDialog(BuildContext context, NotesProvider provider, Note note) {
+  void _showMoveSingleDialog(
+      BuildContext context, NotesProvider provider, Note note) {
     final notebooks = provider.notebooks;
     showModalBottomSheet(
       context: context,
@@ -213,16 +210,18 @@ class _NotesScreenState extends State<NotesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(AppLocalizations.of(context).moveToNotebook,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             ...notebooks.map((nb) => ListTile(
-                  leading: Icon(Icons.folder_outlined, color: BrainTheme.textSecondary),
+                  leading: Icon(Icons.folder_outlined,
+                      color: BrainTheme.textSecondary),
                   title: Text(nb),
                   onTap: () async {
                     Navigator.pop(ctx);
                     await provider.updateNote(note.copyWith(notebook: nb));
                     if (mounted) {
-                      _showBottomSnackBar('Nota movida a "$nb"');
+                      _showTopNotification('Nota movida a "$nb"');
                     }
                   },
                 )),
@@ -232,10 +231,11 @@ class _NotesScreenState extends State<NotesScreen> {
     );
   }
 
-  void _deleteNoteWithUndo(BuildContext context, NotesProvider provider, Note note) {
+  void _deleteNoteWithUndo(
+      BuildContext context, NotesProvider provider, Note note) {
     final noteId = note.id;
     provider.deleteNote(noteId);
-    _showBottomSnackBar(
+    _showTopNotification(
       AppLocalizations.of(context).notesUndoDeleted(note.title),
       actionLabel: AppLocalizations.of(context).undo,
       onAction: () => provider.restoreNote(noteId),
@@ -336,7 +336,8 @@ class _NotesScreenState extends State<NotesScreen> {
             const SizedBox(width: 12),
             _StatChip(
               icon: Icons.folder_outlined,
-              label: '$notebooks ${AppLocalizations.of(context).notebooksLabel}',
+              label:
+                  '$notebooks ${AppLocalizations.of(context).notebooksLabel}',
               color: BrainTheme.accentBlue,
             ),
           ],
@@ -449,7 +450,9 @@ class _NotesScreenState extends State<NotesScreen> {
           size: 20,
         ),
         onPressed: () => setState(() => _isGridView = !_isGridView),
-        tooltip: _isGridView ? AppLocalizations.of(context).listView : AppLocalizations.of(context).gridView,
+        tooltip: _isGridView
+            ? AppLocalizations.of(context).listView
+            : AppLocalizations.of(context).gridView,
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
       ),
@@ -472,15 +475,18 @@ class _NotesScreenState extends State<NotesScreen> {
           items: [
             DropdownMenuItem(
               value: SortOption.updatedAt,
-              child: Icon(Icons.access_time, size: 18, color: BrainTheme.textSecondary),
+              child: Icon(Icons.access_time,
+                  size: 18, color: BrainTheme.textSecondary),
             ),
             DropdownMenuItem(
               value: SortOption.createdAt,
-              child: Icon(Icons.add_circle_outline, size: 18, color: BrainTheme.textSecondary),
+              child: Icon(Icons.add_circle_outline,
+                  size: 18, color: BrainTheme.textSecondary),
             ),
             DropdownMenuItem(
               value: SortOption.title,
-              child: Icon(Icons.sort_by_alpha, size: 18, color: BrainTheme.textSecondary),
+              child: Icon(Icons.sort_by_alpha,
+                  size: 18, color: BrainTheme.textSecondary),
             ),
           ],
           onChanged: (SortOption? value) {
@@ -600,37 +606,46 @@ class _NotesScreenState extends State<NotesScreen> {
           return NotificationListener<ScrollNotification>(
             onNotification: (notification) {
               if (notification is ScrollUpdateNotification &&
-                  notification.metrics.pixels >= notification.metrics.maxScrollExtent - 300) {
+                  notification.metrics.pixels >=
+                      notification.metrics.maxScrollExtent - 300) {
                 provider.loadMore();
               }
               return false;
             },
             child: MasonryGridView.count(
-            key: ValueKey('notes_grid_${notes.length}_${pinned.length}'),
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-            crossAxisCount: 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            itemCount: notes.length,
-            itemBuilder: (context, index) {
-              final note = notes[index];
-              return NoteCard(
-                note: note,
-                searchQuery: _searchQuery,
-                isSelected: _selectedNoteIds.contains(note.id),
-                onSelect: _selectionMode ? (v) => _toggleSelection(note.id) : null,
-                onTap: _selectionMode
-                    ? () => _toggleSelection(note.id)
-                    : () => Navigator.pushNamed(context, '/note', arguments: note.id),
-                onDelete: _selectionMode ? null : () => _deleteNoteWithUndo(context, provider, note),
-                onTogglePin: _selectionMode ? null : () => provider.togglePin(note.id),
-                onCopyContent: _selectionMode ? null : () => _copyNoteContent(note),
-                onShare: _selectionMode ? null : () => _shareNote(note),
-                onMoveToNotebook: _selectionMode ? null : () => _showMoveSingleDialog(context, provider, note),
-              );
-            },
-          ),
-        );
+              key: ValueKey('notes_grid_${notes.length}_${pinned.length}'),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+              crossAxisCount: 2,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              itemCount: notes.length,
+              itemBuilder: (context, index) {
+                final note = notes[index];
+                return NoteCard(
+                  note: note,
+                  searchQuery: _searchQuery,
+                  isSelected: _selectedNoteIds.contains(note.id),
+                  onSelect:
+                      _selectionMode ? (v) => _toggleSelection(note.id) : null,
+                  onTap: _selectionMode
+                      ? () => _toggleSelection(note.id)
+                      : () => Navigator.pushNamed(context, '/note',
+                          arguments: note.id),
+                  onDelete: _selectionMode
+                      ? null
+                      : () => _deleteNoteWithUndo(context, provider, note),
+                  onTogglePin:
+                      _selectionMode ? null : () => provider.togglePin(note.id),
+                  onCopyContent:
+                      _selectionMode ? null : () => _copyNoteContent(note),
+                  onShare: _selectionMode ? null : () => _shareNote(note),
+                  onMoveToNotebook: _selectionMode
+                      ? null
+                      : () => _showMoveSingleDialog(context, provider, note),
+                );
+              },
+            ),
+          );
         }
 
         return ListView.builder(
@@ -646,15 +661,23 @@ class _NotesScreenState extends State<NotesScreen> {
                 note: note,
                 searchQuery: _searchQuery,
                 isSelected: _selectedNoteIds.contains(note.id),
-                onSelect: _selectionMode ? (v) => _toggleSelection(note.id) : null,
+                onSelect:
+                    _selectionMode ? (v) => _toggleSelection(note.id) : null,
                 onTap: _selectionMode
                     ? () => _toggleSelection(note.id)
-                    : () => Navigator.pushNamed(context, '/note', arguments: note.id),
-                onDelete: _selectionMode ? null : () => _deleteNoteWithUndo(context, provider, note),
-                onTogglePin: _selectionMode ? null : () => provider.togglePin(note.id),
-                onCopyContent: _selectionMode ? null : () => _copyNoteContent(note),
+                    : () => Navigator.pushNamed(context, '/note',
+                        arguments: note.id),
+                onDelete: _selectionMode
+                    ? null
+                    : () => _deleteNoteWithUndo(context, provider, note),
+                onTogglePin:
+                    _selectionMode ? null : () => provider.togglePin(note.id),
+                onCopyContent:
+                    _selectionMode ? null : () => _copyNoteContent(note),
                 onShare: _selectionMode ? null : () => _shareNote(note),
-                onMoveToNotebook: _selectionMode ? null : () => _showMoveSingleDialog(context, provider, note),
+                onMoveToNotebook: _selectionMode
+                    ? null
+                    : () => _showMoveSingleDialog(context, provider, note),
               ),
             );
           },

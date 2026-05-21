@@ -8,7 +8,6 @@ import '../../models/goal.dart';
 import '../../models/project.dart';
 import '../../models/tag.dart';
 import '../../utils/notification_service_v2.dart';
-import '../../utils/undo_helper.dart';
 import '../../providers/goals_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tags_provider.dart';
@@ -185,26 +184,13 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
       final gid = widget.goalId!;
       await context.read<GoalsProvider>().deleteGoal(gid);
       if (mounted) {
-        final messenger = ScaffoldMessenger.of(context);
         final l10n = AppLocalizations.of(context);
         final provider = context.read<GoalsProvider>();
         Navigator.pop(context);
-        messenger.hideCurrentSnackBar();
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.itemDeleted, style: TextStyle(color: BrainTheme.textPrimary)),
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
-            margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            action: SnackBarAction(
-              label: l10n.undo,
-              textColor: BrainTheme.accentPurple,
-              onPressed: () => provider.restoreGoal(gid),
-            ),
-          ),
+        showSuccessNotification(
+          l10n.itemDeleted,
+          actionLabel: l10n.undo,
+          onAction: () => provider.restoreGoal(gid),
         );
       }
     }
@@ -712,8 +698,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
             Consumer<ProjectsProvider>(
               builder: (context, projectsProvider, _) {
                 final allProjects = projectsProvider.projects;
-                final selectedProjects =
-                    allProjects.where((p) => _projectIds.contains(p.id)).toList();
+                final selectedProjects = allProjects
+                    .where((p) => _projectIds.contains(p.id))
+                    .toList();
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -740,7 +727,8 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(project.emoji, style: const TextStyle(fontSize: 14)),
+                                  Text(project.emoji,
+                                      style: const TextStyle(fontSize: 14)),
                                   const SizedBox(width: 6),
                                   Text(
                                     project.title,
@@ -753,9 +741,11 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                                   const SizedBox(width: 4),
                                   GestureDetector(
                                     onTap: () {
-                                      setState(() => _projectIds.remove(project.id));
+                                      setState(
+                                          () => _projectIds.remove(project.id));
                                     },
-                                    child: Icon(Icons.close, size: 14,
+                                    child: Icon(Icons.close,
+                                        size: 14,
                                         color: BrainTheme.textTertiary),
                                   ),
                                 ],
@@ -778,12 +768,13 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.add, size: 18,
-                                color: BrainTheme.textTertiary),
+                            Icon(Icons.add,
+                                size: 18, color: BrainTheme.textTertiary),
                             const SizedBox(width: 8),
                             Text(
                               selectedProjects.isEmpty
-                                  ? AppLocalizations.of(context).goalLinkedProjects
+                                  ? AppLocalizations.of(context)
+                                      .goalLinkedProjects
                                   : '${AppLocalizations.of(context).goalLinkedProjects} (${selectedProjects.length})',
                               style: TextStyle(
                                 fontSize: 13,
@@ -936,13 +927,11 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                     TextField(
                       controller: searchController,
                       autofocus: true,
-                      onChanged: (v) =>
-                          setModalState(() => searchQuery = v),
+                      onChanged: (v) => setModalState(() => searchQuery = v),
                       style: const TextStyle(fontSize: 14),
                       decoration: InputDecoration(
                         hintText: AppLocalizations.of(context).searchInProjects,
-                        prefixIcon:
-                            const Icon(Icons.search, size: 20),
+                        prefixIcon: const Icon(Icons.search, size: 20),
                         suffixIcon: searchQuery.isNotEmpty
                             ? IconButton(
                                 icon: const Icon(Icons.clear, size: 18),
@@ -957,8 +946,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                         fillColor: BrainTheme.cardDark,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
-                          borderSide:
-                              BorderSide(color: BrainTheme.borderDark),
+                          borderSide: BorderSide(color: BrainTheme.borderDark),
                         ),
                       ),
                     ),
@@ -980,23 +968,19 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                           itemCount: filtered.length,
                           itemBuilder: (context, index) {
                             final project = filtered[index];
-                            final isSelected =
-                                selectedIds.contains(project.id);
+                            final isSelected = selectedIds.contains(project.id);
                             final pColor = Color(project.colorValue);
                             return ListTile(
                               leading: Container(
                                 width: 40,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color:
-                                      pColor.withValues(alpha: 0.15),
-                                  borderRadius:
-                                      BorderRadius.circular(12),
+                                  color: pColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Center(
                                   child: Text(project.emoji,
-                                      style:
-                                          const TextStyle(fontSize: 18)),
+                                      style: const TextStyle(fontSize: 18)),
                                 ),
                               ),
                               title: Text(
@@ -1007,8 +991,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                                 ),
                               ),
                               trailing: isSelected
-                                  ? Icon(Icons.check_circle,
-                                      color: pColor)
+                                  ? Icon(Icons.check_circle, color: pColor)
                                   : Icon(Icons.circle_outlined,
                                       color: BrainTheme.textTertiary),
                               onTap: () {
@@ -1030,8 +1013,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(context),
-                            child: Text(
-                                AppLocalizations.of(context).cancel),
+                            child: Text(AppLocalizations.of(context).cancel),
                           ),
                         ),
                         const SizedBox(width: 12),

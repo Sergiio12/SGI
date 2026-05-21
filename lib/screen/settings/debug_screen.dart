@@ -4,7 +4,6 @@ import '../../config/theme.dart';
 import '../../services/notification_service.dart';
 import '../../utils/haptic_helper.dart';
 import '../../utils/notification_service_v2.dart';
-import '../../utils/undo_helper.dart';
 
 class DebugScreen extends StatelessWidget {
   const DebugScreen({super.key});
@@ -38,7 +37,8 @@ class DebugScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _DebugCard(
             title: 'Notificaciones In-App',
-            description: 'Prueba el sistema de notificaciones visuales internas.',
+            description:
+                'Prueba el sistema de notificaciones visuales internas.',
             icon: Icons.message_outlined,
             buttonLabel: 'Probar In-App',
             onPressed: () {
@@ -62,24 +62,28 @@ class DebugScreen extends StatelessWidget {
             iconColor: BrainTheme.accentOrange,
             buttonLabel: 'Mostrar SnackBar',
             onPressed: () {
-              showUndoSnackBar(
-                context,
-                message: 'Elemento eliminado de prueba',
-                onUndo: () => showSuccessNotification('Deshecho correctamente'),
+              showSuccessNotification(
+                'Elemento eliminado de prueba',
+                actionLabel: AppLocalizations.of(context).undo,
+                onAction: () =>
+                    showSuccessNotification('Deshecho correctamente'),
               );
             },
           ),
           const SizedBox(height: 16),
           _DebugCard(
             title: 'Feedback háptico',
-            description: 'Prueba las vibraciones hápticas (ligera, selección, media).',
+            description:
+                'Prueba las vibraciones hápticas (ligera, selección, media).',
             icon: Icons.vibration_rounded,
             iconColor: BrainTheme.accentPurple,
             buttonLabel: 'Probar hápticos',
             onPressed: () {
               HapticHelper.light();
-              Future.delayed(const Duration(milliseconds: 300), HapticHelper.selection);
-              Future.delayed(const Duration(milliseconds: 600), HapticHelper.medium);
+              Future.delayed(
+                  const Duration(milliseconds: 300), HapticHelper.selection);
+              Future.delayed(
+                  const Duration(milliseconds: 600), HapticHelper.medium);
             },
           ),
         ],

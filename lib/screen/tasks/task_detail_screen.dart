@@ -7,7 +7,6 @@ import 'package:uuid/uuid.dart';
 import '../../config/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/notification_service_v2.dart';
-import '../../utils/undo_helper.dart';
 import '../../models/recurrence_rule.dart';
 import '../../models/task.dart';
 import '../../providers/tags_provider.dart';
@@ -113,6 +112,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     }
     return true;
   }
+
   late TabController _tabController;
 
   @override
@@ -149,8 +149,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             _initialActualHours = task.actualHours != null
                 ? _formatNumber(task.actualHours!)
                 : null;
-            _initialReminder =
-                task.reminderMinutesBefore?.toString() ?? '';
+            _initialReminder = task.reminderMinutesBefore?.toString() ?? '';
             _initialProjectId = task.projectId;
             _initialSubtasks = List.from(task.subtasks);
             _initialSelectedTags = List.from(task.tags);
@@ -343,7 +342,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   @override
   Widget build(BuildContext context) {
     final task = _isEditing
-        ? context.select<TasksProvider, Task?>((p) => p.getTaskById(widget.taskId!))
+        ? context
+            .select<TasksProvider, Task?>((p) => p.getTaskById(widget.taskId!))
         : null;
 
     if (_isEditing && task == null && !_showForm) {
@@ -433,426 +433,421 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         if (shouldPop && context.mounted) Navigator.pop(context);
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: Text(isEditing
-            ? AppLocalizations.of(context).editTask
-            : AppLocalizations.of(context).createTask),
-        actions: [
-          if (isEditing)
-            IconButton(
-              icon: Icon(Icons.delete_outline, color: BrainTheme.accentRed),
-              onPressed: () => _deleteTask(task),
-            ),
-          TextButton(
-            onPressed: _save,
-            child: Text(
-              AppLocalizations.of(context).save,
-              style: TextStyle(
-                  fontWeight: FontWeight.w600, color: BrainTheme.accentPurple),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _FormCard(
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _titleController,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: BrainTheme.textPrimary,
-                      letterSpacing: -0.5,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context).sortTitle,
-                      border: InputBorder.none,
-                      filled: false,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    autofocus: !isEditing,
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _descController,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: BrainTheme.textSecondary,
-                      height: 1.4,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context).description,
-                      border: InputBorder.none,
-                      filled: false,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    maxLines: null,
-                    minLines: 2,
-                  ),
-                  _buildAiSuggestions(),
-                ],
+        appBar: AppBar(
+          title: Text(isEditing
+              ? AppLocalizations.of(context).editTask
+              : AppLocalizations.of(context).createTask),
+          actions: [
+            if (isEditing)
+              IconButton(
+                icon: Icon(Icons.delete_outline, color: BrainTheme.accentRed),
+                onPressed: () => _deleteTask(task),
+              ),
+            TextButton(
+              onPressed: _save,
+              child: Text(
+                AppLocalizations.of(context).save,
+                style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: BrainTheme.accentPurple),
               ),
             ),
-            const SizedBox(height: 12),
-            _FormSection(
-              title: AppLocalizations.of(context).details,
-              icon: Icons.tune,
-              children: [
-                _buildStatusSelector(),
-                const SizedBox(height: 12),
-                _buildPrioritySelector(),
-                const SizedBox(height: 12),
-                _buildDateField(),
-                const SizedBox(height: 12),
-                _buildProjectField(),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _FormSection(
-              title: AppLocalizations.of(context).notifications,
-              icon: Icons.timer_outlined,
-              children: [
-                Row(
+          ],
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _FormCard(
+                child: Column(
                   children: [
-                    Expanded(
-                      child: _FormTextField(
-                        controller: _estimatedHoursController,
-                        label: AppLocalizations.of(context).task,
-                        icon: Icons.timer_outlined,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
+                    TextField(
+                      controller: _titleController,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: BrainTheme.textPrimary,
+                        letterSpacing: -0.5,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _FormTextField(
-                        controller: _actualHoursController,
-                        label: AppLocalizations.of(context).note,
-                        icon: Icons.schedule,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context).sortTitle,
+                        border: InputBorder.none,
+                        filled: false,
+                        contentPadding: EdgeInsets.zero,
                       ),
+                      autofocus: !isEditing,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _FormTextField(
-                        controller: _reminderController,
-                        label: AppLocalizations.of(context).notifications,
-                        icon: Icons.notifications_outlined,
-                        keyboardType: TextInputType.number,
-                        hint: '60',
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _descController,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: BrainTheme.textSecondary,
+                        height: 1.4,
                       ),
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context).description,
+                        border: InputBorder.none,
+                        filled: false,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      maxLines: null,
+                      minLines: 2,
                     ),
+                    _buildAiSuggestions(),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _FormSection(
-              title: 'Repetir',
-              icon: Icons.repeat,
-              children: [
-                _buildRecurrenceSelector(),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _FormSection(
-              title: AppLocalizations.of(context).tags,
-              icon: Icons.label_outline,
-              children: [
-                Consumer<TagsProvider>(builder: (context, tagsProv, _) {
-                  final selected = tagsProv.tags
-                      .where((t) => _selectedTags.contains(t.id))
-                      .toList();
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              const SizedBox(height: 12),
+              _FormSection(
+                title: AppLocalizations.of(context).details,
+                icon: Icons.tune,
+                children: [
+                  _buildStatusSelector(),
+                  const SizedBox(height: 12),
+                  _buildPrioritySelector(),
+                  const SizedBox(height: 12),
+                  _buildDateField(),
+                  const SizedBox(height: 12),
+                  _buildProjectField(),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _FormSection(
+                title: AppLocalizations.of(context).notifications,
+                icon: Icons.timer_outlined,
+                children: [
+                  Row(
                     children: [
-                      if (selected.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: selected.map((tag) {
-                              return GestureDetector(
-                                onTap: () => setState(
-                                    () => _selectedTags.remove(tag.id)),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: tag.color.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                        color:
-                                            tag.color.withValues(alpha: 0.3)),
+                      Expanded(
+                        child: _FormTextField(
+                          controller: _estimatedHoursController,
+                          label: AppLocalizations.of(context).task,
+                          icon: Icons.timer_outlined,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _FormTextField(
+                          controller: _actualHoursController,
+                          label: AppLocalizations.of(context).note,
+                          icon: Icons.schedule,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _FormTextField(
+                          controller: _reminderController,
+                          label: AppLocalizations.of(context).notifications,
+                          icon: Icons.notifications_outlined,
+                          keyboardType: TextInputType.number,
+                          hint: '60',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _FormSection(
+                title: 'Repetir',
+                icon: Icons.repeat,
+                children: [
+                  _buildRecurrenceSelector(),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _FormSection(
+                title: AppLocalizations.of(context).tags,
+                icon: Icons.label_outline,
+                children: [
+                  Consumer<TagsProvider>(builder: (context, tagsProv, _) {
+                    final selected = tagsProv.tags
+                        .where((t) => _selectedTags.contains(t.id))
+                        .toList();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (selected.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: selected.map((tag) {
+                                return GestureDetector(
+                                  onTap: () => setState(
+                                      () => _selectedTags.remove(tag.id)),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: tag.color.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                          color:
+                                              tag.color.withValues(alpha: 0.3)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(tag.name,
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: tag.color,
+                                                fontWeight: FontWeight.w500)),
+                                        const SizedBox(width: 4),
+                                        Icon(Icons.close,
+                                            size: 12, color: tag.color),
+                                      ],
+                                    ),
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(tag.name,
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: tag.color,
-                                              fontWeight: FontWeight.w500)),
-                                      const SizedBox(width: 4),
-                                      Icon(Icons.close,
-                                          size: 12, color: tag.color),
-                                    ],
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _showTagPicker,
+                                icon: const Icon(Icons.playlist_add, size: 16),
+                                label:
+                                    Text(AppLocalizations.of(context).filter),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: BrainTheme.accentPurple,
+                                  side: BorderSide(
+                                      color: BrainTheme.accentPurple
+                                          .withValues(alpha: 0.3)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _showTagPicker,
-                              icon:
-                                  const Icon(Icons.playlist_add, size: 16),
-                              label: Text(
-                                  AppLocalizations.of(context).filter),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            OutlinedButton.icon(
+                              onPressed: _showManageTagsModal,
+                              icon: const Icon(Icons.settings, size: 16),
+                              label:
+                                  Text(AppLocalizations.of(context).settings),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: BrainTheme.accentPurple,
-                                side: BorderSide(
-                                    color: BrainTheme.accentPurple
-                                        .withValues(alpha: 0.3)),
+                                foregroundColor: BrainTheme.textSecondary,
+                                side: BorderSide(color: BrainTheme.borderDark),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          OutlinedButton.icon(
-                            onPressed: _showManageTagsModal,
-                            icon: const Icon(Icons.settings, size: 16),
-                            label: Text(
-                                AppLocalizations.of(context).settings),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: BrainTheme.textSecondary,
-                              side: BorderSide(
-                                  color: BrainTheme.borderDark),
-                              shape: RoundedRectangleBorder(
+                          ],
+                        ),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _FormSection(
+                title: AppLocalizations.of(context).notes,
+                icon: Icons.link,
+                children: [
+                  Consumer<NotesProvider>(builder: (context, notesProv, _) {
+                    return Column(
+                      children: [
+                        if (_linkedNoteIds.isNotEmpty)
+                          ..._linkedNoteIds.map((id) {
+                            final note = notesProv.getNoteById(id);
+                            if (note == null) return const SizedBox.shrink();
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 6),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: BrainTheme.surfaceDark,
                                 borderRadius: BorderRadius.circular(12),
+                                border:
+                                    Border.all(color: BrainTheme.borderDark),
                               ),
+                              child: Row(
+                                children: [
+                                  Text(note.emoji,
+                                      style: const TextStyle(fontSize: 18)),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(note.title,
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                color: BrainTheme.textPrimary)),
+                                        Text(note.notebook,
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                color:
+                                                    BrainTheme.textTertiary)),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.link_off,
+                                        size: 16, color: BrainTheme.accentRed),
+                                    onPressed: () => setState(
+                                        () => _linkedNoteIds.remove(id)),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        OutlinedButton.icon(
+                          onPressed: _showLinkNotes,
+                          icon: const Icon(Icons.add, size: 16),
+                          label: Text(AppLocalizations.of(context).note),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: BrainTheme.accentPurple,
+                            side: BorderSide(
+                                color: BrainTheme.accentPurple
+                                    .withValues(alpha: 0.3)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  );
-                }),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _FormSection(
-              title: AppLocalizations.of(context).notes,
-              icon: Icons.link,
-              children: [
-                Consumer<NotesProvider>(builder: (context, notesProv, _) {
-                  return Column(
-                    children: [
-                      if (_linkedNoteIds.isNotEmpty)
-                        ..._linkedNoteIds.map((id) {
-                          final note = notesProv.getNoteById(id);
-                          if (note == null) return const SizedBox.shrink();
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 6),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: BrainTheme.surfaceDark,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: BrainTheme.borderDark),
-                            ),
-                            child: Row(
-                              children: [
-                                Text(note.emoji,
-                                    style: const TextStyle(fontSize: 18)),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(note.title,
-                                          style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w500,
-                                              color:
-                                                  BrainTheme.textPrimary)),
-                                      Text(note.notebook,
-                                          style: TextStyle(
-                                              fontSize: 11,
-                                              color:
-                                                  BrainTheme.textTertiary)),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.link_off,
-                                      size: 16,
-                                      color: BrainTheme.accentRed),
-                                  onPressed: () => setState(
-                                      () => _linkedNoteIds.remove(id)),
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                              ],
+                        ),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _FormSection(
+                title: AppLocalizations.of(context).subtasks,
+                icon: Icons.checklist,
+                trailing: Text(
+                  '$subtaskDone/${_subtasks.length}',
+                  style:
+                      TextStyle(fontSize: 12, color: BrainTheme.textTertiary),
+                ),
+                children: [
+                  if (_subtasks.isNotEmpty) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: subtaskProgress),
+                        duration: 400.ms,
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, _) {
+                          return LinearProgressIndicator(
+                            value: value,
+                            minHeight: 4,
+                            backgroundColor: BrainTheme.borderDark,
+                            valueColor: AlwaysStoppedAnimation(
+                              subtaskProgress >= 1.0
+                                  ? BrainTheme.accentGreen
+                                  : BrainTheme.accentPurple,
                             ),
                           );
-                        }),
-                      OutlinedButton.icon(
-                        onPressed: _showLinkNotes,
-                        icon: const Icon(Icons.add, size: 16),
-                        label: Text(AppLocalizations.of(context).note),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: BrainTheme.accentPurple,
-                          side: BorderSide(
-                              color: BrainTheme.accentPurple
-                                  .withValues(alpha: 0.3)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
+                        },
                       ),
-                    ],
-                  );
-                }),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _FormSection(
-              title: AppLocalizations.of(context).subtasks,
-              icon: Icons.checklist,
-              trailing: Text(
-                '$subtaskDone/${_subtasks.length}',
-                style: TextStyle(
-                    fontSize: 12, color: BrainTheme.textTertiary),
-              ),
-              children: [
-                if (_subtasks.isNotEmpty) ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0, end: subtaskProgress),
-                      duration: 400.ms,
-                      curve: Curves.easeOutCubic,
-                      builder: (context, value, _) {
-                        return LinearProgressIndicator(
-                          value: value,
-                          minHeight: 4,
-                          backgroundColor: BrainTheme.borderDark,
-                          valueColor: AlwaysStoppedAnimation(
-                            subtaskProgress >= 1.0
-                                ? BrainTheme.accentGreen
-                                : BrainTheme.accentPurple,
-                          ),
-                        );
-                      },
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                ],
-                ..._subtasks.asMap().entries.map((entry) {
-                  final subtask = entry.value;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _subtasks[entry.key] =
-                                  subtask.copyWith(isDone: !subtask.isDone);
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: 200.ms,
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: subtask.isDone
-                                  ? BrainTheme.accentGreen
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(
+                    const SizedBox(height: 10),
+                  ],
+                  ..._subtasks.asMap().entries.map((entry) {
+                    final subtask = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _subtasks[entry.key] =
+                                    subtask.copyWith(isDone: !subtask.isDone);
+                              });
+                            },
+                            child: AnimatedContainer(
+                              duration: 200.ms,
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
                                 color: subtask.isDone
                                     ? BrainTheme.accentGreen
-                                    : BrainTheme.borderDark,
-                                width: 2,
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(
+                                  color: subtask.isDone
+                                      ? BrainTheme.accentGreen
+                                      : BrainTheme.borderDark,
+                                  width: 2,
+                                ),
                               ),
-                            ),
-                            child: subtask.isDone
-                                ? const Icon(Icons.check,
-                                    size: 12, color: Colors.white)
-                                : null,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            subtask.title,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: subtask.isDone
-                                  ? BrainTheme.textTertiary
-                                  : BrainTheme.textPrimary,
-                              decoration: subtask.isDone
-                                  ? TextDecoration.lineThrough
+                              child: subtask.isDone
+                                  ? const Icon(Icons.check,
+                                      size: 12, color: Colors.white)
                                   : null,
                             ),
                           ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.close,
-                              size: 16, color: BrainTheme.textTertiary),
-                          onPressed: () => setState(
-                              () => _subtasks.removeAt(entry.key)),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _subtaskController,
-                        decoration: InputDecoration(
-                          hintText:
-                              AppLocalizations.of(context).addSubtask,
-                          border: InputBorder.none,
-                          filled: false,
-                          contentPadding:
-                              EdgeInsets.symmetric(vertical: 8),
-                          isDense: true,
-                        ),
-                        onSubmitted: (_) => _addSubtask(),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              subtask.title,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: subtask.isDone
+                                    ? BrainTheme.textTertiary
+                                    : BrainTheme.textPrimary,
+                                decoration: subtask.isDone
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.close,
+                                size: 16, color: BrainTheme.textTertiary),
+                            onPressed: () =>
+                                setState(() => _subtasks.removeAt(entry.key)),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.add_circle,
-                          color: BrainTheme.accentPurple),
-                      onPressed: _addSubtask,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 100),
-          ],
+                    );
+                  }),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _subtaskController,
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.of(context).addSubtask,
+                            border: InputBorder.none,
+                            filled: false,
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                            isDense: true,
+                          ),
+                          onSubmitted: (_) => _addSubtask(),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.add_circle,
+                            color: BrainTheme.accentPurple),
+                        onPressed: _addSubtask,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 100),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -861,15 +856,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(Icons.flag_outlined,
-            size: 16, color: BrainTheme.textTertiary),
+        Icon(Icons.flag_outlined, size: 16, color: BrainTheme.textTertiary),
         const SizedBox(width: 8),
         SizedBox(
           width: 70,
           child: Text(
             AppLocalizations.of(context).status,
-            style:
-                TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+            style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
           ),
         ),
         const SizedBox(width: 8),
@@ -914,13 +907,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(Icons.priority_high,
-                size: 16, color: BrainTheme.textTertiary),
+            Icon(Icons.priority_high, size: 16, color: BrainTheme.textTertiary),
             const SizedBox(width: 8),
             Text(
               AppLocalizations.of(context).sortPriority,
-              style:
-                  TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+              style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
             ),
           ],
         ),
@@ -971,9 +962,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                         _priorityLabel(priority, context),
                         style: TextStyle(
                           fontSize: 10,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
                           color: isSelected ? color : BrainTheme.textTertiary,
                         ),
                       ),
@@ -999,8 +989,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
           width: 70,
           child: Text(
             AppLocalizations.of(context).dueDate,
-            style:
-                TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+            style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
           ),
         ),
         const SizedBox(width: 8),
@@ -1010,16 +999,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
               final date = await showDatePicker(
                 context: context,
                 initialDate: _dueDate ?? DateTime.now(),
-                firstDate:
-                    DateTime.now().subtract(const Duration(days: 365)),
-                lastDate:
-                    DateTime.now().add(const Duration(days: 365 * 3)),
+                firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
               );
               if (date != null) setState(() => _dueDate = date);
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 color: BrainTheme.surfaceDark,
                 borderRadius: BorderRadius.circular(10),
@@ -1029,15 +1015,14 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _dueDate != null &&
-                            _dueDate!.isBefore(DateTime.now())
+                    _dueDate != null && _dueDate!.isBefore(DateTime.now())
                         ? Icons.error_outline
                         : Icons.event,
                     size: 14,
-                    color: _dueDate != null &&
-                            _dueDate!.isBefore(DateTime.now())
-                        ? BrainTheme.accentRed
-                        : BrainTheme.textSecondary,
+                    color:
+                        _dueDate != null && _dueDate!.isBefore(DateTime.now())
+                            ? BrainTheme.accentRed
+                            : BrainTheme.textSecondary,
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -1067,15 +1052,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(Icons.folder_outlined,
-            size: 16, color: BrainTheme.textTertiary),
+        Icon(Icons.folder_outlined, size: 16, color: BrainTheme.textTertiary),
         const SizedBox(width: 8),
         SizedBox(
           width: 70,
           child: Text(
             AppLocalizations.of(context).project,
-            style:
-                TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+            style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
           ),
         ),
         const SizedBox(width: 8),
@@ -1093,23 +1076,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   value: _projectId,
                   dropdownColor: BrainTheme.cardDark,
                   underline: const SizedBox.shrink(),
-                  hint: Text(
-                      AppLocalizations.of(context).noDueDate),
+                  hint: Text(AppLocalizations.of(context).noDueDate),
                   isExpanded: true,
                   items: [
                     DropdownMenuItem(
                         value: null,
-                        child: Text(
-                            AppLocalizations.of(context).noDueDate)),
-                    ...projects.projects
-                        .map((project) => DropdownMenuItem(
-                              value: project.id,
-                              child: Text(
-                                  '${project.emoji} ${project.title}'),
-                            )),
+                        child: Text(AppLocalizations.of(context).noDueDate)),
+                    ...projects.projects.map((project) => DropdownMenuItem(
+                          value: project.id,
+                          child: Text('${project.emoji} ${project.title}'),
+                        )),
                   ],
-                  onChanged: (value) =>
-                      setState(() => _projectId = value),
+                  onChanged: (value) => setState(() => _projectId = value),
                 ),
               );
             },
@@ -1160,13 +1138,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   items: [
                     null,
                     ...RecurrenceFrequency.values,
-                  ].map((f) => DropdownMenuItem(
-                        value: f,
-                        child: Text(
-                          freqLabels[f]!,
-                          style: TextStyle(color: BrainTheme.textPrimary),
-                        ),
-                      )).toList(),
+                  ]
+                      .map((f) => DropdownMenuItem(
+                            value: f,
+                            child: Text(
+                              freqLabels[f]!,
+                              style: TextStyle(color: BrainTheme.textPrimary),
+                            ),
+                          ))
+                      .toList(),
                   onChanged: (value) => setState(() {
                     _recurrenceFrequency = value;
                     if (value == null) {
@@ -1195,7 +1175,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   style: TextStyle(color: BrainTheme.textPrimary, fontSize: 14),
                   decoration: InputDecoration(
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide(color: BrainTheme.borderDark),
@@ -1220,13 +1201,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(Icons.stop_circle_outlined, size: 16, color: BrainTheme.textTertiary),
+              Icon(Icons.stop_circle_outlined,
+                  size: 16, color: BrainTheme.textTertiary),
               const SizedBox(width: 8),
               SizedBox(
                 width: 70,
                 child: Text(
                   'Finaliza',
-                  style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+                  style:
+                      TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1245,10 +1228,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     isExpanded: true,
                     items: const [
                       DropdownMenuItem(value: 0, child: Text('Nunca')),
-                      DropdownMenuItem(value: 1, child: Text('Después de N ocurrencias')),
-                      DropdownMenuItem(value: 2, child: Text('Fecha específica')),
+                      DropdownMenuItem(
+                          value: 1, child: Text('Después de N ocurrencias')),
+                      DropdownMenuItem(
+                          value: 2, child: Text('Fecha específica')),
                     ],
-                    onChanged: (value) => setState(() => _recurrenceEndCondition = value!),
+                    onChanged: (value) =>
+                        setState(() => _recurrenceEndCondition = value!),
                   ),
                 ),
               ),
@@ -1264,11 +1250,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   child: TextField(
                     controller: _recurrenceCountController,
                     keyboardType: TextInputType.number,
-                    style: TextStyle(color: BrainTheme.textPrimary, fontSize: 14),
+                    style:
+                        TextStyle(color: BrainTheme.textPrimary, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'N',
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 8),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(color: BrainTheme.borderDark),
@@ -1285,7 +1273,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 const SizedBox(width: 8),
                 Text(
                   'ocurrencias',
-                  style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+                  style:
+                      TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
                 ),
               ],
             ),
@@ -1302,12 +1291,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                         context: context,
                         initialDate: _recurrenceEndDate ?? DateTime.now(),
                         firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
+                        lastDate:
+                            DateTime.now().add(const Duration(days: 365 * 3)),
                       );
-                      if (date != null) setState(() => _recurrenceEndDate = date);
+                      if (date != null)
+                        setState(() => _recurrenceEndDate = date);
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: BrainTheme.surfaceDark,
                         borderRadius: BorderRadius.circular(10),
@@ -1316,19 +1308,23 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.event, size: 14, color: BrainTheme.textSecondary),
+                          Icon(Icons.event,
+                              size: 14, color: BrainTheme.textSecondary),
                           const SizedBox(width: 6),
                           Text(
                             _recurrenceEndDate != null
-                                ? DateFormat('dd MMM yyyy').format(_recurrenceEndDate!)
+                                ? DateFormat('dd MMM yyyy')
+                                    .format(_recurrenceEndDate!)
                                 : 'Seleccionar fecha',
                             style: TextStyle(color: BrainTheme.textPrimary),
                           ),
                           if (_recurrenceEndDate != null) ...[
                             const SizedBox(width: 6),
                             GestureDetector(
-                              onTap: () => setState(() => _recurrenceEndDate = null),
-                              child: Icon(Icons.close, size: 14, color: BrainTheme.textTertiary),
+                              onTap: () =>
+                                  setState(() => _recurrenceEndDate = null),
+                              child: Icon(Icons.close,
+                                  size: 14, color: BrainTheme.textTertiary),
                             ),
                           ],
                         ],
@@ -1386,26 +1382,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       final tid = task.id;
       await context.read<TasksProvider>().deleteTask(tid);
       if (mounted) {
-        final messenger = ScaffoldMessenger.of(context);
         final l10n = AppLocalizations.of(context);
         final provider = context.read<TasksProvider>();
         Navigator.pop(context);
-        messenger.hideCurrentSnackBar();
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.taskDeleted, style: TextStyle(color: BrainTheme.textPrimary)),
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 4),
-            margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            action: SnackBarAction(
-              label: l10n.undo,
-              textColor: BrainTheme.accentPurple,
-              onPressed: () => provider.restoreTask(tid),
-            ),
-          ),
+        showSuccessNotification(
+          l10n.taskDeleted,
+          actionLabel: l10n.undo,
+          onAction: () => provider.restoreTask(tid),
         );
       }
     }
@@ -1449,8 +1432,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                 color: BrainTheme.textPrimary)),
                       ),
                       IconButton(
-                        icon: Icon(Icons.close,
-                            color: BrainTheme.textSecondary),
+                        icon:
+                            Icon(Icons.close, color: BrainTheme.textSecondary),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -1470,8 +1453,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                             ),
                           ),
                           title: Text(t.name,
-                              style:
-                                  TextStyle(color: BrainTheme.textPrimary)),
+                              style: TextStyle(color: BrainTheme.textPrimary)),
                           value: isSelected,
                           activeColor: BrainTheme.accentPurple,
                           onChanged: (v) => setState(() {
@@ -1545,8 +1527,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     const SizedBox(height: 12),
                     TextField(
                       decoration: InputDecoration(
-                        hintText:
-                            AppLocalizations.of(context).searchInNotes,
+                        hintText: AppLocalizations.of(context).searchInNotes,
                         prefixIcon: const Icon(Icons.search, size: 20),
                         isDense: true,
                       ),
@@ -1621,16 +1602,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                                 color: BrainTheme.textPrimary)),
                       ),
                       IconButton(
-                        icon: Icon(Icons.close,
-                            color: BrainTheme.textSecondary),
+                        icon:
+                            Icon(Icons.close, color: BrainTheme.textSecondary),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Expanded(
-                    child: Consumer<TagsProvider>(
-                        builder: (context, prov, _) {
+                    child: Consumer<TagsProvider>(builder: (context, prov, _) {
                       return ListView(
                         children: prov.tags
                             .map((t) => ListTile(
@@ -1729,8 +1709,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                   TextField(
                       controller: nameCtrl,
                       decoration: InputDecoration(
-                          labelText:
-                              AppLocalizations.of(context).tag)),
+                          labelText: AppLocalizations.of(context).tag)),
                   const SizedBox(height: 12),
                   TagColorPicker(
                     selectedColorValue: newTagColorValue,
@@ -1751,8 +1730,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                     style: FilledButton.styleFrom(
                       backgroundColor: BrainTheme.accentPurple,
                     ),
-                    child:
-                        Text(AppLocalizations.of(context).createTask),
+                    child: Text(AppLocalizations.of(context).createTask),
                   ),
                 ],
               ),
@@ -1824,12 +1802,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         final chips = <Widget>[];
 
         if (suggestion.suggestedPriority != null) {
-          final color = BrainTheme.priorityColor(suggestion.suggestedPriority!.index);
+          final color =
+              BrainTheme.priorityColor(suggestion.suggestedPriority!.index);
           chips.add(_SuggestionChip(
             icon: Icons.flag,
-            label: 'Prioridad: ${_priorityLabel(suggestion.suggestedPriority!, context)}',
+            label:
+                'Prioridad: ${_priorityLabel(suggestion.suggestedPriority!, context)}',
             color: color,
-            onTap: () => setState(() => _priority = suggestion.suggestedPriority!),
+            onTap: () =>
+                setState(() => _priority = suggestion.suggestedPriority!),
           ));
         }
 
@@ -1856,7 +1837,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         if (suggestion.suggestedTags.isNotEmpty) {
           for (final tagName in suggestion.suggestedTags) {
             final tagsProv = context.read<TagsProvider>();
-            final tag = tagsProv.tags.where((t) => t.name == tagName).firstOrNull;
+            final tag =
+                tagsProv.tags.where((t) => t.name == tagName).firstOrNull;
             if (tag != null && !_selectedTags.contains(tag.id)) {
               chips.add(_SuggestionChip(
                 icon: Icons.label,
@@ -2100,7 +2082,8 @@ class _TaskHeaderSliver extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.edit_outlined, color: Colors.white, size: 18),
+            child:
+                const Icon(Icons.edit_outlined, color: Colors.white, size: 18),
           ),
           onPressed: onEdit,
         ),
@@ -2111,7 +2094,8 @@ class _TaskHeaderSliver extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.delete_outline, color: Colors.white, size: 18),
+            child:
+                const Icon(Icons.delete_outline, color: Colors.white, size: 18),
           ),
           onPressed: onDelete,
         ),
@@ -2174,7 +2158,8 @@ class _TaskHeaderSliver extends StatelessWidget {
                             height: 48,
                             decoration: BoxDecoration(
                               color: task.status == TaskStatus.completed
-                                  ? BrainTheme.accentGreen.withValues(alpha: 0.3)
+                                  ? BrainTheme.accentGreen
+                                      .withValues(alpha: 0.3)
                                   : Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
@@ -2230,7 +2215,8 @@ class _TaskHeaderSliver extends StatelessWidget {
                                         .slideX(begin: 0.1, end: 0),
                                     const SizedBox(width: 6),
                                     _TaskHeaderBadge(
-                                      label: _priorityLabel(task.priority, context),
+                                      label: _priorityLabel(
+                                          task.priority, context),
                                       color: priColor,
                                       icon: Icons.flag_outlined,
                                     )
@@ -2564,8 +2550,7 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
         indicatorColor: BrainTheme.accentPurple,
         indicatorSize: TabBarIndicatorSize.label,
         indicatorWeight: 3,
-        labelStyle:
-            const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
         tabs: [
           Tab(
               child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -2682,8 +2667,7 @@ class _TaskInfoTab extends StatelessWidget {
                   task.isOverdue ? Icons.error_outline : Icons.event,
                   AppLocalizations.of(context).dueDate,
                   DateFormat('dd MMM yyyy').format(task.dueDate!),
-                  valueColor:
-                      task.isOverdue ? BrainTheme.accentRed : null,
+                  valueColor: task.isOverdue ? BrainTheme.accentRed : null,
                 ),
               ],
               if (task.projectId != null) ...[
@@ -2693,9 +2677,7 @@ class _TaskInfoTab extends StatelessWidget {
                   return _detailRow(
                     Icons.folder_outlined,
                     AppLocalizations.of(context).project,
-                    project != null
-                        ? '${project.emoji} ${project.title}'
-                        : '—',
+                    project != null ? '${project.emoji} ${project.title}' : '—',
                   );
                 }),
               ],
@@ -2706,8 +2688,7 @@ class _TaskInfoTab extends StatelessWidget {
                   '${task.estimatedHours.toStringAsFixed(1)}h'),
               if (task.actualHours != null) ...[
                 const Divider(height: 16),
-                _detailRow(Icons.schedule,
-                    AppLocalizations.of(context).note,
+                _detailRow(Icons.schedule, AppLocalizations.of(context).note,
                     '${task.actualHours!.toStringAsFixed(1)}h'),
               ],
             ],
@@ -2756,8 +2737,7 @@ class _TaskInfoTab extends StatelessWidget {
         SizedBox(
           width: 80,
           child: Text(label,
-              style:
-                  TextStyle(fontSize: 12, color: BrainTheme.textSecondary)),
+              style: TextStyle(fontSize: 12, color: BrainTheme.textSecondary)),
         ),
         Expanded(
           child: Text(
@@ -2848,12 +2828,11 @@ class _TaskSubtabsTab extends StatelessWidget {
             Text('📋', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
             Text(AppLocalizations.of(context).noTasks,
-                style: TextStyle(
-                    fontSize: 16, color: BrainTheme.textSecondary)),
+                style:
+                    TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
             const SizedBox(height: 8),
             Text(AppLocalizations.of(context).emptyStateDescription,
-                style:
-                    TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
+                style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
           ],
         ),
       );
@@ -2938,12 +2917,11 @@ class _TaskNotesTab extends StatelessWidget {
             Text('🔗', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
             Text(AppLocalizations.of(context).noData,
-                style: TextStyle(
-                    fontSize: 16, color: BrainTheme.textSecondary)),
+                style:
+                    TextStyle(fontSize: 16, color: BrainTheme.textSecondary)),
             const SizedBox(height: 8),
             Text(AppLocalizations.of(context).emptyStateDescription,
-                style:
-                    TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
+                style: TextStyle(fontSize: 13, color: BrainTheme.textTertiary)),
           ],
         ),
       );
@@ -2967,8 +2945,7 @@ class _TaskNotesTab extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Text(note.emoji,
-                      style: const TextStyle(fontSize: 22)),
+                  Text(note.emoji, style: const TextStyle(fontSize: 22)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -2979,30 +2956,29 @@ class _TaskNotesTab extends StatelessWidget {
                                 fontWeight: FontWeight.w500,
                                 color: BrainTheme.textPrimary,
                                 fontSize: 14)),
-                  Text(note.notebook,
-                             style: TextStyle(
-                                 color: BrainTheme.textTertiary,
-                                 fontSize: 12)),
-                       ],
-                     ),
-                   ),
-                   IconButton(
-                     icon: Icon(Icons.link_off,
-                         color: BrainTheme.accentRed, size: 18),
-                     onPressed: () {
-                       final updated = List<String>.from(linkedNoteIds)
-                         ..removeAt(index);
-                       onChanged(updated);
-                     },
-                   ),
-                 ],
-               ),
-             );
-           },
-         );
-       },
-     );
-   }
+                        Text(note.notebook,
+                            style: TextStyle(
+                                color: BrainTheme.textTertiary, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.link_off,
+                        color: BrainTheme.accentRed, size: 18),
+                    onPressed: () {
+                      final updated = List<String>.from(linkedNoteIds)
+                        ..removeAt(index);
+                      onChanged(updated);
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 class _SuggestionChip extends StatelessWidget {

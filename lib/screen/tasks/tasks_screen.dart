@@ -12,7 +12,7 @@ import '../../models/task.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../providers/daily_planner_provider.dart';
-import '../../utils/undo_helper.dart';
+import '../../utils/notification_service_v2.dart';
 import '../../widgets/skeleton_card.dart';
 import '../../widgets/task_card.dart';
 import '../../widgets/task_board_column.dart';
@@ -275,8 +275,8 @@ class _TasksScreenState extends State<TasksScreen> {
     );
   }
 
-  Widget _buildBoard(
-      BuildContext context, TasksProvider provider, DailyPlannerProvider planner) {
+  Widget _buildBoard(BuildContext context, TasksProvider provider,
+      DailyPlannerProvider planner) {
     final visibleColumns = TaskStatus.values
         .where((status) => _visibleBoardColumns.contains(status))
         .toList();
@@ -348,8 +348,8 @@ class _TasksScreenState extends State<TasksScreen> {
                     borderRadius: BorderRadius.circular(10),
                     border: hovering
                         ? Border.all(
-                            color: BrainTheme.accentPurple
-                                .withValues(alpha: 0.3),
+                            color:
+                                BrainTheme.accentPurple.withValues(alpha: 0.3),
                           )
                         : null,
                   ),
@@ -408,8 +408,8 @@ class _TasksScreenState extends State<TasksScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: visibleColumns.map((status) {
                             final colTasks = columns[status]!;
-                            final overWip = _wipLimit > 0 &&
-                                colTasks.length > _wipLimit;
+                            final overWip =
+                                _wipLimit > 0 && colTasks.length > _wipLimit;
                             return TaskBoardColumn(
                               status: status,
                               title: _statusLabel(status, context),
@@ -419,8 +419,8 @@ class _TasksScreenState extends State<TasksScreen> {
                               overWip: overWip,
                               onTaskDropped: (task, s) =>
                                   provider.moveTaskToStatus(task.id, s),
-                              onCreateTask: () =>
-                                  _showInlineCreateTask(context, status, provider),
+                              onCreateTask: () => _showInlineCreateTask(
+                                  context, status, provider),
                               taskBuilder: (task) =>
                                   _buildTaskCard(task, provider),
                             );
@@ -478,7 +478,8 @@ class _TasksScreenState extends State<TasksScreen> {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        AppLocalizations.of(context).newTaskWithStatus(_statusLabel(status, context)),
+                        AppLocalizations.of(context)
+                            .newTaskWithStatus(_statusLabel(status, context)),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -487,8 +488,8 @@ class _TasksScreenState extends State<TasksScreen> {
                       ),
                       const Spacer(),
                       IconButton(
-                        icon: Icon(Icons.close,
-                            color: BrainTheme.textSecondary),
+                        icon:
+                            Icon(Icons.close, color: BrainTheme.textSecondary),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -503,8 +504,7 @@ class _TasksScreenState extends State<TasksScreen> {
                       fillColor: BrainTheme.cardDark,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                            BorderSide(color: BrainTheme.borderDark),
+                        borderSide: BorderSide(color: BrainTheme.borderDark),
                       ),
                     ),
                   ),
@@ -523,17 +523,15 @@ class _TasksScreenState extends State<TasksScreen> {
                           labelStyle: TextStyle(
                             color: selected ? color : BrainTheme.textSecondary,
                             fontSize: 11,
-                            fontWeight: selected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
+                            fontWeight:
+                                selected ? FontWeight.w600 : FontWeight.w400,
                           ),
                           side: BorderSide(
                             color: selected
                                 ? color.withValues(alpha: 0.4)
                                 : BrainTheme.borderDark,
                           ),
-                          onSelected: (_) =>
-                              setModalState(() => priority = p),
+                          onSelected: (_) => setModalState(() => priority = p),
                         ),
                       );
                     }).toList(),
@@ -551,8 +549,8 @@ class _TasksScreenState extends State<TasksScreen> {
                             initialDate: dueDate,
                             firstDate: DateTime.now()
                                 .subtract(const Duration(days: 30)),
-                            lastDate: DateTime.now()
-                                .add(const Duration(days: 365)),
+                            lastDate:
+                                DateTime.now().add(const Duration(days: 365)),
                           );
                           if (picked != null) {
                             setModalState(() => dueDate = picked);
@@ -571,11 +569,13 @@ class _TasksScreenState extends State<TasksScreen> {
                       FilledButton(
                         onPressed: () {
                           if (titleCtl.text.trim().isEmpty) return;
-                          provider.addTask(
+                          provider
+                              .addTask(
                             title: titleCtl.text.trim(),
                             priority: priority,
                             dueDate: dueDate,
-                          ).then((result) {
+                          )
+                              .then((result) {
                             final task = result.valueOrNull;
                             if (task != null && status != TaskStatus.pending) {
                               provider.moveTaskToStatus(task.id, status);
@@ -661,7 +661,8 @@ class _TasksScreenState extends State<TasksScreen> {
                         runSpacing: 8,
                         children: TaskPriority.values.map((priority) {
                           final active = selectedPriorities.contains(priority);
-                          final color = BrainTheme.priorityColor(priority.index);
+                          final color =
+                              BrainTheme.priorityColor(priority.index);
                           return FilterChip(
                             label: Text(_priorityLabel(priority, context)),
                             selected: active,
@@ -700,7 +701,8 @@ class _TasksScreenState extends State<TasksScreen> {
                         children: _TaskDueDateFilter.values.map((filter) {
                           final selected = dueDateFilter == filter;
                           return ChoiceChip(
-                            label: Text(_dueDateFilterLabelFor(filter, context)),
+                            label:
+                                Text(_dueDateFilterLabelFor(filter, context)),
                             selected: selected,
                             selectedColor:
                                 BrainTheme.accentBlue.withValues(alpha: 0.15),
@@ -742,8 +744,7 @@ class _TasksScreenState extends State<TasksScreen> {
                             contentPadding: EdgeInsets.zero,
                             dense: true,
                             onChanged: (value) {
-                              setModalState(
-                                  () => onlyWithDescription = value);
+                              setModalState(() => onlyWithDescription = value);
                             },
                           ),
                           SwitchListTile(
@@ -771,8 +772,7 @@ class _TasksScreenState extends State<TasksScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: TaskStatus.values.map((status) {
-                          final selected =
-                              visibleBoardColumns.contains(status);
+                          final selected = visibleBoardColumns.contains(status);
                           final color = _statusColor(status);
                           return FilterChip(
                             label: Row(
@@ -830,8 +830,7 @@ class _TasksScreenState extends State<TasksScreen> {
                             items: _TaskSortOption.values.map((option) {
                               return DropdownMenuItem(
                                 value: option,
-                                child: Text(
-                                    _sortOptionLabel(option, context)),
+                                child: Text(_sortOptionLabel(option, context)),
                               );
                             }).toList(),
                             onChanged: (value) {
@@ -863,14 +862,13 @@ class _TasksScreenState extends State<TasksScreen> {
                               });
                             },
                             style: OutlinedButton.styleFrom(
-                              side: BorderSide(
-                                  color: BrainTheme.borderDark),
+                              side: BorderSide(color: BrainTheme.borderDark),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: Text(
-                                AppLocalizations.of(context).clearFilters),
+                            child:
+                                Text(AppLocalizations.of(context).clearFilters),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -895,8 +893,7 @@ class _TasksScreenState extends State<TasksScreen> {
                               ),
                               elevation: 0,
                             ),
-                            child:
-                                Text(AppLocalizations.of(context).save),
+                            child: Text(AppLocalizations.of(context).save),
                           ),
                         ),
                       ],
@@ -970,9 +967,10 @@ class _TasksScreenState extends State<TasksScreen> {
             onDismissed: () {
               final tid = task.id;
               provider.deleteTask(tid);
-              showUndoSnackBar(context,
-                message: 'Tarea movida a la papelera',
-                onUndo: () => provider.restoreTask(tid),
+              showSuccessNotification(
+                'Tarea movida a la papelera',
+                actionLabel: AppLocalizations.of(context).undo,
+                onAction: () => provider.restoreTask(tid),
               );
             },
           ),

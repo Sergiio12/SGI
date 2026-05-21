@@ -9,7 +9,7 @@ import '../../models/project.dart';
 import '../../providers/projects_provider.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/project_card.dart';
-import '../../utils/undo_helper.dart';
+import '../../utils/notification_service_v2.dart';
 import '../../widgets/skeleton_card.dart';
 
 enum _ProjectSortBy { updatedAt, title, deadline, progress }
@@ -325,10 +325,10 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       final pid = project.id;
       await provider.deleteProject(pid);
       if (context.mounted) {
-        showUndoSnackBar(
-          context,
-          message: '${AppLocalizations.of(context).itemDeleted}',
-          onUndo: () => provider.restoreProject(pid),
+        showSuccessNotification(
+          '${AppLocalizations.of(context).itemDeleted}',
+          actionLabel: AppLocalizations.of(context).undo,
+          onAction: () => provider.restoreProject(pid),
         );
       }
     }

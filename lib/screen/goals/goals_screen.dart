@@ -8,7 +8,7 @@ import '../../models/goal.dart';
 import '../../providers/goals_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tags_provider.dart';
-import '../../utils/undo_helper.dart';
+import '../../utils/notification_service_v2.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/goal_card.dart';
 import '../../widgets/skeleton_card.dart';
@@ -379,10 +379,10 @@ class _GoalsScreenState extends State<GoalsScreen> {
       final gid = goal.id;
       await context.read<GoalsProvider>().deleteGoal(gid);
       if (context.mounted) {
-        showUndoSnackBar(
-          context,
-          message: '${l10n.itemDeleted}',
-          onUndo: () => context.read<GoalsProvider>().restoreGoal(gid),
+        showSuccessNotification(
+          '${l10n.itemDeleted}',
+          actionLabel: l10n.undo,
+          onAction: () => context.read<GoalsProvider>().restoreGoal(gid),
         );
       }
     }

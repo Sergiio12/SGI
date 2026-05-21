@@ -24,7 +24,7 @@ class CalendarIntegrationService {
 
       Calendar? existing;
       for (final c in calendars) {
-        if (c.name == _calendarName && c.id != null) {
+        if (c.name == _calendarName) {
           existing = c;
           break;
         }
