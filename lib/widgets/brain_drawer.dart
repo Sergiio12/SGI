@@ -11,79 +11,83 @@ class BrainDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: BrainTheme.surfaceDark,
-      child: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          BrainTheme.accentPurple,
-                          BrainTheme.accentBlue
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(Icons.psychology, color: Colors.white),
-                  ),
-                  const SizedBox(width: 14),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        backgroundColor: BrainTheme.surfaceDark,
+        child: SafeArea(
+          bottom: true,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  child: Row(
                     children: [
-                      Text(
-                        AppLocalizations.of(context).appTitle,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: BrainTheme.textPrimary,
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              BrainTheme.accentPurple,
+                              BrainTheme.accentBlue
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
                         ),
+                        child:
+                            const Icon(Icons.psychology, color: Colors.white),
                       ),
-                      Text(
-                        'Tu espacio personal',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: BrainTheme.textSecondary,
-                        ),
+                      const SizedBox(width: 14),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context).appTitle,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: BrainTheme.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            'Tu espacio personal',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: BrainTheme.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                const Spacer(),
+                Divider(color: BrainTheme.borderDark),
+                _DrawerItem(
+                  icon: Icons.delete_outline_rounded,
+                  label: AppLocalizations.of(context).trash,
+                  badge: Consumer<TrashProvider>(
+                    builder: (_, trash, __) {
+                      return trash.totalItems > 0
+                          ? _CountBadge(
+                              count: trash.totalItems,
+                              color: BrainTheme.accentRed,
+                            )
+                          : const SizedBox.shrink();
+                    },
+                  ),
+                  onTap: () => _open(context, '/trash'),
+                ),
+                _DrawerItem(
+                  icon: Icons.settings_outlined,
+                  label: AppLocalizations.of(context).settings,
+                  onTap: () => _open(context, '/settings'),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
-            const Spacer(),
-            Divider(color: BrainTheme.borderDark),
-            _DrawerItem(
-              icon: Icons.delete_outline_rounded,
-              label: AppLocalizations.of(context).trash,
-              badge: Consumer<TrashProvider>(
-                builder: (_, trash, __) {
-                  return trash.totalItems > 0
-                      ? _CountBadge(
-                          count: trash.totalItems,
-                          color: BrainTheme.accentRed,
-                        )
-                      : const SizedBox.shrink();
-                },
-              ),
-              onTap: () => _open(context, '/trash'),
-            ),
-            _DrawerItem(
-              icon: Icons.settings_outlined,
-              label: AppLocalizations.of(context).settings,
-              onTap: () => _open(context, '/settings'),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 
   void _open(BuildContext context, String route) {

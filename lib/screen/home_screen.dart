@@ -44,7 +44,8 @@ class _LoadingScreen extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: const Icon(Icons.psychology, color: Colors.white, size: 32),
+              child:
+                  const Icon(Icons.psychology, color: Colors.white, size: 32),
             ),
             const SizedBox(height: 24),
             Text(
@@ -248,7 +249,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final tasksLoaded = context.select<TasksProvider, bool>((p) => p.isLoaded);
-    final projectsLoaded = context.select<ProjectsProvider, bool>((p) => p.isLoaded);
+    final projectsLoaded =
+        context.select<ProjectsProvider, bool>((p) => p.isLoaded);
     final notesLoaded = context.select<NotesProvider, bool>((p) => p.isLoaded);
     final goalsLoaded = context.select<GoalsProvider, bool>((p) => p.isLoaded);
 
@@ -280,7 +282,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Scaffold(
                         backgroundColor: BrainTheme.primaryDark,
-                        appBar: _buildAppBar(context, currentTab, hasSidebar: true),
+                        appBar:
+                            _buildAppBar(context, currentTab, hasSidebar: true),
                         body: _buildBody(context, tabs),
                         floatingActionButton: QuickCaptureFAB(
                           onCapture: _handleQuickCapture,
@@ -336,16 +339,11 @@ class _HomeScreenState extends State<HomeScreen> {
           Navigator.pushNamed(context, '/note'),
       const SingleActivator(LogicalKeyboardKey.slash): () =>
           Navigator.pushNamed(context, '/search'),
-      const SingleActivator(LogicalKeyboardKey.digit1): () =>
-          _onTabChanged(0),
-      const SingleActivator(LogicalKeyboardKey.digit2): () =>
-          _onTabChanged(1),
-      const SingleActivator(LogicalKeyboardKey.digit3): () =>
-          _onTabChanged(2),
-      const SingleActivator(LogicalKeyboardKey.digit4): () =>
-          _onTabChanged(3),
-      const SingleActivator(LogicalKeyboardKey.digit5): () =>
-          _onTabChanged(4),
+      const SingleActivator(LogicalKeyboardKey.digit1): () => _onTabChanged(0),
+      const SingleActivator(LogicalKeyboardKey.digit2): () => _onTabChanged(1),
+      const SingleActivator(LogicalKeyboardKey.digit3): () => _onTabChanged(2),
+      const SingleActivator(LogicalKeyboardKey.digit4): () => _onTabChanged(3),
+      const SingleActivator(LogicalKeyboardKey.digit5): () => _onTabChanged(4),
     };
   }
 
@@ -385,8 +383,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(currentTab.icon,
-                    size: 18, color: Colors.white),
+                child: Icon(currentTab.icon, size: 18, color: Colors.white),
               );
             },
             child: Container(
@@ -463,54 +460,58 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildBottomNav(
     List<({String title, IconData icon, Widget screen})> tabs,
   ) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: BrainTheme.borderDark.withValues(alpha: 0.5),
-            width: 1,
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: BrainTheme.borderDark.withValues(alpha: 0.5),
+              width: 1,
+            ),
           ),
         ),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabChanged,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: BrainTheme.primaryDark,
-        selectedItemColor: BrainTheme.accentPurple,
-        unselectedItemColor: BrainTheme.textTertiary,
-        selectedLabelStyle: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.2,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-        ),
-        items: tabs
-            .map(
-              (tab) => BottomNavigationBarItem(
-                icon: Icon(tab.icon, size: 22),
-                activeIcon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        BrainTheme.accentPurple.withValues(alpha: 0.2),
-                        BrainTheme.accentPurple.withValues(alpha: 0.05),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onTabChanged,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: BrainTheme.primaryDark,
+          selectedItemColor: BrainTheme.accentPurple,
+          unselectedItemColor: BrainTheme.textTertiary,
+          selectedLabelStyle: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+          items: tabs
+              .map(
+                (tab) => BottomNavigationBarItem(
+                  icon: Icon(tab.icon, size: 22),
+                  activeIcon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          BrainTheme.accentPurple.withValues(alpha: 0.2),
+                          BrainTheme.accentPurple.withValues(alpha: 0.05),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    child: Icon(tab.icon,
+                        size: 22, color: BrainTheme.accentPurple),
                   ),
-                  child: Icon(tab.icon, size: 22, color: BrainTheme.accentPurple),
+                  label: tab.title,
                 ),
-                label: tab.title,
-              ),
-            )
-            .toList(),
+              )
+              .toList(),
+        ),
       ),
     );
   }

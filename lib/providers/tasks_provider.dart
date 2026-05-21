@@ -270,7 +270,11 @@ class TasksProvider extends ChangeNotifier {
         showSuccessNotification('Tarea actualizada');
       }
     } catch (e, s) {
-      AppException(message: 'Error al actualizar tarea', code: 'UPDATE_TASK', stackTrace: s).log();
+      AppException(
+              message: 'Error al actualizar tarea',
+              code: 'UPDATE_TASK',
+              stackTrace: s)
+          .log();
       showErrorNotification('Error al actualizar tarea');
     }
   }
@@ -303,7 +307,11 @@ class TasksProvider extends ChangeNotifier {
         }
       }
     } catch (e, s) {
-      AppException(message: 'Error al cambiar estado de tarea', code: 'TOGGLE_TASK', stackTrace: s).log();
+      AppException(
+              message: 'Error al cambiar estado de tarea',
+              code: 'TOGGLE_TASK',
+              stackTrace: s)
+          .log();
       showErrorNotification('Error al cambiar estado de tarea');
     }
   }
@@ -338,7 +346,9 @@ class TasksProvider extends ChangeNotifier {
       HapticHelper.light();
       showSuccessNotification(message);
     } catch (e, s) {
-      AppException(message: 'Error al mover tarea', code: 'MOVE_TASK', stackTrace: s).log();
+      AppException(
+              message: 'Error al mover tarea', code: 'MOVE_TASK', stackTrace: s)
+          .log();
       showErrorNotification('Error al mover tarea');
     }
   }
@@ -359,7 +369,11 @@ class TasksProvider extends ChangeNotifier {
         _notifyAndScheduleSave();
       }
     } catch (e, s) {
-      AppException(message: 'Error al cambiar subtarea', code: 'TOGGLE_SUBTASK', stackTrace: s).log();
+      AppException(
+              message: 'Error al cambiar subtarea',
+              code: 'TOGGLE_SUBTASK',
+              stackTrace: s)
+          .log();
     }
   }
 
@@ -379,7 +393,11 @@ class TasksProvider extends ChangeNotifier {
         _notifyAndScheduleSave();
       }
     } catch (e, s) {
-      AppException(message: 'Error al añadir subtarea', code: 'ADD_SUBTASK', stackTrace: s).log();
+      AppException(
+              message: 'Error al añadir subtarea',
+              code: 'ADD_SUBTASK',
+              stackTrace: s)
+          .log();
     }
   }
 
@@ -408,9 +426,18 @@ class TasksProvider extends ChangeNotifier {
       _notifyAndScheduleSave();
       await NotificationService.cancelTaskReminders(taskId);
       HapticHelper.medium();
-      showSuccessNotification('Tarea movida a la papelera');
+      showSuccessNotification(
+        'Tarea movida a la papelera',
+        title: 'Tarea eliminada',
+        actionLabel: 'Deshacer',
+        onAction: () async => restoreTask(task.id),
+      );
     } catch (e, s) {
-      AppException(message: 'Error al eliminar tarea', code: 'DELETE_TASK', stackTrace: s).log();
+      AppException(
+              message: 'Error al eliminar tarea',
+              code: 'DELETE_TASK',
+              stackTrace: s)
+          .log();
       showErrorNotification('Error al eliminar tarea');
     }
   }
@@ -428,7 +455,11 @@ class TasksProvider extends ChangeNotifier {
         showSuccessNotification('Tarea restaurada');
       }
     } catch (e, s) {
-      AppException(message: 'Error al restaurar tarea', code: 'RESTORE_TASK', stackTrace: s).log();
+      AppException(
+              message: 'Error al restaurar tarea',
+              code: 'RESTORE_TASK',
+              stackTrace: s)
+          .log();
       showErrorNotification('Error al restaurar tarea');
     }
   }
@@ -440,7 +471,11 @@ class TasksProvider extends ChangeNotifier {
       await _storage.saveTrashTasks(trash);
       showSuccessNotification('Tarea eliminada permanentemente');
     } catch (e, s) {
-      AppException(message: 'Error al eliminar tarea permanentemente', code: 'PERM_DELETE_TASK', stackTrace: s).log();
+      AppException(
+              message: 'Error al eliminar tarea permanentemente',
+              code: 'PERM_DELETE_TASK',
+              stackTrace: s)
+          .log();
       showErrorNotification('Error al eliminar tarea');
     }
   }
