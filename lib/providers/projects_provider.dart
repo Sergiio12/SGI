@@ -174,7 +174,6 @@ class ProjectsProvider extends ChangeNotifier {
       await _storage.saveTrashProjects(trash);
       _notifyAndScheduleSave();
       HapticHelper.medium();
-      showSuccessNotification('Proyecto movido a la papelera');
     } catch (e, s) {
       AppException(message: 'Error al eliminar proyecto', code: 'DELETE_PROJECT', stackTrace: s).log();
       showErrorNotification('Error al eliminar proyecto');

@@ -563,9 +563,17 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   ),
                 );
                 if (confirm == true) {
-                  await context
-                      .read<NotesProvider>()
-                      .deleteNote(widget.noteId!);
+                  final provider = context.read<NotesProvider>();
+                  final noteTitle = _titleController.text.isNotEmpty
+                      ? _titleController.text
+                      : 'Nota';
+                  final noteId = widget.noteId!;
+                  await provider.deleteNote(noteId);
+                  showSuccessNotification(
+                    AppLocalizations.of(context).notesUndoDeleted(noteTitle),
+                    actionLabel: AppLocalizations.of(context).undo,
+                    onAction: () => provider.restoreNote(noteId),
+                  );
                   if (mounted) Navigator.pop(context);
                 }
               },

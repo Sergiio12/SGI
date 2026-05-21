@@ -439,12 +439,6 @@ class TasksProvider extends ChangeNotifier {
       _notifyAndScheduleSave();
       await NotificationService.cancelTaskReminders(taskId);
       HapticHelper.medium();
-      showSuccessNotification(
-        'Tarea movida a la papelera',
-        title: 'Tarea eliminada',
-        actionLabel: 'Deshacer',
-        onAction: () async => restoreTask(task.id),
-      );
     } catch (e, s) {
       AppException(
               message: 'Error al eliminar tarea',

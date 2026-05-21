@@ -137,7 +137,6 @@ class GoalsProvider extends ChangeNotifier {
       await _storage.saveTrashGoals(trash);
       _notifyAndScheduleSave();
       HapticHelper.medium();
-      showSuccessNotification('Objetivo movido a la papelera');
     } catch (e, s) {
       AppException(message: 'Error al eliminar objetivo', code: 'DELETE_GOAL', stackTrace: s).log();
       showErrorNotification('Error al eliminar objetivo');

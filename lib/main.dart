@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_bootstrap.dart';
+import 'config/theme.dart';
 import 'core/result.dart';
 import 'l10n/app_localizations.dart';
 import 'screen/onboarding/onboarding_screen.dart';
@@ -18,27 +19,48 @@ void main() {
       await NotificationService.init();
       await HomeWidgetService.init();
 
-      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-      ));
-
       final needsOnboarding = await OnboardingScreen.isNeeded();
 
       if (needsOnboarding) {
+        SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+        ));
+
         runApp(
           MaterialApp(
             debugShowCheckedModeBanner: false,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
+            theme: BrainTheme.lightTheme,
+            darkTheme: BrainTheme.darkTheme,
+            themeMode: ThemeMode.dark,
             home: OnboardingScreen(
-              onComplete: () {
-                AppBootstrap.build().then((app) => runApp(app));
+              onComplete: () async {
+                final app = await AppBootstrap.build();
+                final brightness = WidgetsBinding
+                    .instance.platformDispatcher.platformBrightness;
+                SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness: brightness == Brightness.light
+                      ? Brightness.dark
+                      : Brightness.light,
+                ));
+                runApp(app);
               },
             ),
           ),
         );
       } else {
+        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness:
+              WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+                      Brightness.light
+                  ? Brightness.dark
+                  : Brightness.light,
+        ));
+
         final app = await AppBootstrap.build();
         runApp(app);
       }

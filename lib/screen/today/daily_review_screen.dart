@@ -56,10 +56,12 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
           final plannedTasks =
               allTasks.where((t) => plannedIds.contains(t.id)).toList();
           final total = plannedTasks.length;
-          final completed =
-              plannedTasks.where((t) => t.status == TaskStatus.completed).length;
-          final pending =
-              plannedTasks.where((t) => t.status != TaskStatus.completed).length;
+          final completed = plannedTasks
+              .where((t) => t.status == TaskStatus.completed)
+              .length;
+          final pending = plannedTasks
+              .where((t) => t.status != TaskStatus.completed)
+              .length;
           final completionRate = total > 0 ? completed / total : 0.0;
 
           return ListView(
@@ -99,7 +101,8 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
                         color: BrainTheme.cardDark.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                            color: BrainTheme.accentPurple.withValues(alpha: 0.15)),
+                            color: BrainTheme.accentPurple
+                                .withValues(alpha: 0.15)),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,7 +141,8 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 5),
                                     decoration: BoxDecoration(
-                                      color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+                                      color: BrainTheme.accentPurple
+                                          .withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Row(
@@ -172,7 +176,8 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
 
               // Completed tasks
               if (completed > 0) ...[
-                _buildSectionTitle(context, 'Completadas', BrainTheme.accentGreen),
+                _buildSectionTitle(
+                    context, 'Completadas', BrainTheme.accentGreen),
                 const SizedBox(height: 8),
                 ...plannedTasks
                     .where((t) => t.status == TaskStatus.completed)
@@ -192,7 +197,8 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
               ],
 
               // Stats summary
-              _buildStatsCard(context, completed, pending, total, plannedIds.length),
+              _buildStatsCard(
+                  context, completed, pending, total, plannedIds.length),
               const SizedBox(height: 24),
 
               // Reflection prompt
@@ -298,14 +304,13 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
       decoration: BoxDecoration(
         color: BrainTheme.cardDark.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: BrainTheme.accentPurple.withValues(alpha: 0.2)),
+        border:
+            Border.all(color: BrainTheme.accentPurple.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.format_quote,
-              size: 18, color: BrainTheme.accentPurple),
+          Icon(Icons.format_quote, size: 18, color: BrainTheme.accentPurple),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -337,8 +342,7 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
     ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05);
   }
 
-  Widget _buildSectionTitle(
-      BuildContext context, String title, Color color) {
+  Widget _buildSectionTitle(BuildContext context, String title, Color color) {
     return Row(
       children: [
         Container(
@@ -369,8 +373,7 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
       decoration: BoxDecoration(
         color: BrainTheme.cardDark.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: BrainTheme.borderDark.withValues(alpha: 0.4)),
+        border: Border.all(color: BrainTheme.borderDark.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,8 +416,7 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
               child: LinearProgressIndicator(
                 value: total > 0 ? completed / total : 0.0,
                 minHeight: 6,
-                backgroundColor:
-                    BrainTheme.borderDark.withValues(alpha: 0.4),
+                backgroundColor: BrainTheme.borderDark.withValues(alpha: 0.4),
                 valueColor: AlwaysStoppedAnimation(
                   completed == total
                       ? BrainTheme.accentGreen
@@ -434,8 +436,7 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
       decoration: BoxDecoration(
         color: BrainTheme.cardDark.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: BrainTheme.borderDark.withValues(alpha: 0.4)),
+        border: Border.all(color: BrainTheme.borderDark.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,8 +475,8 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: 'Escribe tu reflexión aquí...',
-                hintStyle: TextStyle(
-                    fontSize: 13, color: BrainTheme.textTertiary),
+                hintStyle:
+                    TextStyle(fontSize: 13, color: BrainTheme.textTertiary),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
                 isDense: true,
@@ -520,7 +521,8 @@ class _ReviewTaskCard extends StatelessWidget {
           Icon(
             isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
             size: 18,
-            color: isCompleted ? BrainTheme.accentGreen : BrainTheme.textTertiary,
+            color:
+                isCompleted ? BrainTheme.accentGreen : BrainTheme.textTertiary,
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -533,8 +535,7 @@ class _ReviewTaskCard extends StatelessWidget {
                 color: isCompleted
                     ? BrainTheme.textTertiary
                     : BrainTheme.textPrimary,
-                decoration:
-                    isCompleted ? TextDecoration.lineThrough : null,
+                decoration: isCompleted ? TextDecoration.lineThrough : null,
               ),
             ),
           ),

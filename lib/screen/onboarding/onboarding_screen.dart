@@ -9,6 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/theme.dart';
 
 const _onboardingKey = 'onboarding_completed_v2';
+const _kThemeMode = 'theme_mode';
+const _kAccentColor = 'accent_color';
+const _kUserName = 'user_name';
 
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onComplete;
@@ -36,7 +39,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   int _currentPage = 0;
 
   final _nameController = TextEditingController();
-  bool _useDarkMode = true;
+  String _themeMode = 'dark';
   int _selectedAccent = 0;
 
   final _accentColors = [
@@ -80,9 +83,21 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   Future<void> _complete() async {
     final prefs = await SharedPreferences.getInstance();
+    final brightness = _themeMode == 'light'
+        ? Brightness.light
+        : _themeMode == 'system'
+            ? WidgetsBinding.instance.platformDispatcher.platformBrightness
+            : Brightness.dark;
+
+    await prefs.setString(_kThemeMode, _themeMode);
     await prefs.setInt(
-        'accent_color', _accentColors[_selectedAccent].toARGB32());
+        _kAccentColor, _accentColors[_selectedAccent].toARGB32());
+    if (_nameController.text.trim().isNotEmpty) {
+      await prefs.setString(_kUserName, _nameController.text.trim());
+    }
     await OnboardingScreen.markCompleted();
+
+    BrainTheme.updateBrightness(brightness);
     BrainTheme.updateAccentColor(_accentColors[_selectedAccent]);
     widget.onComplete();
   }
@@ -451,35 +466,44 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             ),
             const SizedBox(height: 12),
             _GlassCard(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Text(
+                    'Tema',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
                     children: [
-                      Text(
-                        'Modo oscuro',
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                      _ThemeOption(
+                        label: 'Claro',
+                        icon: Icons.light_mode_outlined,
+                        isSelected: _themeMode == 'light',
+                        accentColor: _accentColors[_selectedAccent],
+                        onTap: () => setState(() => _themeMode = 'light'),
                       ),
-                      Text(
-                        'Tema predeterminado',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.5),
-                        ),
+                      const SizedBox(width: 8),
+                      _ThemeOption(
+                        label: 'Oscuro',
+                        icon: Icons.dark_mode_outlined,
+                        isSelected: _themeMode == 'dark',
+                        accentColor: _accentColors[_selectedAccent],
+                        onTap: () => setState(() => _themeMode = 'dark'),
+                      ),
+                      const SizedBox(width: 8),
+                      _ThemeOption(
+                        label: 'Sistema',
+                        icon: Icons.settings_brightness_outlined,
+                        isSelected: _themeMode == 'system',
+                        accentColor: _accentColors[_selectedAccent],
+                        onTap: () => setState(() => _themeMode = 'system'),
                       ),
                     ],
-                  ),
-                  Switch.adaptive(
-                    value: _useDarkMode,
-                    activeTrackColor:
-                        _accentColors[_selectedAccent].withValues(alpha: 0.4),
-                    activeThumbColor: _accentColors[_selectedAccent],
-                    onChanged: (v) => setState(() => _useDarkMode = v),
                   ),
                 ],
               ),
@@ -586,6 +610,69 @@ class _GlassCard extends StatelessWidget {
             ),
           ),
           child: child,
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeOption extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final Color accentColor;
+  final VoidCallback onTap;
+
+  const _ThemeOption({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.accentColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: 200.ms,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? accentColor.withValues(alpha: 0.15)
+                : Colors.white.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? accentColor.withValues(alpha: 0.5)
+                  : Colors.white.withValues(alpha: 0.08),
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: 24,
+                color: isSelected
+                    ? accentColor
+                    : Colors.white.withValues(alpha: 0.5),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected
+                      ? accentColor
+                      : Colors.white.withValues(alpha: 0.5),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

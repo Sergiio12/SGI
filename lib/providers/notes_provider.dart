@@ -226,7 +226,6 @@ class NotesProvider extends ChangeNotifier {
       await _storage.saveTrashNotes(trash);
       _notifyAndScheduleSave();
       HapticHelper.medium();
-      showSuccessNotification('Nota movida a la papelera');
     } catch (e, s) {
       AppException(message: 'Error al eliminar nota', code: 'DELETE_NOTE', stackTrace: s).log();
       showErrorNotification('Error al eliminar nota');
