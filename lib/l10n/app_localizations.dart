@@ -356,6 +356,12 @@ abstract class AppLocalizations {
   /// **'No date'**
   String get noDueDate;
 
+  /// No description provided for @noProject.
+  ///
+  /// In en, this message translates to:
+  /// **'No project'**
+  String get noProject;
+
   /// No description provided for @overdue.
   ///
   /// In en, this message translates to:

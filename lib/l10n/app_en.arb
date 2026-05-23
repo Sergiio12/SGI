@@ -54,6 +54,7 @@
 
   "dueDate": "Due date",
   "noDueDate": "No date",
+  "noProject": "No project",
   "overdue": "Overdue",
   "today": "Today",
   "thisWeek": "This week",

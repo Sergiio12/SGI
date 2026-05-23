@@ -54,6 +54,7 @@
 
   "dueDate": "Fecha de vencimiento",
   "noDueDate": "Sin fecha",
+  "noProject": "Sin proyecto",
   "overdue": "Vencida",
   "today": "Hoy",
   "thisWeek": "Esta semana",

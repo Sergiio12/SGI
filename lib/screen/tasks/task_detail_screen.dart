@@ -16,6 +16,7 @@ import '../../providers/ai_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/notes_provider.dart';
 import '../../widgets/tag_color_picker.dart';
+import '../../widgets/task_project_selector.dart';
 
 class TaskDetailScreen extends StatefulWidget {
   final String? taskId;
@@ -39,6 +40,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   TaskStatus _status = TaskStatus.pending;
   DateTime? _dueDate;
   String? _projectId;
+  String _projectSearchQuery = '';
   List<SubTask> _subtasks = [];
   List<String> _linkedNoteIds = [];
   List<String> _selectedTags = [];
@@ -1065,30 +1067,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         Expanded(
           child: Consumer<ProjectsProvider>(
             builder: (context, projects, _) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: BrainTheme.surfaceDark,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: BrainTheme.borderDark),
-                ),
-                child: DropdownButton<String?>(
-                  value: _projectId,
-                  dropdownColor: BrainTheme.cardDark,
-                  underline: const SizedBox.shrink(),
-                  hint: Text(AppLocalizations.of(context).noDueDate),
-                  isExpanded: true,
-                  items: [
-                    DropdownMenuItem(
-                        value: null,
-                        child: Text(AppLocalizations.of(context).noDueDate)),
-                    ...projects.projects.map((project) => DropdownMenuItem(
-                          value: project.id,
-                          child: Text('${project.emoji} ${project.title}'),
-                        )),
-                  ],
-                  onChanged: (value) => setState(() => _projectId = value),
-                ),
+              return TaskProjectSelector(
+                projects: projects.projects,
+                selectedProjectId: _projectId,
+                searchQuery: _projectSearchQuery,
+                onSelected: (value) => setState(() {
+                  _projectId = value;
+                  _projectSearchQuery = '';
+                }),
+                onSearchChanged: (value) => setState(() {
+                  _projectSearchQuery = value;
+                }),
+                emptyLabel: AppLocalizations.of(context).noProject,
               );
             },
           ),

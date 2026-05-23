@@ -9,6 +9,8 @@ class TaskProjectSelector extends StatelessWidget {
   final String searchQuery;
   final ValueChanged<String?> onSelected;
   final ValueChanged<String> onSearchChanged;
+  final String emptyLabel;
+  final String searchHint;
 
   const TaskProjectSelector({
     required this.projects,
@@ -16,6 +18,8 @@ class TaskProjectSelector extends StatelessWidget {
     required this.searchQuery,
     required this.onSelected,
     required this.onSearchChanged,
+    this.emptyLabel = 'Todos los proyectos',
+    this.searchHint = 'Buscar proyecto...',
   });
 
   @override
@@ -23,8 +27,7 @@ class TaskProjectSelector extends StatelessWidget {
     Project? selectedProject;
     if (selectedProjectId != null) {
       try {
-        selectedProject =
-            projects.firstWhere((p) => p.id == selectedProjectId);
+        selectedProject = projects.firstWhere((p) => p.id == selectedProjectId);
       } catch (_) {}
     }
 
@@ -114,9 +117,12 @@ class TaskProjectSelector extends StatelessWidget {
                     const SizedBox(height: 12),
                     TextField(
                       autofocus: true,
-                      onChanged: (v) => setS(() => localQuery = v),
+                      onChanged: (v) => setS(() {
+                        localQuery = v;
+                        onSearchChanged(v);
+                      }),
                       decoration: InputDecoration(
-                        hintText: 'Buscar proyecto...',
+                        hintText: searchHint,
                         prefixIcon: const Icon(Icons.search, size: 18),
                         isDense: true,
                         contentPadding:
@@ -125,99 +131,97 @@ class TaskProjectSelector extends StatelessWidget {
                         fillColor: BrainTheme.cardDark,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              BorderSide(color: BrainTheme.borderDark),
+                          borderSide: BorderSide(color: BrainTheme.borderDark),
                         ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     Expanded(
-                      child: ListView(
-                        children: [
-                          ListTile(
-                            dense: true,
-                            leading: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: BrainTheme.accentPurple
-                                    .withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(Icons.folder_off_outlined,
-                                  size: 16,
-                                  color: BrainTheme.accentPurple),
-                            ),
-                            title: Text(
-                              'Todos los proyectos',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight:
-                                    selectedProjectId == null
-                                        ? FontWeight.w700
-                                        : FontWeight.w400,
-                                color: BrainTheme.textPrimary,
-                              ),
-                            ),
-                            trailing: selectedProjectId == null
-                                ? Icon(Icons.check,
-                                    size: 18,
-                                    color: BrainTheme.accentGreen)
-                                : null,
-                            onTap: () {
-                              onSelected(null);
-                              Navigator.pop(ctx);
-                            },
-                          ),
-                          ...filtered.map((project) {
-                            final isSelected =
-                                project.id == selectedProjectId;
+                      child: ListView.builder(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        itemCount: filtered.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
                             return ListTile(
                               dense: true,
                               leading: Container(
                                 width: 32,
                                 height: 32,
                                 decoration: BoxDecoration(
-                                  color: Color(project.colorValue)
+                                  color: BrainTheme.accentPurple
                                       .withValues(alpha: 0.1),
-                                  borderRadius:
-                                      BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Center(
-                                  child: Text(project.emoji,
-                                      style:
-                                          const TextStyle(fontSize: 16)),
-                                ),
+                                child: Icon(Icons.folder_off_outlined,
+                                    size: 16, color: BrainTheme.accentPurple),
                               ),
                               title: Text(
-                                project.title,
+                                emptyLabel,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  fontWeight: isSelected
+                                  fontWeight: selectedProjectId == null
                                       ? FontWeight.w700
                                       : FontWeight.w400,
                                   color: BrainTheme.textPrimary,
                                 ),
                               ),
-                              subtitle: Text(
-                                '${project.taskIds.length} tareas',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: BrainTheme.textTertiary,
-                                ),
-                              ),
-                              trailing: isSelected
+                              trailing: selectedProjectId == null
                                   ? Icon(Icons.check,
-                                      size: 18,
-                                      color: BrainTheme.accentGreen)
+                                      size: 18, color: BrainTheme.accentGreen)
                                   : null,
                               onTap: () {
-                                onSelected(project.id);
+                                onSelected(null);
                                 Navigator.pop(ctx);
                               },
                             );
-                          }),
-                        ],
+                          }
+
+                          final project = filtered[index - 1];
+                          final isSelected = project.id == selectedProjectId;
+
+                          return ListTile(
+                            dense: true,
+                            leading: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: Color(project.colorValue)
+                                    .withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(project.emoji,
+                                    style: const TextStyle(fontSize: 16)),
+                              ),
+                            ),
+                            title: Text(
+                              project.title,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w400,
+                                color: BrainTheme.textPrimary,
+                              ),
+                            ),
+                            subtitle: Text(
+                              '${project.taskIds.length} tareas',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: BrainTheme.textTertiary,
+                              ),
+                            ),
+                            trailing: isSelected
+                                ? Icon(Icons.check,
+                                    size: 18, color: BrainTheme.accentGreen)
+                                : null,
+                            onTap: () {
+                              onSelected(project.id);
+                              Navigator.pop(ctx);
+                            },
+                          );
+                        },
                       ),
                     ),
                   ],

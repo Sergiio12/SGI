@@ -138,6 +138,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noDueDate => 'Sin fecha';
 
   @override
+  String get noProject => 'Sin proyecto';
+
+  @override
   String get overdue => 'Vencida';
 
   @override
