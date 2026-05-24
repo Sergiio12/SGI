@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:second_brain/models/goal.dart';
+import 'package:second_brain/models/notebook_info.dart';
 import 'package:second_brain/models/note.dart';
 import 'package:second_brain/models/project.dart';
 import 'package:second_brain/models/tag.dart';
@@ -16,7 +17,7 @@ class MockStorageService implements IStorageService {
   List<Project> _trashProjects = [];
   List<Note> _trashNotes = [];
   List<Goal> _trashGoals = [];
-  List<String> _notebookNames = [];
+  List<NotebookInfo> _notebookInfos = [];
   Map<String, String> _dailyIntentions = {};
   Map<String, List<String>> _dailyPlans = {};
   Map<String, String> _dailyTimeBlocks = {};
@@ -106,11 +107,11 @@ class MockStorageService implements IStorageService {
   }
 
   @override
-  Future<List<String>> loadNotebookNames() async => _notebookNames;
+  Future<List<NotebookInfo>> loadNotebooks() async => _notebookInfos;
 
   @override
-  Future<void> saveNotebookNames(List<String> names) async {
-    _notebookNames = List<String>.from(names);
+  Future<void> saveNotebooks(List<NotebookInfo> notebooks) async {
+    _notebookInfos = List<NotebookInfo>.from(notebooks);
   }
 
   @override
@@ -148,7 +149,7 @@ class MockStorageService implements IStorageService {
     _trashProjects = [];
     _trashNotes = [];
     _trashGoals = [];
-    _notebookNames = [];
+    _notebookInfos = [];
     _dailyIntentions = {};
     _dailyPlans = {};
     _dailyTimeBlocks = {};

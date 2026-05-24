@@ -37,7 +37,6 @@ void main() {
         notebook: 'Work',
         emoji: '📕',
         isPinned: true,
-        tags: ['important'],
       );
       expect(result.isSuccess, isTrue);
       final note = result.unwrap();
@@ -46,7 +45,6 @@ void main() {
       expect(note.notebook, 'Work');
       expect(note.isPinned, isTrue);
       expect(note.emoji, '📕');
-      expect(note.tags, ['important']);
     });
 
     test('updateNote modifies note', () async {
@@ -134,7 +132,6 @@ void main() {
         title: 'Work note',
         notebook: 'Work',
         type: NoteType.reference,
-        tags: ['important'],
       );
       await provider.addNote(title: 'Personal', notebook: 'Personal');
 

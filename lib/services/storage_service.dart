@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/goal.dart';
+import '../models/notebook_info.dart';
 import '../models/note.dart';
 import '../models/project.dart';
 import '../models/task.dart';
@@ -214,16 +215,17 @@ class HiveStorageService implements IStorageService {
   }
 
   @override
-  Future<List<String>> loadNotebookNames() async {
+  Future<List<NotebookInfo>> loadNotebooks() async {
     final raw = _box!.get(_notebookNamesKey);
     if (raw == null) return [];
     final list = jsonDecode(raw) as List;
-    return list.cast<String>();
+    return list.map((item) => NotebookInfo.fromJson(item)).toList();
   }
 
   @override
-  Future<void> saveNotebookNames(List<String> names) async {
-    await _box!.put(_notebookNamesKey, jsonEncode(names));
+  Future<void> saveNotebooks(List<NotebookInfo> notebooks) async {
+    await _box!.put(_notebookNamesKey,
+        jsonEncode(notebooks.map((notebook) => notebook.toJson()).toList()));
   }
 
   @override

@@ -8,6 +8,7 @@ import '../../config/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/notification_service_v2.dart';
 import '../../models/recurrence_rule.dart';
+import '../../models/tag.dart';
 import '../../models/task.dart';
 import '../../providers/tags_provider.dart';
 import '../../providers/projects_provider.dart';
@@ -613,40 +614,24 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                               }).toList(),
                             ),
                           ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: _showTagPicker,
-                                icon: const Icon(Icons.playlist_add, size: 16),
-                                label:
-                                    Text(AppLocalizations.of(context).filter),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: BrainTheme.accentPurple,
-                                  side: BorderSide(
-                                      color: BrainTheme.accentPurple
-                                          .withValues(alpha: 0.3)),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _showTagManager,
+                            icon: const Icon(Icons.label_outline, size: 16),
+                            label: Text(
+                              '${selected.isEmpty ? AppLocalizations.of(context).tags : '${selected.length} ${AppLocalizations.of(context).tags.toLowerCase()}'}',
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: BrainTheme.accentPurple,
+                              side: BorderSide(
+                                  color: BrainTheme.accentPurple
+                                      .withValues(alpha: 0.3)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            OutlinedButton.icon(
-                              onPressed: _showManageTagsModal,
-                              icon: const Icon(Icons.settings, size: 16),
-                              label:
-                                  Text(AppLocalizations.of(context).settings),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: BrainTheme.textSecondary,
-                                side: BorderSide(color: BrainTheme.borderDark),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ],
                     );
@@ -1393,7 +1378,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     });
   }
 
-  void _showTagPicker() {
+  void _showTagManager() {
+    final searchController = TextEditingController();
+    final nameController = TextEditingController();
+    int newTagColorValue = BrainTheme.accentPurple.toARGB32();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1402,75 +1391,284 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
-        return Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-          child: Container(
-            height: 480,
-            padding: const EdgeInsets.all(16),
-            child: Consumer<TagsProvider>(builder: (context, tagsProv, _) {
-              final tags = tagsProv.tags;
-              return Column(
-                children: [
-                  Row(
+        String searchQuery = '';
+        return StatefulBuilder(builder: (mctx, setModalState) {
+          return Padding(
+            padding:
+                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              height: 560,
+              padding: const EdgeInsets.all(16),
+              child: Consumer<TagsProvider>(
+                builder: (context, tagsProv, _) {
+                  final allTags = tagsProv.tags;
+                  final filtered = searchQuery.isEmpty
+                      ? allTags
+                      : allTags
+                          .where((t) => t.name
+                              .toLowerCase()
+                              .contains(searchQuery.toLowerCase()))
+                          .toList();
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(AppLocalizations.of(context).tags,
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: BrainTheme.textPrimary)),
-                      ),
-                      IconButton(
-                        icon:
-                            Icon(Icons.close, color: BrainTheme.textSecondary),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: ListView(
-                      children: tags.map((t) {
-                        final isSelected = _selectedTags.contains(t.id);
-                        return CheckboxListTile(
-                          secondary: Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: t.color,
-                              shape: BoxShape.circle,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              AppLocalizations.of(context).tags,
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: BrainTheme.textPrimary),
                             ),
                           ),
-                          title: Text(t.name,
-                              style: TextStyle(color: BrainTheme.textPrimary)),
-                          value: isSelected,
-                          activeColor: BrainTheme.accentPurple,
-                          onChanged: (v) => setState(() {
-                            if (v == true) {
-                              if (!_selectedTags.contains(t.id))
-                                _selectedTags.add(t.id);
-                            } else {
-                              _selectedTags.remove(t.id);
-                            }
-                          }),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  FilledButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: BrainTheme.accentPurple,
-                    ),
-                    child: Text(AppLocalizations.of(context).ok),
-                  ),
-                ],
-              );
-            }),
-          ),
-        );
+                          IconButton(
+                            icon: Icon(Icons.close,
+                                color: BrainTheme.textSecondary),
+                            onPressed: () => Navigator.pop(ctx),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: searchController,
+                        onChanged: (v) =>
+                            setModalState(() => searchQuery = v),
+                        style: const TextStyle(fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText:
+                              '${AppLocalizations.of(context).search}...',
+                          prefixIcon: Icon(Icons.search,
+                              size: 20, color: BrainTheme.textTertiary),
+                          suffixIcon: searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(Icons.clear,
+                                      size: 18,
+                                      color: BrainTheme.textSecondary),
+                                  onPressed: () {
+                                    searchController.clear();
+                                    setModalState(() => searchQuery = '');
+                                  },
+                                )
+                              : null,
+                          isDense: true,
+                          filled: true,
+                          fillColor: BrainTheme.cardDark,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide:
+                                BorderSide(color: BrainTheme.borderDark),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: filtered.isEmpty
+                            ? Center(
+                                child: Text(
+                                  searchQuery.isNotEmpty
+                                      ? AppLocalizations.of(context).noResults
+                                      : AppLocalizations.of(context).noTags,
+                                  style: TextStyle(
+                                      color: BrainTheme.textTertiary),
+                                ),
+                              )
+                            : ListView(
+                                children: filtered.map((t) {
+                                  final isSelected =
+                                      _selectedTags.contains(t.id);
+                                  return Card(
+                                    margin: const EdgeInsets.only(bottom: 4),
+                                    color: isSelected
+                                        ? t.color.withValues(alpha: 0.1)
+                                        : BrainTheme.surfaceDark,
+                                    child: ListTile(
+                                      dense: true,
+                                      leading: GestureDetector(
+                                        onTap: () => setState(() {
+                                          if (isSelected) {
+                                            _selectedTags.remove(t.id);
+                                          } else {
+                                            _selectedTags.add(t.id);
+                                          }
+                                        }),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: t.color.withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            t.name,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                              color: t.color,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      title: const SizedBox.shrink(),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(Icons.edit,
+                                                size: 18,
+                                                color:
+                                                    BrainTheme.textSecondary),
+                                            onPressed: () =>
+                                                _editTagInDialog(
+                                              context,
+                                              tagsProv,
+                                              t,
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(Icons.delete_outline,
+                                                size: 18,
+                                                color: BrainTheme.accentRed),
+                                            onPressed: () {
+                                              tagsProv.deleteTag(t.id);
+                                              setModalState(() {});
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                      ),
+                      const Divider(height: 12),
+                      Text(
+                        AppLocalizations.of(context).createNewTag,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          color: BrainTheme.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: nameController,
+                              style: const TextStyle(fontSize: 14),
+                              decoration: InputDecoration(
+                                hintText:
+                                    AppLocalizations.of(context).tagName,
+                                isDense: true,
+                                filled: true,
+                                fillColor: BrainTheme.cardDark,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide:
+                                      BorderSide(color: BrainTheme.borderDark),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: () async {
+                              final name =
+                                  nameController.text.trim();
+                              if (name.isEmpty) return;
+                              await tagsProv.addTag(
+                                name: name,
+                                colorValue: newTagColorValue,
+                              );
+                              nameController.clear();
+                              setModalState(() {
+                                newTagColorValue =
+                                    BrainTheme.accentPurple.toARGB32();
+                              });
+                            },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: BrainTheme.accentGreen,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              minimumSize: Size.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Icon(Icons.add, size: 18),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          );
+        });
       },
+    );
+  }
+
+  void _editTagInDialog(
+      BuildContext context, TagsProvider prov, Tag tag) {
+    int editColorValue = tag.color.toARGB32();
+    final editNameCtrl = TextEditingController(text: tag.name);
+    showDialog(
+      context: context,
+      builder: (dctx) => StatefulBuilder(
+        builder: (dState, setDialogState) => AlertDialog(
+          backgroundColor: BrainTheme.cardDark,
+          title: const Text('Editar etiqueta',
+              style:
+                  TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                    controller: editNameCtrl,
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context).tagName,
+                      filled: true,
+                      fillColor: BrainTheme.surfaceDark,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                    )),
+                const SizedBox(height: 16),
+                TagColorPicker(
+                  selectedColorValue: editColorValue,
+                  onColorChanged: (v) =>
+                      setDialogState(() => editColorValue = v),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(dctx),
+                child: Text(AppLocalizations.of(context).cancel)),
+            FilledButton(
+                onPressed: () async {
+                  await prov.updateTag(tag.copyWith(
+                      name: editNameCtrl.text,
+                      color: Color(editColorValue)));
+                  Navigator.pop(dctx);
+                },
+                child: Text(AppLocalizations.of(context).save)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1561,175 +1759,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     );
   }
 
-  void _showManageTagsModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: BrainTheme.surfaceDark,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        final nameCtrl = TextEditingController();
-        int newTagColorValue = BrainTheme.accentPurple.toARGB32();
-        return StatefulBuilder(builder: (mctx, setModalState) {
-          return Padding(
-            padding:
-                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-            child: Container(
-              height: 520,
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(AppLocalizations.of(context).tags,
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: BrainTheme.textPrimary)),
-                      ),
-                      IconButton(
-                        icon:
-                            Icon(Icons.close, color: BrainTheme.textSecondary),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: Consumer<TagsProvider>(builder: (context, prov, _) {
-                      return ListView(
-                        children: prov.tags
-                            .map((t) => ListTile(
-                                  leading: CircleAvatar(
-                                      backgroundColor: t.color, radius: 16),
-                                  title: Text(t.name,
-                                      style: TextStyle(
-                                          color: BrainTheme.textPrimary)),
-                                  trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                            icon: Icon(Icons.edit,
-                                                color:
-                                                    BrainTheme.textSecondary),
-                                            onPressed: () {
-                                              int editColorValue =
-                                                  t.color.toARGB32();
-                                              final editNameCtrl =
-                                                  TextEditingController(
-                                                      text: t.name);
-                                              showDialog(
-                                                  context: context,
-                                                  builder: (dctx) =>
-                                                      StatefulBuilder(
-                                                          builder: (dState,
-                                                                  setDialogState) =>
-                                                              AlertDialog(
-                                                                backgroundColor:
-                                                                    BrainTheme
-                                                                        .cardDark,
-                                                                title: Text(
-                                                                    AppLocalizations.of(
-                                                                            context)
-                                                                        .tags),
-                                                                content:
-                                                                    SingleChildScrollView(
-                                                                        child: Column(
-                                                                            mainAxisSize:
-                                                                                MainAxisSize.min,
-                                                                            children: [
-                                                                      TextField(
-                                                                          controller:
-                                                                              editNameCtrl,
-                                                                          decoration:
-                                                                              InputDecoration(hintText: AppLocalizations.of(context).tagName)),
-                                                                      const SizedBox(
-                                                                          height:
-                                                                              16),
-                                                                      TagColorPicker(
-                                                                        selectedColorValue:
-                                                                            editColorValue,
-                                                                        onColorChanged:
-                                                                            (v) =>
-                                                                                setDialogState(() => editColorValue = v),
-                                                                      ),
-                                                                    ])),
-                                                                actions: [
-                                                                  TextButton(
-                                                                      onPressed: () =>
-                                                                          Navigator.pop(
-                                                                              dctx),
-                                                                      child: Text(
-                                                                          AppLocalizations.of(context)
-                                                                              .cancel)),
-                                                                  FilledButton(
-                                                                      onPressed:
-                                                                          () async {
-                                                                        await prov.updateTag(t.copyWith(
-                                                                            name:
-                                                                                editNameCtrl.text,
-                                                                            color: Color(editColorValue)));
-                                                                        Navigator.pop(
-                                                                            dctx);
-                                                                        Navigator.pop(
-                                                                            ctx);
-                                                                      },
-                                                                      child: Text(
-                                                                          AppLocalizations.of(context)
-                                                                              .save))
-                                                                ],
-                                                              )));
-                                            }),
-                                        IconButton(
-                                            icon: Icon(Icons.delete_outline,
-                                                color: BrainTheme.accentRed),
-                                            onPressed: () =>
-                                                prov.deleteTag(t.id)),
-                                      ]),
-                                ))
-                            .toList(),
-                      );
-                    }),
-                  ),
-                  const Divider(),
-                  TextField(
-                      controller: nameCtrl,
-                      decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context).tag)),
-                  const SizedBox(height: 12),
-                  TagColorPicker(
-                    selectedColorValue: newTagColorValue,
-                    onColorChanged: (v) =>
-                        setModalState(() => newTagColorValue = v),
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton(
-                    onPressed: () async {
-                      if (nameCtrl.text.trim().isEmpty) return;
-                      await context.read<TagsProvider>().addTag(
-                          name: nameCtrl.text.trim(),
-                          colorValue: newTagColorValue);
-                      nameCtrl.clear();
-                      setModalState(() => newTagColorValue =
-                          BrainTheme.accentPurple.toARGB32());
-                    },
-                    style: FilledButton.styleFrom(
-                      backgroundColor: BrainTheme.accentPurple,
-                    ),
-                    child: Text(AppLocalizations.of(context).createTask),
-                  ),
-                ],
-              ),
-            ),
-          );
-        });
-      },
-    );
-  }
 
   String _statusLabel(TaskStatus status, BuildContext context) {
     final l10n = AppLocalizations.of(context);

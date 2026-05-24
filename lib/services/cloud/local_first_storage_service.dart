@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../models/goal.dart';
+import '../../models/notebook_info.dart';
 import '../../models/note.dart';
 import '../../models/project.dart';
 import '../../models/tag.dart';
@@ -90,12 +91,11 @@ class LocalFirstStorageService implements IStorageService {
   }
 
   @override
-  Future<List<String>> loadNotebookNames() =>
-      _local.loadNotebookNames();
+  Future<List<NotebookInfo>> loadNotebooks() => _local.loadNotebooks();
 
   @override
-  Future<void> saveNotebookNames(List<String> names) =>
-      _local.saveNotebookNames(names);
+  Future<void> saveNotebooks(List<NotebookInfo> notebooks) =>
+      _local.saveNotebooks(notebooks);
 
   @override
   Future<List<Goal>> loadGoals() async {
@@ -165,8 +165,7 @@ class LocalFirstStorageService implements IStorageService {
       _local.saveDailyIntentions(intentions);
 
   @override
-  Future<Map<String, List<String>>> loadDailyPlans() =>
-      _local.loadDailyPlans();
+  Future<Map<String, List<String>>> loadDailyPlans() => _local.loadDailyPlans();
 
   @override
   Future<void> saveDailyPlans(Map<String, List<String>> plans) =>

@@ -6,13 +6,12 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../../config/theme.dart';
 import '../../models/note.dart';
-import '../../models/tag.dart';
 import '../../providers/notes_provider.dart';
-import '../../providers/tags_provider.dart';
 import '../../utils/debouncer.dart';
 import '../../widgets/note_card.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/skeleton_card.dart';
+import '../../widgets/notebook_picker.dart';
 import '../../utils/notification_service_v2.dart';
 
 class NotesScreen extends StatefulWidget {
@@ -24,7 +23,6 @@ class NotesScreen extends StatefulWidget {
 
 class _NotesScreenState extends State<NotesScreen> {
   String? _filterNotebook;
-  Set<String> _filterTagIds = {};
   bool _isGridView = true;
   SortOption _sortOption = SortOption.updatedAt;
   final _searchController = TextEditingController();
@@ -127,8 +125,8 @@ class _NotesScreenState extends State<NotesScreen> {
             ...notebooks.map((nb) => ListTile(
                   leading: Icon(Icons.folder_outlined,
                       color: BrainTheme.textSecondary),
-                  title: Text(nb,
-                      style: TextStyle(color: BrainTheme.textPrimary)),
+                  title:
+                      Text(nb, style: TextStyle(color: BrainTheme.textPrimary)),
                   onTap: () async {
                     Navigator.pop(ctx);
                     for (final id in _selectedNoteIds) {
@@ -230,8 +228,8 @@ class _NotesScreenState extends State<NotesScreen> {
             ...notebooks.map((nb) => ListTile(
                   leading: Icon(Icons.folder_outlined,
                       color: BrainTheme.textSecondary),
-                  title: Text(nb,
-                      style: TextStyle(color: BrainTheme.textPrimary)),
+                  title:
+                      Text(nb, style: TextStyle(color: BrainTheme.textPrimary)),
                   onTap: () async {
                     Navigator.pop(ctx);
                     await provider.updateNote(note.copyWith(notebook: nb));
@@ -257,16 +255,6 @@ class _NotesScreenState extends State<NotesScreen> {
     );
   }
 
-  void _toggleTagFilter(String tagId) {
-    setState(() {
-      if (_filterTagIds.contains(tagId)) {
-        _filterTagIds.remove(tagId);
-      } else {
-        _filterTagIds.add(tagId);
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<NotesProvider>();
@@ -287,7 +275,6 @@ class _NotesScreenState extends State<NotesScreen> {
         _buildSearchBar(),
         _buildStatsBar(total, pinnedCount, notebooksCount),
         _buildFilterRow(provider.notebooks),
-        _buildTagFilter(),
         const SizedBox(height: 8),
         Expanded(
           child: RefreshIndicator(
@@ -305,7 +292,6 @@ class _NotesScreenState extends State<NotesScreen> {
   List<Note> _getFilteredNotes(NotesProvider provider) {
     return provider.filteredNotes(
       notebook: _filterNotebook,
-      tags: _filterTagIds.isNotEmpty ? _filterTagIds.toList() : null,
       searchQuery: _searchQuery.isNotEmpty ? _searchQuery : null,
       sortBy: _sortOption,
     );
@@ -384,8 +370,7 @@ class _NotesScreenState extends State<NotesScreen> {
           const SizedBox(width: 12),
           _StatChip(
             icon: Icons.folder_outlined,
-            label:
-                '$notebooks ${AppLocalizations.of(context).notebooksLabel}',
+            label: '$notebooks ${AppLocalizations.of(context).notebooksLabel}',
             color: BrainTheme.accentBlue,
           ),
         ],
@@ -409,63 +394,54 @@ class _NotesScreenState extends State<NotesScreen> {
   }
 
   Widget _buildNotebookDropdown(List<String> notebooks) {
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: BrainTheme.surfaceDark,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: BrainTheme.borderDark),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String?>(
-          value: _filterNotebook,
-          isExpanded: true,
-          hint: Row(
-            children: [
-              Icon(Icons.folder_outlined,
-                  size: 16, color: BrainTheme.textSecondary),
-              const SizedBox(width: 8),
-              Text(
-                AppLocalizations.of(context).allNotebooks,
-                style:
-                    TextStyle(color: BrainTheme.textSecondary, fontSize: 13),
+    final label = _filterNotebook ?? AppLocalizations.of(context).allNotebooks;
+    final notebookColor = _filterNotebook != null
+        ? context.read<NotesProvider>().getNotebookColor(_filterNotebook!)
+        : null;
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () async {
+        final selected = await showNotebookPickerModal(
+          context,
+          selectedNotebook: _filterNotebook,
+          allowAll: true,
+        );
+        if (!mounted) return;
+        setState(() => _filterNotebook = selected);
+      },
+      child: Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: BrainTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: BrainTheme.borderDark),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: notebookColor?.withValues(alpha: 0.2) ?? BrainTheme.surfaceDark,
+                borderRadius: BorderRadius.circular(8),
               ),
-            ],
-          ),
-          items: [
-            DropdownMenuItem<String?>(
-              value: null,
+              child: Icon(
+                Icons.folder,
+                size: 16,
+                color: notebookColor ?? BrainTheme.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
               child: Text(
-                AppLocalizations.of(context).allNotebooks,
+                label,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: BrainTheme.textPrimary, fontSize: 13),
               ),
             ),
-            ...notebooks.map((nb) => DropdownMenuItem<String?>(
-                  value: nb,
-                  child: Row(
-                    children: [
-                      Icon(Icons.folder_outlined,
-                          size: 14, color: BrainTheme.accentBlue),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          nb,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              color: BrainTheme.textPrimary, fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
+            Icon(Icons.expand_more, color: BrainTheme.textSecondary, size: 20),
           ],
-          onChanged: (String? value) =>
-              setState(() => _filterNotebook = value),
-          dropdownColor: BrainTheme.cardDark,
-          icon: Icon(Icons.expand_more,
-              color: BrainTheme.textSecondary, size: 20),
-          style: TextStyle(color: BrainTheme.textPrimary, fontSize: 13),
         ),
       ),
     );
@@ -544,75 +520,6 @@ class _NotesScreenState extends State<NotesScreen> {
     );
   }
 
-  Widget _buildTagFilter() {
-    final tagsProv = context.watch<TagsProvider>();
-    final noteTags = tagsProv.getTags(TagType.note);
-    final usedTagIds = context.read<NotesProvider>().tagCounts.keys.toSet();
-    final activeTags =
-        noteTags.where((t) => usedTagIds.contains(t.id)).toList();
-
-    if (activeTags.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-      child: SizedBox(
-        height: 34,
-        child: ListView(
-          scrollDirection: Axis.horizontal,
-          children: activeTags.map((tag) {
-            final isSelected = _filterTagIds.contains(tag.id);
-            return Padding(
-              padding: const EdgeInsets.only(right: 6),
-              child: GestureDetector(
-                onTap: () => _toggleTagFilter(tag.id),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? tag.color.withValues(alpha: 0.2)
-                        : BrainTheme.surfaceDark,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected ? tag.color : BrainTheme.borderDark,
-                      width: isSelected ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: tag.color,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        tag.name,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isSelected
-                              ? tag.color
-                              : BrainTheme.textSecondary,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
   Widget _buildNotesList(List<Note> notes, NotesProvider provider) {
     if (_isGridView) {
       return MasonryGridView.count(
@@ -654,10 +561,8 @@ class _NotesScreenState extends State<NotesScreen> {
       onDelete: _selectionMode
           ? null
           : () => _deleteNoteWithUndo(context, provider, note),
-      onTogglePin:
-          _selectionMode ? null : () => provider.togglePin(note.id),
-      onCopyContent:
-          _selectionMode ? null : () => _copyNoteContent(note),
+      onTogglePin: _selectionMode ? null : () => provider.togglePin(note.id),
+      onCopyContent: _selectionMode ? null : () => _copyNoteContent(note),
       onShare: _selectionMode ? null : () => _shareNote(note),
       onMoveToNotebook: _selectionMode
           ? null

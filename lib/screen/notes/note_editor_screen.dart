@@ -10,12 +10,10 @@ import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../../config/theme.dart';
 import '../../models/note.dart';
-import '../../models/tag.dart';
 import '../../utils/notification_service_v2.dart';
 import '../../providers/notes_provider.dart';
-import '../../providers/tags_provider.dart';
 import '../../widgets/note_editor/modals/emoji_picker_modal.dart';
-import '../../widgets/note_editor/modals/tag_picker_modal.dart';
+import '../../widgets/notebook_picker.dart';
 
 class NoteEditorScreen extends StatefulWidget {
   final String? noteId;
@@ -33,7 +31,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   String _emoji = '📝';
   String? _projectId;
-  List<String> _selectedTagIds = [];
   bool _isPinned = false;
   List<NoteAttachment> _attachments = [];
   String _notebook = 'General';
@@ -43,7 +40,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   String _initialTitle = '';
   String _initialContent = '';
   String _initialEmoji = '📝';
-  List<String> _initialTagIds = [];
   bool _initialPinned = false;
   List<NoteAttachment> _initialAttachments = [];
   String _initialNotebook = 'General';
@@ -60,13 +56,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           _notebook != _initialNotebook ||
           _isPinned != _initialPinned ||
           _notebook != _initialNotebook ||
-          !_listEquals(_selectedTagIds, _initialTagIds) ||
           !_listEquals(_attachments, _initialAttachments);
     }
     return _titleController.text.isNotEmpty ||
         _contentController.text.isNotEmpty ||
         _emoji != '📝' ||
-        _selectedTagIds.isNotEmpty ||
         _isPinned ||
         _attachments.isNotEmpty ||
         _notebook != 'General';
@@ -83,7 +77,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   @override
   void initState() {
     super.initState();
-    _autosaveTimer = Timer.periodic(const Duration(seconds: 30), (_) => _autosave());
+    _autosaveTimer =
+        Timer.periodic(const Duration(seconds: 30), (_) => _autosave());
     if (!_isEditing) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _titleFocusNode.requestFocus();
@@ -96,7 +91,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           _initialTitle = note.title;
           _initialContent = note.content;
           _initialEmoji = note.emoji;
-          _initialTagIds = List.from(note.tags);
           _initialPinned = note.isPinned;
           _initialAttachments = List.from(note.attachments);
           _initialNotebook = note.notebook;
@@ -106,15 +100,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             _notebook = note.notebook;
             _emoji = note.emoji;
             _projectId = note.projectId;
-            _selectedTagIds = List.from(note.tags);
             _isPinned = note.isPinned;
             _attachments = List.from(note.attachments);
           });
         }
-      });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final tagsProv = context.read<TagsProvider>();
-        if (!tagsProv.isLoaded) tagsProv.loadTags();
       });
     }
   }
@@ -134,7 +123,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: BrainTheme.accentRed),
+            style:
+                FilledButton.styleFrom(backgroundColor: BrainTheme.accentRed),
             child: Text(AppLocalizations.of(ctx).discard),
           ),
         ],
@@ -180,7 +170,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           notebook: notebook,
           emoji: _emoji,
           projectId: _projectId,
-          tags: _selectedTagIds,
           isPinned: _isPinned,
         ));
       }
@@ -192,7 +181,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         notebook: notebook,
         emoji: _emoji,
         projectId: _projectId,
-        tags: _selectedTagIds,
         isPinned: _isPinned,
       );
     }
@@ -360,167 +348,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
-  Future<void> _showTagPicker() async {
-    final selected = await showTagPickerModal(
+  Future<void> _showNotebookPicker() async {
+    final selected = await showNotebookPickerModal(
       context,
-      _selectedTagIds.toSet(),
+      selectedNotebook: _notebook,
     );
-    setState(() => _selectedTagIds = selected.toList());
-  }
-
-  void _showNotebookPicker() {
-    final provider = context.read<NotesProvider>();
-    final notebooks = provider.notebooks;
-    final searchController = TextEditingController();
-    final newController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (ctx) {
-        return StatefulBuilder(builder: (context, setSheetState) {
-          final query = searchController.text.toLowerCase();
-          final filtered = query.isEmpty
-              ? notebooks
-              : notebooks.where((nb) => nb.toLowerCase().contains(query)).toList();
-
-          return Padding(
-            padding:
-                EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-            child: Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(ctx).size.height * 0.6,
-              ),
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(AppLocalizations.of(context).notebook,
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w700)),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: searchController,
-                    onChanged: (_) => setSheetState(() {}),
-                    decoration: InputDecoration(
-                      hintText: 'Buscar cuaderno...',
-                      prefixIcon: Icon(Icons.search, size: 20,
-                          color: BrainTheme.textTertiary),
-                      suffixIcon: searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(Icons.clear, size: 18,
-                                  color: BrainTheme.textSecondary),
-                              onPressed: () {
-                                searchController.clear();
-                                setSheetState(() {});
-                              },
-                            )
-                          : null,
-                      filled: true,
-                      fillColor: BrainTheme.surfaceDark,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: newController,
-                    decoration: InputDecoration(
-                      hintText: 'Nuevo cuaderno...',
-                      prefixIcon: Icon(Icons.add, size: 20,
-                          color: BrainTheme.accentPurple),
-                      filled: true,
-                      fillColor: BrainTheme.surfaceDark,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                    ),
-                    onSubmitted: (value) async {
-                      if (value.trim().isNotEmpty) {
-                        final name = value.trim();
-                        final prov = context.read<NotesProvider>();
-                        if (!prov.notebooks.contains(name)) {
-                          await prov.createNotebook(name);
-                        }
-                        setState(() => _notebook = name);
-                        Navigator.pop(ctx);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  if (filtered.isNotEmpty)
-                    Flexible(
-                      child: ListView(
-                        shrinkWrap: true,
-                        children: filtered
-                            .map((nb) => ListTile(
-                                  dense: true,
-                                  leading: Icon(
-                                    _notebook == nb
-                                        ? Icons.folder
-                                        : Icons.folder_outlined,
-                                    color: _notebook == nb
-                                        ? BrainTheme.accentPurple
-                                        : BrainTheme.textSecondary,
-                                    size: 20,
-                                  ),
-                                  title: Text(nb,
-                                      style: TextStyle(
-                                          fontWeight: _notebook == nb
-                                              ? FontWeight.w600
-                                              : FontWeight.normal,
-                                          fontSize: 14)),
-                                  trailing: _notebook == nb
-                                      ? Icon(Icons.check,
-                                          color: BrainTheme.accentPurple,
-                                          size: 20)
-                                      : null,
-                                  onTap: () {
-                                    setState(() => _notebook = nb);
-                                    Navigator.pop(ctx);
-                                  },
-                                ))
-                            .toList(),
-                      ),
-                    )
-                  else
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      child: Center(
-                        child: Text(
-                          'Sin resultados',
-                          style: TextStyle(
-                              color: BrainTheme.textTertiary, fontSize: 13),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          );
-        });
-      },
-    );
+    if (selected != null) {
+      setState(() => _notebook = selected);
+    }
   }
 
   @override
@@ -533,80 +368,79 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         if (shouldPop && context.mounted) Navigator.pop(context);
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing
-            ? AppLocalizations.of(context).editNote
-            : AppLocalizations.of(context).createNote),
-        actions: [
-          if (_isEditing)
-            IconButton(
-              icon: Icon(Icons.delete_outline, color: BrainTheme.accentRed),
-              tooltip: AppLocalizations.of(context).delete,
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: Text(
-                        '${AppLocalizations.of(ctx).delete} ${AppLocalizations.of(ctx).note}'),
-                    content: const Text('Se moverá a la papelera.'),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
-                          child: Text(AppLocalizations.of(ctx).cancel)),
-                      FilledButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          style: FilledButton.styleFrom(
-                              backgroundColor: BrainTheme.accentRed,
-                              foregroundColor: Colors.white),
-                          child: Text(AppLocalizations.of(ctx).delete)),
-                    ],
-                  ),
-                );
-                if (confirm == true) {
-                  final provider = context.read<NotesProvider>();
-                  final noteTitle = _titleController.text.isNotEmpty
-                      ? _titleController.text
-                      : 'Nota';
-                  final noteId = widget.noteId!;
-                  await provider.deleteNote(noteId);
-                  showSuccessNotification(
-                    AppLocalizations.of(context).notesUndoDeleted(noteTitle),
-                    actionLabel: AppLocalizations.of(context).undo,
-                    onAction: () => provider.restoreNote(noteId),
+        appBar: AppBar(
+          title: Text(_isEditing
+              ? AppLocalizations.of(context).editNote
+              : AppLocalizations.of(context).createNote),
+          actions: [
+            if (_isEditing)
+              IconButton(
+                icon: Icon(Icons.delete_outline, color: BrainTheme.accentRed),
+                tooltip: AppLocalizations.of(context).delete,
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(
+                          '${AppLocalizations.of(ctx).delete} ${AppLocalizations.of(ctx).note}'),
+                      content: const Text('Se moverá a la papelera.'),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: Text(AppLocalizations.of(ctx).cancel)),
+                        FilledButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            style: FilledButton.styleFrom(
+                                backgroundColor: BrainTheme.accentRed,
+                                foregroundColor: Colors.white),
+                            child: Text(AppLocalizations.of(ctx).delete)),
+                      ],
+                    ),
                   );
-                  if (mounted) Navigator.pop(context);
-                }
-              },
-            ),
-          FilledButton(
-              onPressed: _save,
-              style: FilledButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  if (confirm == true) {
+                    final provider = context.read<NotesProvider>();
+                    final noteTitle = _titleController.text.isNotEmpty
+                        ? _titleController.text
+                        : 'Nota';
+                    final noteId = widget.noteId!;
+                    await provider.deleteNote(noteId);
+                    showSuccessNotification(
+                      AppLocalizations.of(context).notesUndoDeleted(noteTitle),
+                      actionLabel: AppLocalizations.of(context).undo,
+                      onAction: () => provider.restoreNote(noteId),
+                    );
+                    if (mounted) Navigator.pop(context);
+                  }
+                },
               ),
-              child: Text(AppLocalizations.of(context).save,
-                  style: TextStyle(fontWeight: FontWeight.w600))),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 100),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildEmojiAndTitle(),
-            const SizedBox(height: 12),
-            _buildMetadataRow(),
-            const SizedBox(height: 12),
-            _buildTagsSection(),
-            const Divider(height: 24),
-            _buildContentEditor(),
-            const Divider(height: 24),
-            _buildAttachmentsSection(),
+            FilledButton(
+                onPressed: _save,
+                style: FilledButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
+                child: Text(AppLocalizations.of(context).save,
+                    style: TextStyle(fontWeight: FontWeight.w600))),
+            const SizedBox(width: 8),
           ],
         ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildEmojiAndTitle(),
+              const SizedBox(height: 12),
+              _buildMetadataRow(),
+              const SizedBox(height: 12),
+              const Divider(height: 24),
+              _buildContentEditor(),
+              const Divider(height: 24),
+              _buildAttachmentsSection(),
+            ],
+          ),
+        ),
       ),
-    ),
     );
   }
 
@@ -652,6 +486,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   }
 
   Widget _buildMetadataRow() {
+    final notebookColor =
+        context.read<NotesProvider>().getNotebookColor(_notebook);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -661,6 +497,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               icon: Icons.folder_outlined,
               label: _notebook,
               onTap: _showNotebookPicker,
+              color: notebookColor,
             ),
           ),
           const SizedBox(width: 8),
@@ -674,71 +511,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         ],
       ),
     );
-  }
-
-  Widget _buildTagsSection() {
-    return Consumer<TagsProvider>(builder: (context, tagsProv, _) {
-      final selectedTags = _selectedTagIds
-          .map((id) => tagsProv.getById(id))
-          .whereType<Tag>()
-          .toList();
-
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(AppLocalizations.of(context).tags,
-                    style: TextStyle(
-                        color: BrainTheme.textSecondary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13)),
-                const Spacer(),
-                TextButton(
-                  onPressed: _showTagPicker,
-                  child: Text(
-                    selectedTags.isEmpty ? 'Añadir' : 'Editar',
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                ),
-              ],
-            ),
-            if (selectedTags.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: selectedTags
-                    .map((tag) => GestureDetector(
-                          onTap: () =>
-                              setState(() => _selectedTagIds.remove(tag.id)),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: tag.color.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: tag.color),
-                            ),
-                            child:
-                                Row(mainAxisSize: MainAxisSize.min, children: [
-                              Text(tag.name,
-                                  style: TextStyle(
-                                      color: tag.color, fontSize: 12)),
-                              const SizedBox(width: 6),
-                              Icon(Icons.close, size: 14, color: tag.color),
-                            ]),
-                          ),
-                        ))
-                    .toList(),
-              ),
-            ],
-          ],
-        ),
-      );
-    });
   }
 
   Widget _buildContentEditor() {
@@ -833,6 +605,7 @@ class _MetadataChip extends StatelessWidget {
   final VoidCallback onTap;
   final bool active;
   final Color? activeColor;
+  final Color? color;
 
   const _MetadataChip({
     required this.icon,
@@ -840,13 +613,15 @@ class _MetadataChip extends StatelessWidget {
     required this.onTap,
     this.active = false,
     this.activeColor,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = active
-        ? (activeColor ?? BrainTheme.accentPurple)
-        : BrainTheme.textSecondary;
+    final effectiveColor = color ??
+        (active
+            ? (activeColor ?? BrainTheme.accentPurple)
+            : BrainTheme.textSecondary);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -866,14 +641,17 @@ class _MetadataChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: color),
+            Icon(icon, size: 16, color: effectiveColor),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
                 label,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 12, color: color, fontWeight: FontWeight.w500),
+                  fontSize: 12,
+                  color: effectiveColor,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/goal.dart';
 import '../../models/note.dart';
+import '../../models/notebook_info.dart';
 import '../../models/project.dart';
 import '../../models/tag.dart';
 import '../../models/task.dart';
@@ -16,8 +17,8 @@ abstract class IStorageService {
   Future<void> saveProjects(List<Project> projects);
   Future<List<Note>> loadNotes();
   Future<void> saveNotes(List<Note> notes);
-  Future<List<String>> loadNotebookNames();
-  Future<void> saveNotebookNames(List<String> names);
+  Future<List<NotebookInfo>> loadNotebooks();
+  Future<void> saveNotebooks(List<NotebookInfo> notebooks);
   Future<List<Goal>> loadGoals();
   Future<void> saveGoals(List<Goal> goals);
   Future<List<Tag>> loadTags();

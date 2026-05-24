@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/result.dart';
+import '../models/notebook_info.dart';
 import '../models/note.dart';
 import '../services/interfaces/storage_service_interface.dart';
 import '../utils/debouncer.dart';
@@ -39,7 +40,7 @@ class NotesProvider extends ChangeNotifier {
   List<Note>? __recentNotes;
   List<String>? __notebooks;
   Map<String, int>? __notebookCounts;
-  Map<String, int>? __tagCounts;
+  final List<NotebookInfo> _notebookInfos = [];
 
   List<Note> get notes => _notes;
   bool get isLoaded => _isLoaded;
@@ -50,7 +51,8 @@ class NotesProvider extends ChangeNotifier {
       __unpinnedNotes ??= _notes.where((n) => !n.isPinned).toList();
   List<Note> get recentNotes {
     if (__recentNotes != null) return __recentNotes!;
-    final sorted = [..._notes]..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    final sorted = [..._notes]
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     __recentNotes = sorted.take(10).toList();
     return __recentNotes!;
   }
@@ -58,37 +60,42 @@ class NotesProvider extends ChangeNotifier {
   List<String> get notebooks {
     if (__notebooks != null) return __notebooks!;
     final derived = _notes.map((n) => n.notebook).toSet();
-    final merged = {...derived, ..._notebookNames.toSet()}.toList()..sort();
+    final merged = {
+      ...derived,
+      ..._notebookInfos.map((info) => info.name).toSet()
+    }.toList()
+      ..sort();
     __notebooks = merged.isEmpty ? ['General'] : merged;
     return __notebooks!;
   }
+
+  NotebookInfo getNotebookInfo(String notebook) {
+    return _notebookInfos.firstWhere(
+      (info) => info.name == notebook,
+      orElse: () => NotebookInfo(
+        name: notebook,
+        colorHex: NotebookInfo.defaultColorHex(notebook),
+      ),
+    );
+  }
+
+  Color getNotebookColor(String notebook) => getNotebookInfo(notebook).color;
 
   Map<String, int> get notebookCounts {
     if (__notebookCounts != null) return __notebookCounts!;
     __notebookCounts = <String, int>{};
     for (final n in _notes) {
-      __notebookCounts![n.notebook] =
-          (__notebookCounts![n.notebook] ?? 0) + 1;
+      __notebookCounts![n.notebook] = (__notebookCounts![n.notebook] ?? 0) + 1;
     }
     return __notebookCounts!;
   }
 
-  Map<String, int> get tagCounts {
-    if (__tagCounts != null) return __tagCounts!;
-    __tagCounts = <String, int>{};
-    for (final n in _notes) {
-      for (final tag in n.tags) {
-        __tagCounts![tag] = (__tagCounts![tag] ?? 0) + 1;
-      }
-    }
-    return __tagCounts!;
-  }
-
-  List<String> _notebookNames = [];
-
   Future<void> loadNotes() async {
     _notes = await _storage.loadNotes();
-    _notebookNames = await _storage.loadNotebookNames();
+    final savedNotebooks = await _storage.loadNotebooks();
+    _notebookInfos
+      ..clear()
+      ..addAll(savedNotebooks);
     _markDirty();
     _isLoaded = true;
     notifyListeners();
@@ -100,33 +107,19 @@ class NotesProvider extends ChangeNotifier {
     __recentNotes = null;
     __notebooks = null;
     __notebookCounts = null;
-    __tagCounts = null;
   }
 
   void _notifyAndScheduleSave() {
     _markDirty();
-    _pruneOrphanNotebookNames();
     notifyListeners();
     _saveDebouncer.call(() async {
       await _storage.saveNotes(_notes);
-      await _storage.saveNotebookNames(_notebookNames);
+      await _storage.saveNotebooks(_notebookInfos);
     });
-  }
-
-  void _pruneOrphanNotebookNames() {
-    final derived = _notes.map((n) => n.notebook).toSet();
-    _notebookNames.removeWhere(derived.contains);
   }
 
   List<Note> getNotesByProject(String projectId) =>
       _notes.where((n) => n.projectId == projectId).toList();
-
-  List<Note> getNotesByTag(String tag) =>
-      _notes.where((n) => n.tags.contains(tag)).toList();
-
-  List<Note> getNotesByTags(List<String> tags) => _notes
-      .where((n) => tags.any((t) => n.tags.contains(t)))
-      .toList();
 
   List<Note> getNotesByType(NoteType type) =>
       _notes.where((n) => n.type == type).toList();
@@ -149,7 +142,6 @@ class NotesProvider extends ChangeNotifier {
     String notebook = 'General',
     String? projectId,
     String emoji = '\u{1F4DD}',
-    List<String> tags = const [],
     List<NoteAttachment> attachments = const [],
     bool isPinned = false,
   }) async {
@@ -164,7 +156,6 @@ class NotesProvider extends ChangeNotifier {
         notebook: notebook,
         projectId: projectId,
         emoji: emoji,
-        tags: tags,
         isPinned: isPinned,
         createdAt: now,
         updatedAt: now,
@@ -194,7 +185,11 @@ class NotesProvider extends ChangeNotifier {
         _notifyAndScheduleSave();
       }
     } catch (e, s) {
-      AppException(message: 'Error al actualizar nota', code: 'UPDATE_NOTE', stackTrace: s).log();
+      AppException(
+              message: 'Error al actualizar nota',
+              code: 'UPDATE_NOTE',
+              stackTrace: s)
+          .log();
       showErrorNotification('Error al actualizar nota');
     }
   }
@@ -211,7 +206,11 @@ class NotesProvider extends ChangeNotifier {
         showSuccessNotification(newPinned ? 'Nota anclada' : 'Nota desanclada');
       }
     } catch (e, s) {
-      AppException(message: 'Error al cambiar anclaje de nota', code: 'TOGGLE_PIN', stackTrace: s).log();
+      AppException(
+              message: 'Error al cambiar anclaje de nota',
+              code: 'TOGGLE_PIN',
+              stackTrace: s)
+          .log();
       showErrorNotification('Error al cambiar anclaje de nota');
     }
   }
@@ -227,7 +226,11 @@ class NotesProvider extends ChangeNotifier {
       _notifyAndScheduleSave();
       HapticHelper.medium();
     } catch (e, s) {
-      AppException(message: 'Error al eliminar nota', code: 'DELETE_NOTE', stackTrace: s).log();
+      AppException(
+              message: 'Error al eliminar nota',
+              code: 'DELETE_NOTE',
+              stackTrace: s)
+          .log();
       showErrorNotification('Error al eliminar nota');
     }
   }
@@ -245,7 +248,11 @@ class NotesProvider extends ChangeNotifier {
         showSuccessNotification('Nota restaurada');
       }
     } catch (e, s) {
-      AppException(message: 'Error al restaurar nota', code: 'RESTORE_NOTE', stackTrace: s).log();
+      AppException(
+              message: 'Error al restaurar nota',
+              code: 'RESTORE_NOTE',
+              stackTrace: s)
+          .log();
       showErrorNotification('Error al restaurar nota');
     }
   }
@@ -257,23 +264,40 @@ class NotesProvider extends ChangeNotifier {
       await _storage.saveTrashNotes(trash);
       showSuccessNotification('Nota eliminada permanentemente');
     } catch (e, s) {
-      AppException(message: 'Error al eliminar nota permanentemente', code: 'PERM_DELETE_NOTE', stackTrace: s).log();
+      AppException(
+              message: 'Error al eliminar nota permanentemente',
+              code: 'PERM_DELETE_NOTE',
+              stackTrace: s)
+          .log();
       showErrorNotification('Error al eliminar nota');
     }
   }
 
   Future<void> renameNotebook(String oldName, String newName) async {
-    if (oldName == newName || newName.trim().isEmpty) return;
+    final trimmedNew = newName.trim();
+    if (oldName == trimmedNew || trimmedNew.isEmpty) return;
     try {
       for (var i = 0; i < _notes.length; i++) {
         if (_notes[i].notebook == oldName) {
-          _notes[i] = _notes[i].copyWith(notebook: newName.trim());
+          _notes[i] = _notes[i].copyWith(notebook: trimmedNew);
         }
+      }
+      final infoIndex =
+          _notebookInfos.indexWhere((info) => info.name == oldName);
+      if (infoIndex != -1) {
+        _notebookInfos[infoIndex] = NotebookInfo(
+          name: trimmedNew,
+          colorHex: _notebookInfos[infoIndex].colorHex,
+        );
       }
       _notifyAndScheduleSave();
       showSuccessNotification('Cuaderno renombrado');
     } catch (e, s) {
-      AppException(message: 'Error al renombrar cuaderno', code: 'RENAME_NOTEBOOK', stackTrace: s).log();
+      AppException(
+              message: 'Error al renombrar cuaderno',
+              code: 'RENAME_NOTEBOOK',
+              stackTrace: s)
+          .log();
     }
   }
 
@@ -284,20 +308,45 @@ class NotesProvider extends ChangeNotifier {
           _notes[i] = _notes[i].copyWith(notebook: 'General');
         }
       }
+      _notebookInfos.removeWhere((info) => info.name == name);
       _notifyAndScheduleSave();
       showSuccessNotification('Cuaderno eliminado, notas movidas a General');
     } catch (e, s) {
-      AppException(message: 'Error al eliminar cuaderno', code: 'DELETE_NOTEBOOK', stackTrace: s).log();
+      AppException(
+              message: 'Error al eliminar cuaderno',
+              code: 'DELETE_NOTEBOOK',
+              stackTrace: s)
+          .log();
     }
   }
 
-  Future<void> createNotebook(String name) async {
+  Future<void> createNotebook(String name, {Color? color}) async {
     final trimmed = name.trim();
     if (trimmed.isEmpty || notebooks.contains(trimmed)) return;
-    _notebookNames.add(trimmed);
+    _notebookInfos.add(NotebookInfo(
+      name: trimmed,
+      colorHex: color != null
+          ? color.toARGB32().toRadixString(16).substring(2).toUpperCase()
+          : NotebookInfo.defaultColorHex(trimmed),
+    ));
     _markDirty();
     notifyListeners();
-    await _storage.saveNotebookNames(_notebookNames);
+    await _storage.saveNotebooks(_notebookInfos);
+  }
+
+  Future<void> setNotebookColor(String name, Color color) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    final index = _notebookInfos.indexWhere((info) => info.name == trimmed);
+    final colorHex = color.toARGB32().toRadixString(16).substring(2).toUpperCase();
+    if (index != -1) {
+      _notebookInfos[index] = NotebookInfo(name: trimmed, colorHex: colorHex);
+    } else {
+      _notebookInfos.add(NotebookInfo(name: trimmed, colorHex: colorHex));
+    }
+    _markDirty();
+    notifyListeners();
+    await _storage.saveNotebooks(_notebookInfos);
   }
 
   Future<void> replaceAll(List<Note> notes) async {
@@ -309,8 +358,7 @@ class NotesProvider extends ChangeNotifier {
     final lower = query.toLowerCase();
     return note.title.toLowerCase().contains(lower) ||
         note.content.toLowerCase().contains(lower) ||
-        note.notebook.toLowerCase().contains(lower) ||
-        note.tags.any((t) => t.toLowerCase().contains(lower));
+        note.notebook.toLowerCase().contains(lower);
   }
 
   List<Note> search(String query) {
@@ -321,7 +369,6 @@ class NotesProvider extends ChangeNotifier {
   List<Note> filteredNotes({
     NoteType? type,
     String? notebook,
-    List<String>? tags,
     String? searchQuery,
     String? projectId,
     SortOption sortBy = SortOption.updatedAt,
@@ -336,9 +383,6 @@ class NotesProvider extends ChangeNotifier {
     }
     if (notebook != null) {
       result = result.where((n) => n.notebook == notebook).toList();
-    }
-    if (tags != null && tags.isNotEmpty) {
-      result = result.where((n) => tags.any((t) => n.tags.contains(t))).toList();
     }
     if (searchQuery != null && searchQuery.isNotEmpty) {
       result = result.where((n) => _matchesQuery(n, searchQuery)).toList();

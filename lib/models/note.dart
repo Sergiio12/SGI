@@ -47,7 +47,6 @@ class Note extends BrainItem {
     bool? isPinned,
     int? colorValue,
     String? emoji,
-    List<String>? tags,
     bool clearProjectId = false,
   }) {
     return Note(
@@ -63,7 +62,6 @@ class Note extends BrainItem {
       isPinned: isPinned ?? this.isPinned,
       colorValue: colorValue ?? this.colorValue,
       emoji: emoji ?? this.emoji,
-      tags: tags ?? this.tags,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
     );
@@ -83,7 +81,6 @@ class Note extends BrainItem {
         'isPinned': isPinned,
         'colorValue': colorValue,
         'emoji': emoji,
-        'tags': tags,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
       };
@@ -105,7 +102,6 @@ class Note extends BrainItem {
         isPinned: json['isPinned'] ?? false,
         colorValue: json['colorValue'] ?? 0xFF1E1E2E,
         emoji: json['emoji'] ?? '📝',
-        tags: List<String>.from(json['tags'] ?? []),
         createdAt: DateTime.parse(json['createdAt']),
         updatedAt: DateTime.parse(json['updatedAt']),
       );
