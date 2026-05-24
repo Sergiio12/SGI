@@ -404,5 +404,27 @@
   "sectionPlanning": "Planning",
 
   "noteAttached": "Note pinned",
-  "noteDetached": "Note unpinned"
+  "noteDetached": "Note unpinned",
+
+  "pomodoroIdle": "Ready",
+  "pomodoroWork": "Focus",
+  "pomodoroBreak": "Break",
+  "pomodoroLongBreak": "Long break",
+  "pomodoroPaused": "Paused",
+  "pomodoroSessions": "sessions",
+  "pomodoroStart": "Start",
+  "pomodoroPause": "Pause",
+  "pomodoroResume": "Resume",
+  "pomodoroStop": "Stop",
+  "pomodoroSkip": "Skip",
+  "pomodoroWorkLabel": "focus",
+  "pomodoroBreakLabel": "rest",
+
+  "dailySummary": "Daily summary",
+  "dailySummaryTime": "Notification time",
+  "dailySummaryTimezone": "Timezone",
+  "archive": "Archive",
+  "archiveOldTasks": "Archive old tasks",
+  "archivedTasks": "Archived tasks",
+  "unarchive": "Unarchive"
 }

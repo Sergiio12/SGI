@@ -32,6 +32,7 @@ class HiveStorageService implements IStorageService {
   static const String _dailyIntentionsKey = 'brain_daily_intentions';
   static const String _dailyPlansKey = 'brain_daily_plans';
   static const String _dailyTimeBlocksKey = 'brain_daily_time_blocks';
+  static const String _archivedTasksKey = 'brain_archived_tasks';
 
   Box<String>? _box;
 
@@ -183,6 +184,12 @@ class HiveStorageService implements IStorageService {
     _cachedTasks = List<Task>.from(tasks);
     await _saveList(_tasksKey, tasks.map((t) => t.toJson()).toList());
   }
+
+  Future<List<Task>> loadArchivedTasks() async =>
+      _loadList(_archivedTasksKey, Task.fromJson);
+
+  Future<void> saveArchivedTasks(List<Task> tasks) async =>
+      _saveList(_archivedTasksKey, tasks.map((t) => t.toJson()).toList());
 
   @override
   Future<List<Project>> loadProjects() async {

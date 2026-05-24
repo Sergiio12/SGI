@@ -139,6 +139,81 @@ class NotificationsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
+              const _SectionHeader(title: 'RESUMEN DIARIO'),
+              const SizedBox(height: 8),
+              Opacity(
+                opacity: settings.notificationsEnabled ? 1.0 : 0.4,
+                child: Column(
+                  children: [
+                    _SettingsSwitch(
+                      icon: Icons.wb_sunny_rounded,
+                      title: 'Resumen diario',
+                      subtitle: 'Notificación a las 7:00 AM con tareas de hoy',
+                      value: settings.dailyNotificationEnabled,
+                      onChanged: (v) =>
+                          settings.setDailyNotificationEnabled(v),
+                    ),
+                    if (settings.dailyNotificationEnabled) ...[
+                      const SizedBox(height: 4),
+                      Material(
+                        color: Colors.transparent,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                                color: Theme.of(context).dividerColor),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Horario de la notificación',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: BrainTheme.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _TimeButton(
+                                      label: 'Hora',
+                                      time: settings.dailyNotificationTime,
+                                      onTap: () async {
+                                        final picked = await showTimePicker(
+                                          context: context,
+                                          initialTime:
+                                              settings.dailyNotificationTime,
+                                        );
+                                        if (picked != null) {
+                                          settings.setDailyNotificationTime(
+                                              picked);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _TimezoneSelector(
+                                      timezone: settings.timezone,
+                                      onChanged: (v) =>
+                                          settings.setTimezone(v),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
               const _SectionHeader(title: 'CALENDARIO'),
               const SizedBox(height: 8),
               Column(
@@ -536,6 +611,150 @@ class _TimeRangePicker extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TimezoneSelector extends StatelessWidget {
+  final String timezone;
+  final ValueChanged<String> onChanged;
+
+  static const _timezones = [
+    'America/Mexico_City',
+    'America/New_York',
+    'America/Chicago',
+    'America/Denver',
+    'America/Los_Angeles',
+    'America/Argentina/Buenos_Aires',
+    'America/Bogota',
+    'America/Santiago',
+    'America/Lima',
+    'America/Caracas',
+    'Europe/Madrid',
+    'Europe/London',
+    'Europe/Paris',
+    'Europe/Berlin',
+    'Europe/Rome',
+    'Atlantic/Canary',
+  ];
+
+  const _TimezoneSelector({
+    required this.timezone,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => _showPicker(context),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        decoration: BoxDecoration(
+          color: BrainTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(
+              'Zona horaria',
+              style: TextStyle(
+                fontSize: 11,
+                color: BrainTheme.textTertiary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              timezone.split('/').last.replaceAll('_', ' '),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: BrainTheme.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: BrainTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Row(
+                  children: [
+                    Text(
+                      'Seleccionar zona horaria',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: BrainTheme.textPrimary,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: Icon(Icons.close,
+                          color: BrainTheme.textSecondary),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(),
+              SizedBox(
+                height: 300,
+                child: ListView.builder(
+                  itemCount: _timezones.length,
+                  itemBuilder: (context, index) {
+                    final tz = _timezones[index];
+                    final selected = tz == timezone;
+                    return ListTile(
+                      title: Text(
+                        tz.split('/').last.replaceAll('_', ' '),
+                        style: TextStyle(
+                          color: selected
+                              ? BrainTheme.accentPurple
+                              : BrainTheme.textPrimary,
+                          fontWeight:
+                              selected ? FontWeight.w600 : FontWeight.w400,
+                        ),
+                      ),
+                      subtitle: Text(
+                        tz,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: BrainTheme.textTertiary,
+                        ),
+                      ),
+                      trailing: selected
+                          ? Icon(Icons.check,
+                              color: BrainTheme.accentPurple, size: 18)
+                          : null,
+                      onTap: () {
+                        onChanged(tz);
+                        Navigator.pop(ctx);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -2257,6 +2257,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Note unpinned'**
   String get noteDetached;
+
+  /// No description provided for @pomodoroIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get pomodoroIdle;
+
+  /// No description provided for @pomodoroWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus'**
+  String get pomodoroWork;
+
+  /// No description provided for @pomodoroBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Break'**
+  String get pomodoroBreak;
+
+  /// No description provided for @pomodoroLongBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Long break'**
+  String get pomodoroLongBreak;
+
+  /// No description provided for @pomodoroPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get pomodoroPaused;
+
+  /// No description provided for @pomodoroSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'sessions'**
+  String get pomodoroSessions;
+
+  /// No description provided for @pomodoroStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get pomodoroStart;
+
+  /// No description provided for @pomodoroPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pomodoroPause;
+
+  /// No description provided for @pomodoroResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get pomodoroResume;
+
+  /// No description provided for @pomodoroStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get pomodoroStop;
+
+  /// No description provided for @pomodoroSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get pomodoroSkip;
+
+  /// No description provided for @pomodoroWorkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'focus'**
+  String get pomodoroWorkLabel;
+
+  /// No description provided for @pomodoroBreakLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'rest'**
+  String get pomodoroBreakLabel;
+
+  /// No description provided for @dailySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily summary'**
+  String get dailySummary;
+
+  /// No description provided for @dailySummaryTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification time'**
+  String get dailySummaryTime;
+
+  /// No description provided for @dailySummaryTimezone.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get dailySummaryTimezone;
+
+  /// No description provided for @archive.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get archive;
+
+  /// No description provided for @archiveOldTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive old tasks'**
+  String get archiveOldTasks;
+
+  /// No description provided for @archivedTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived tasks'**
+  String get archivedTasks;
+
+  /// No description provided for @unarchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Unarchive'**
+  String get unarchive;
 }
 
 class _AppLocalizationsDelegate

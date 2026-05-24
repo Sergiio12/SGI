@@ -1121,4 +1121,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noteDetached => 'Note unpinned';
+
+  @override
+  String get pomodoroIdle => 'Ready';
+
+  @override
+  String get pomodoroWork => 'Focus';
+
+  @override
+  String get pomodoroBreak => 'Break';
+
+  @override
+  String get pomodoroLongBreak => 'Long break';
+
+  @override
+  String get pomodoroPaused => 'Paused';
+
+  @override
+  String get pomodoroSessions => 'sessions';
+
+  @override
+  String get pomodoroStart => 'Start';
+
+  @override
+  String get pomodoroPause => 'Pause';
+
+  @override
+  String get pomodoroResume => 'Resume';
+
+  @override
+  String get pomodoroStop => 'Stop';
+
+  @override
+  String get pomodoroSkip => 'Skip';
+
+  @override
+  String get pomodoroWorkLabel => 'focus';
+
+  @override
+  String get pomodoroBreakLabel => 'rest';
+
+  @override
+  String get dailySummary => 'Daily summary';
+
+  @override
+  String get dailySummaryTime => 'Notification time';
+
+  @override
+  String get dailySummaryTimezone => 'Timezone';
+
+  @override
+  String get archive => 'Archive';
+
+  @override
+  String get archiveOldTasks => 'Archive old tasks';
+
+  @override
+  String get archivedTasks => 'Archived tasks';
+
+  @override
+  String get unarchive => 'Unarchive';
 }

@@ -44,7 +44,7 @@ class EmptyState extends StatelessWidget {
                 ],
               ),
               child: Text(emoji, style: const TextStyle(fontSize: 64)),
-            ).animate(onPlay: (controller) => controller.repeat(reverse: true)).moveY(begin: -5, end: 5, duration: 2.seconds, curve: Curves.easeInOut),
+            ).animate().moveY(begin: -8, end: 0, duration: 600.ms, curve: Curves.easeOutBack),
             const SizedBox(height: 24),
             Text(
               title,

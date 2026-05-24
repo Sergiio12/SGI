@@ -404,5 +404,27 @@
   "sectionPlanning": "Planificación",
 
   "noteAttached": "Nota anclada",
-  "noteDetached": "Nota desanclada"
+  "noteDetached": "Nota desanclada",
+
+  "pomodoroIdle": "Preparado",
+  "pomodoroWork": "Enfoque",
+  "pomodoroBreak": "Descanso",
+  "pomodoroLongBreak": "Descanso largo",
+  "pomodoroPaused": "Pausado",
+  "pomodoroSessions": "sesiones",
+  "pomodoroStart": "Comenzar",
+  "pomodoroPause": "Pausar",
+  "pomodoroResume": "Reanudar",
+  "pomodoroStop": "Detener",
+  "pomodoroSkip": "Saltar",
+  "pomodoroWorkLabel": "trabajo",
+  "pomodoroBreakLabel": "descanso",
+
+  "dailySummary": "Resumen diario",
+  "dailySummaryTime": "Horario de la notificación",
+  "dailySummaryTimezone": "Zona horaria",
+  "archive": "Archivar",
+  "archiveOldTasks": "Archivar tareas antiguas",
+  "archivedTasks": "Tareas archivadas",
+  "unarchive": "Desarchivar"
 }

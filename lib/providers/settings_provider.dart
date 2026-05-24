@@ -25,6 +25,10 @@ class SettingsProvider extends ChangeNotifier {
       'default_calendar_reminder_minutes';
   static const _kCloudSyncEnabled = 'cloud_sync_enabled';
   static const _kWidgetEnabled = 'widget_enabled';
+  static const _kTimezone = 'timezone';
+  static const _kDailyNotificationEnabled = 'daily_notification_enabled';
+  static const _kDailyNotificationHour = 'daily_notification_hour';
+  static const _kDailyNotificationMinute = 'daily_notification_minute';
 
   late SharedPreferences _prefs;
   bool _isLoaded = false;
@@ -50,6 +54,10 @@ class SettingsProvider extends ChangeNotifier {
   bool _calendarSyncEnabled = false;
   int _defaultCalendarReminderMinutes = 30;
   bool _cloudSyncEnabled = false;
+  String _timezone = 'America/Mexico_City';
+  bool _dailyNotificationEnabled = true;
+  int _dailyNotificationHour = 7;
+  int _dailyNotificationMinute = 0;
 
   bool get isLoaded => _isLoaded;
   bool get hapticFeedback => _hapticFeedback;
@@ -71,6 +79,12 @@ class SettingsProvider extends ChangeNotifier {
   bool get calendarSyncEnabled => _calendarSyncEnabled;
   int get defaultCalendarReminderMinutes => _defaultCalendarReminderMinutes;
   bool get cloudSyncEnabled => _cloudSyncEnabled;
+  String get timezone => _timezone;
+  bool get dailyNotificationEnabled => _dailyNotificationEnabled;
+  int get dailyNotificationHour => _dailyNotificationHour;
+  int get dailyNotificationMinute => _dailyNotificationMinute;
+  TimeOfDay get dailyNotificationTime =>
+      TimeOfDay(hour: _dailyNotificationHour, minute: _dailyNotificationMinute);
 
   TimeOfDay get quietStart => TimeOfDay(hour: _quietStartHour, minute: _quietStartMinute);
   TimeOfDay get quietEnd => TimeOfDay(hour: _quietEndHour, minute: _quietEndMinute);
@@ -111,6 +125,10 @@ class SettingsProvider extends ChangeNotifier {
     _defaultCalendarReminderMinutes =
         _prefs.getInt(_kDefaultCalendarReminderMinutes) ?? 30;
     _cloudSyncEnabled = _prefs.getBool(_kCloudSyncEnabled) ?? false;
+    _timezone = _prefs.getString(_kTimezone) ?? 'America/Mexico_City';
+    _dailyNotificationEnabled = _prefs.getBool(_kDailyNotificationEnabled) ?? true;
+    _dailyNotificationHour = _prefs.getInt(_kDailyNotificationHour) ?? 7;
+    _dailyNotificationMinute = _prefs.getInt(_kDailyNotificationMinute) ?? 0;
 
     _isLoaded = true;
     notifyListeners();
@@ -223,6 +241,29 @@ class SettingsProvider extends ChangeNotifier {
     await _prefs.setBool(_kCloudSyncEnabled, value);
   }
 
+  Future<void> setTimezone(String value) async {
+    _timezone = value;
+    _syncNotificationService();
+    notifyListeners();
+    await _prefs.setString(_kTimezone, value);
+  }
+
+  Future<void> setDailyNotificationEnabled(bool value) async {
+    _dailyNotificationEnabled = value;
+    _syncNotificationService();
+    notifyListeners();
+    await _prefs.setBool(_kDailyNotificationEnabled, value);
+  }
+
+  Future<void> setDailyNotificationTime(TimeOfDay time) async {
+    _dailyNotificationHour = time.hour;
+    _dailyNotificationMinute = time.minute;
+    _syncNotificationService();
+    notifyListeners();
+    await _prefs.setInt(_kDailyNotificationHour, time.hour);
+    await _prefs.setInt(_kDailyNotificationMinute, time.minute);
+  }
+
   Future<void> setAccentColor(Color color) async {
     _accentColor = color;
     BrainTheme.updateAccentColor(color);
@@ -241,6 +282,10 @@ class SettingsProvider extends ChangeNotifier {
       quietStartMinute: _quietStartMinute,
       quietEndHour: _quietEndHour,
       quietEndMinute: _quietEndMinute,
+      timezone: _timezone,
+      dailyNotificationEnabled: _dailyNotificationEnabled,
+      dailyNotificationHour: _dailyNotificationHour,
+      dailyNotificationMinute: _dailyNotificationMinute,
     );
     onNotificationSettingsChanged?.call();
   }

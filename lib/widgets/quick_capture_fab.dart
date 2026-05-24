@@ -49,82 +49,92 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
+    return Stack(
       children: [
-        // Mini FABs
-        IgnorePointer(
-          ignoring: !_isOpen,
-          child: ScaleTransition(
-          scale: _animation,
-          alignment: Alignment.bottomRight,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              _MiniFAB(
-                icon: Icons.note_add_outlined,
-                label: AppLocalizations.of(context).note,
-                color: BrainTheme.accentGreen,
-                onTap: () {
-                  HapticHelper.medium();
-                  _toggle();
-                  widget.onCapture('note');
-                },
-              ),
-              const SizedBox(height: 10),
-              _MiniFAB(
-                icon: Icons.add_task,
-                label: AppLocalizations.of(context).task,
-                color: BrainTheme.accentBlue,
-                onTap: () {
-                  HapticHelper.medium();
-                  _toggle();
-                  widget.onCapture('task');
-                },
-              ),
-              const SizedBox(height: 10),
-              _MiniFAB(
-                icon: Icons.create_new_folder_outlined,
-                label: AppLocalizations.of(context).project,
-                color: BrainTheme.accentOrange,
-                onTap: () {
-                  HapticHelper.medium();
-                  _toggle();
-                  widget.onCapture('project');
-                },
-              ),
-              const SizedBox(height: 10),
-              _MiniFAB(
-                icon: Icons.track_changes_outlined,
-                label: AppLocalizations.of(context).goal,
-                color: BrainTheme.accentPurple,
-                onTap: () {
-                  HapticHelper.medium();
-                  _toggle();
-                  widget.onCapture('goal');
-                },
-              ),
-              const SizedBox(height: 14),
-            ],
+        if (_isOpen)
+          GestureDetector(
+            onTap: _toggle,
+            behavior: HitTestBehavior.opaque,
+            child: const SizedBox.expand(),
           ),
-        ),
-        ),
-
-        // Main FAB
-        Semantics(
-          label: AppLocalizations.of(context).quickCapture,
-          button: true,
-          child: FloatingActionButton(
-            onPressed: _toggle,
-            backgroundColor: BrainTheme.accentPurple.withValues(alpha: 0.9),
-            elevation: 4,
-            child: AnimatedRotation(
-              turns: _isOpen ? 0.125 : 0,
-              duration: const Duration(milliseconds: 250),
-              child: const Icon(Icons.add, size: 24),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Mini FABs
+            IgnorePointer(
+              ignoring: !_isOpen,
+              child: ScaleTransition(
+              scale: _animation,
+              alignment: Alignment.bottomRight,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  _MiniFAB(
+                    icon: Icons.note_add_outlined,
+                    label: AppLocalizations.of(context).note,
+                    color: BrainTheme.accentGreen,
+                    onTap: () {
+                      HapticHelper.medium();
+                      _toggle();
+                      widget.onCapture('note');
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _MiniFAB(
+                    icon: Icons.add_task,
+                    label: AppLocalizations.of(context).task,
+                    color: BrainTheme.accentBlue,
+                    onTap: () {
+                      HapticHelper.medium();
+                      _toggle();
+                      widget.onCapture('task');
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _MiniFAB(
+                    icon: Icons.create_new_folder_outlined,
+                    label: AppLocalizations.of(context).project,
+                    color: BrainTheme.accentOrange,
+                    onTap: () {
+                      HapticHelper.medium();
+                      _toggle();
+                      widget.onCapture('project');
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _MiniFAB(
+                    icon: Icons.track_changes_outlined,
+                    label: AppLocalizations.of(context).goal,
+                    color: BrainTheme.accentPurple,
+                    onTap: () {
+                      HapticHelper.medium();
+                      _toggle();
+                      widget.onCapture('goal');
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                ],
+              ),
             ),
-          ),
+            ),
+
+            // Main FAB
+            Semantics(
+              label: AppLocalizations.of(context).quickCapture,
+              button: true,
+              child: FloatingActionButton(
+                onPressed: _toggle,
+                backgroundColor: BrainTheme.accentPurple.withValues(alpha: 0.9),
+                elevation: 4,
+                child: AnimatedRotation(
+                  turns: _isOpen ? 0.125 : 0,
+                  duration: const Duration(milliseconds: 250),
+                  child: const Icon(Icons.add, size: 24),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );

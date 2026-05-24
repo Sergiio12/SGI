@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../config/theme.dart';
 import '../../services/smart_alerts_service.dart';
@@ -32,7 +33,10 @@ class SmartAlertsSection extends StatelessWidget {
             ],
           ),
         ),
-        ...alerts.map((alert) => _AlertCard(alert: alert)),
+        ...alerts.asMap().entries.map((entry) => _AlertCard(alert: entry.value)
+          .animate()
+          .fadeIn(duration: 300.ms, delay: (50 * entry.key).ms)
+          .slideX(begin: -0.05, end: 0, curve: Curves.easeOutCubic)),
       ],
     );
   }

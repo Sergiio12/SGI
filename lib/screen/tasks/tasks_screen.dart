@@ -46,6 +46,7 @@ class _TasksScreenState extends State<TasksScreen> {
   Set<TaskStatus> _visibleBoardColumns = TaskStatus.values.toSet();
   _TaskSortOption _sortOption = _TaskSortOption.priority;
   int _wipLimit = 15;
+  DateRangeFilter _dateRangeFilter = DateRangeFilter.all;
 
   bool _selectionMode = false;
   final Set<String> _selectedTaskIds = {};
@@ -271,6 +272,47 @@ class _TasksScreenState extends State<TasksScreen> {
               ),
             ),
             const SizedBox(height: 8),
+            SizedBox(
+              height: 34,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: DateRangeFilter.values.map((filter) {
+                  final selected = _dateRangeFilter == filter;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(_dateRangeFilterLabel(filter, context)),
+                      selected: selected,
+                      selectedColor:
+                          BrainTheme.accentBlue.withValues(alpha: 0.15),
+                      backgroundColor: Colors.transparent,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: selected
+                            ? BrainTheme.accentBlue
+                            : BrainTheme.textTertiary,
+                        fontWeight:
+                            selected ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                      side: BorderSide(
+                        color: selected
+                            ? BrainTheme.accentBlue.withValues(alpha: 0.4)
+                            : BrainTheme.borderDark,
+                      ),
+                      onSelected: (_) {
+                        setState(() {
+                          _dateRangeFilter = filter;
+                          _dueDateFilter = _mapDateRangeToDueDate(filter);
+                        });
+                        provider.setDateRangeFilter(filter);
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 8),
             Expanded(
               child: _buildBoard(context, provider, planner),
             ),
@@ -278,6 +320,20 @@ class _TasksScreenState extends State<TasksScreen> {
         );
       },
     );
+  }
+
+  String _dateRangeFilterLabel(DateRangeFilter filter, BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    switch (filter) {
+      case DateRangeFilter.all:
+        return 'Todo';
+      case DateRangeFilter.today:
+        return l10n.today;
+      case DateRangeFilter.thisWeek:
+        return l10n.thisWeek;
+      case DateRangeFilter.overdue:
+        return l10n.overdueTasks;
+    }
   }
 
   Widget _buildBoard(BuildContext context, TasksProvider provider,
@@ -752,23 +808,59 @@ class _TasksScreenState extends State<TasksScreen> {
                               setModalState(() => onlyWithDescription = value);
                             },
                           ),
-                          SwitchListTile(
-                            value: onlyWithProject,
-                            activeThumbColor: BrainTheme.accentPurple,
-                            title: Text(
-                                AppLocalizations.of(context).onlyWithProject,
-                                style: TextStyle(
-                                    color: BrainTheme.textPrimary,
-                                    fontSize: 14)),
-                            contentPadding: EdgeInsets.zero,
-                            dense: true,
-                            onChanged: (value) {
-                              setModalState(() => onlyWithProject = value);
-                            },
-                          ),
-                        ],
+                      SwitchListTile(
+                        value: onlyWithProject,
+                        activeThumbColor: BrainTheme.accentPurple,
+                        title: Text(
+                            AppLocalizations.of(context).onlyWithProject,
+                            style: TextStyle(
+                                color: BrainTheme.textPrimary,
+                                fontSize: 14)),
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        onChanged: (value) {
+                          setModalState(() => onlyWithProject = value);
+                        },
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () {
+                          context
+                              .read<TasksProvider>()
+                              .autoArchive();
+                          Navigator.pop(context);
+                          showSuccessNotification(
+                              'Tareas antiguas archivadas');
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10),
+                          child: Row(
+                            children: [
+                              Icon(Icons.archive_outlined,
+                                  size: 16,
+                                  color: BrainTheme.accentOrange),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Archivar tareas antiguas',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: BrainTheme.accentOrange,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const Spacer(),
+                              Icon(Icons.chevron_right,
+                                  size: 16,
+                                  color: BrainTheme.textTertiary),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                     const SizedBox(height: 16),
                     _FilterSection(
                       icon: Icons.view_column,
@@ -925,6 +1017,19 @@ class _TasksScreenState extends State<TasksScreen> {
         return l10n.sortCreatedAt;
       case _TaskSortOption.title:
         return l10n.sortTitle;
+    }
+  }
+
+  _TaskDueDateFilter _mapDateRangeToDueDate(DateRangeFilter filter) {
+    switch (filter) {
+      case DateRangeFilter.all:
+        return _TaskDueDateFilter.all;
+      case DateRangeFilter.today:
+        return _TaskDueDateFilter.today;
+      case DateRangeFilter.thisWeek:
+        return _TaskDueDateFilter.thisWeek;
+      case DateRangeFilter.overdue:
+        return _TaskDueDateFilter.overdue;
     }
   }
 

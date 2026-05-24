@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../config/theme.dart';
+import '../utils/haptic_helper.dart';
 
 class StatsCard extends StatelessWidget {
   final String title;
@@ -103,7 +104,10 @@ class StatsCard extends StatelessWidget {
     );
 
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        HapticHelper.selection();
+        onTap?.call();
+      },
       borderRadius: BorderRadius.circular(20),
       child: card,
     )

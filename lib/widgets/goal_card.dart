@@ -220,11 +220,16 @@ class GoalCard extends StatelessWidget {
                   const SizedBox(height: 16),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(6),
-                    child: LinearProgressIndicator(
-                      value: goal.progress,
-                      minHeight: 8,
-                      backgroundColor: BrainTheme.borderDark,
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: goal.progress),
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, _) => LinearProgressIndicator(
+                        value: value,
+                        minHeight: 8,
+                        backgroundColor: BrainTheme.borderDark,
+                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -345,12 +350,17 @@ class GoalCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              LinearProgressIndicator(
-                value: goal.progress,
-                minHeight: 6,
-                backgroundColor: BrainTheme.borderDark,
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(Color(goal.colorValue)),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: goal.progress),
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, _) => LinearProgressIndicator(
+                  value: value,
+                  minHeight: 6,
+                  backgroundColor: BrainTheme.borderDark,
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(Color(goal.colorValue)),
+                ),
               ),
               const SizedBox(height: 20),
               ListTile(

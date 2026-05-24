@@ -69,7 +69,9 @@ class TaskCard extends StatelessWidget {
         onLongPress: onLongPress,
         child: Hero(
           tag: 'task_${task.id}',
-          child: Container(
+          child: AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
           margin: const EdgeInsets.only(bottom: 8),
           decoration: ShapeDecoration(
             color: BrainTheme.cardDark.withValues(alpha: isDimmed ? 0.5 : 0.9),

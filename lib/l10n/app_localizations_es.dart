@@ -1122,4 +1122,64 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noteDetached => 'Nota desanclada';
+
+  @override
+  String get pomodoroIdle => 'Preparado';
+
+  @override
+  String get pomodoroWork => 'Enfoque';
+
+  @override
+  String get pomodoroBreak => 'Descanso';
+
+  @override
+  String get pomodoroLongBreak => 'Descanso largo';
+
+  @override
+  String get pomodoroPaused => 'Pausado';
+
+  @override
+  String get pomodoroSessions => 'sesiones';
+
+  @override
+  String get pomodoroStart => 'Comenzar';
+
+  @override
+  String get pomodoroPause => 'Pausar';
+
+  @override
+  String get pomodoroResume => 'Reanudar';
+
+  @override
+  String get pomodoroStop => 'Detener';
+
+  @override
+  String get pomodoroSkip => 'Saltar';
+
+  @override
+  String get pomodoroWorkLabel => 'trabajo';
+
+  @override
+  String get pomodoroBreakLabel => 'descanso';
+
+  @override
+  String get dailySummary => 'Resumen diario';
+
+  @override
+  String get dailySummaryTime => 'Horario de la notificación';
+
+  @override
+  String get dailySummaryTimezone => 'Zona horaria';
+
+  @override
+  String get archive => 'Archivar';
+
+  @override
+  String get archiveOldTasks => 'Archivar tareas antiguas';
+
+  @override
+  String get archivedTasks => 'Tareas archivadas';
+
+  @override
+  String get unarchive => 'Desarchivar';
 }

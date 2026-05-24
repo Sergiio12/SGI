@@ -22,6 +22,7 @@ class Task extends BrainItem {
   final RecurrenceRule? recurrence;
   final String? sourceTaskId;
   final String? calendarEventId;
+  final bool isArchived;
 
   Task({
     required super.id,
@@ -41,6 +42,7 @@ class Task extends BrainItem {
     this.recurrence,
     this.sourceTaskId,
     this.calendarEventId,
+    this.isArchived = false,
     super.tags = const [],
     required super.createdAt,
     required super.updatedAt,
@@ -79,6 +81,7 @@ class Task extends BrainItem {
     RecurrenceRule? recurrence,
     String? sourceTaskId,
     String? calendarEventId,
+    bool? isArchived,
     bool clearDueDate = false,
     bool clearActualHours = false,
     bool clearReminder = false,
@@ -113,6 +116,7 @@ class Task extends BrainItem {
       calendarEventId: clearCalendarEventId
           ? null
           : (calendarEventId ?? this.calendarEventId),
+      isArchived: isArchived ?? this.isArchived,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
     );
@@ -140,6 +144,7 @@ class Task extends BrainItem {
         if (recurrence != null) 'recurrence': recurrence!.toJson(),
         if (sourceTaskId != null) 'sourceTaskId': sourceTaskId,
         if (calendarEventId != null) 'calendarEventId': calendarEventId,
+        if (isArchived) 'isArchived': isArchived,
       };
 
   factory Task.fromJson(Map<String, dynamic> json) => Task(
@@ -169,6 +174,7 @@ class Task extends BrainItem {
             : null,
         sourceTaskId: json['sourceTaskId'],
         calendarEventId: json['calendarEventId'],
+        isArchived: json['isArchived'] ?? false,
         createdAt: DateTime.parse(json['createdAt']),
         updatedAt: DateTime.parse(json['updatedAt']),
       );

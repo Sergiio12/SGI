@@ -10,6 +10,7 @@ import '../services/calendar_integration_service.dart';
 import '../services/home_widget_service.dart';
 import '../services/notification_service.dart';
 import '../services/interfaces/storage_service_interface.dart';
+import '../services/storage_service.dart';
 import '../utils/debouncer.dart';
 import '../utils/haptic_helper.dart';
 import '../utils/notification_service_v2.dart';
@@ -17,9 +18,13 @@ import '../utils/notification_service_v2.dart';
 class TasksProvider extends ChangeNotifier {
   final IStorageService _storage;
   List<Task> _tasks = [];
+  List<Task> _archivedTasks = [];
   final _uuid = const Uuid();
   bool _isLoaded = false;
   final _saveDebouncer = Debouncer(delay: const Duration(milliseconds: 500));
+
+  String? _projectFilter;
+  DateRangeFilter _dateRangeFilter = DateRangeFilter.all;
 
   TasksProvider({required IStorageService storage}) : _storage = storage;
 
@@ -34,7 +39,42 @@ class TasksProvider extends ChangeNotifier {
   List<Task>? __cancelledTasks;
 
   List<Task> get tasks => _tasks;
+  List<Task> get archivedTasks => _archivedTasks;
   bool get isLoaded => _isLoaded;
+  String? get projectFilter => _projectFilter;
+  DateRangeFilter get dateRangeFilter => _dateRangeFilter;
+
+  List<Task> get filteredTasks {
+    var result = _tasks.where((t) => !t.isArchived);
+    if (_projectFilter != null) {
+      result = result.where((t) => t.projectId == _projectFilter);
+    }
+    final now = DateTime.now();
+    switch (_dateRangeFilter) {
+      case DateRangeFilter.all:
+        break;
+      case DateRangeFilter.today:
+        result = result.where((t) =>
+            t.dueDate != null &&
+            t.dueDate!.year == now.year &&
+            t.dueDate!.month == now.month &&
+            t.dueDate!.day == now.day);
+        break;
+      case DateRangeFilter.thisWeek: {
+        final weekEnd = now.add(const Duration(days: 7));
+        result = result.where((t) =>
+            t.dueDate != null &&
+            !t.dueDate!.isBefore(DateTime(now.year, now.month, now.day)) &&
+            t.dueDate!
+                .isBefore(DateTime(weekEnd.year, weekEnd.month, weekEnd.day + 1)));
+        break;
+      }
+      case DateRangeFilter.overdue:
+        result = result.where((t) => t.isOverdue);
+        break;
+    }
+    return result.toList();
+  }
 
   List<Task> get todoTasks =>
       __todoTasks ??= _tasks.where((t) => t.status == TaskStatus.pending).toList();
@@ -91,6 +131,8 @@ class TasksProvider extends ChangeNotifier {
 
   Future<void> loadTasks() async {
     _tasks = await _storage.loadTasks();
+    await loadArchivedTasks();
+    autoArchive();
     _markDirty();
     _isLoaded = true;
     notifyListeners();
@@ -112,7 +154,10 @@ class TasksProvider extends ChangeNotifier {
   void _notifyAndScheduleSave() {
     _markDirty();
     notifyListeners();
-    _saveDebouncer.call(() => _storage.saveTasks(_tasks));
+    _saveDebouncer.call(() async {
+      await _storage.saveTasks(_tasks);
+      await _saveArchived();
+    });
   }
 
   void _syncCalendarForTask(Task task) {
@@ -566,4 +611,72 @@ class TasksProvider extends ChangeNotifier {
     if (_tasks.isEmpty) return 0;
     return doneTasks.length / _tasks.length;
   }
+
+  // ─── Filtros ────────────────────────────────────────────────────────────────
+
+  void setProjectFilter(String? projectId) {
+    _projectFilter = projectId;
+    notifyListeners();
+  }
+
+  void setDateRangeFilter(DateRangeFilter filter) {
+    _dateRangeFilter = filter;
+    notifyListeners();
+  }
+
+  // ─── Archivado ──────────────────────────────────────────────────────────────
+
+  Future<void> loadArchivedTasks() async {
+    if (_storage is HiveStorageService) {
+      _archivedTasks = await (_storage as HiveStorageService).loadArchivedTasks();
+    }
+  }
+
+  Future<void> archiveTask(String taskId) async {
+    final index = _tasks.indexWhere((t) => t.id == taskId);
+    if (index == -1) return;
+    final task = _tasks.removeAt(index);
+    final archived = task.copyWith(isArchived: true, lastActivityAt: DateTime.now());
+    _archivedTasks.add(archived);
+    _notifyAndScheduleSave();
+    await _saveArchived();
+    HapticHelper.light();
+  }
+
+  Future<void> unarchiveTask(String taskId) async {
+    final index = _archivedTasks.indexWhere((t) => t.id == taskId);
+    if (index == -1) return;
+    final task = _archivedTasks.removeAt(index);
+    _tasks.add(task.copyWith(isArchived: false, lastActivityAt: DateTime.now()));
+    _notifyAndScheduleSave();
+    await _saveArchived();
+    HapticHelper.light();
+  }
+
+  Future<void> autoArchive() async {
+    final cutoff = DateTime.now().subtract(const Duration(days: 7));
+    final toArchive = <Task>[];
+    for (final task in _tasks) {
+      if (task.isArchived) continue;
+      if ((task.status == TaskStatus.completed || task.status == TaskStatus.cancelled) &&
+          task.updatedAt.isBefore(cutoff)) {
+        toArchive.add(task);
+      }
+    }
+    if (toArchive.isEmpty) return;
+    for (final task in toArchive) {
+      _tasks.removeWhere((t) => t.id == task.id);
+      _archivedTasks.add(task.copyWith(isArchived: true));
+    }
+    _notifyAndScheduleSave();
+    await _saveArchived();
+  }
+
+  Future<void> _saveArchived() async {
+    if (_storage is HiveStorageService) {
+      await (_storage as HiveStorageService).saveArchivedTasks(_archivedTasks);
+    }
+  }
 }
+
+enum DateRangeFilter { all, today, thisWeek, overdue }

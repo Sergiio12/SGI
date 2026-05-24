@@ -12,6 +12,10 @@ const _kChannelId = 'brain_task_reminders';
 const _kChannelName = 'Recordatorios de tareas';
 const _kChannelDesc =
     'Notificaciones cuando una tarea se acerca a su fecha límite';
+const _kSummaryChannelId = 'brain_daily_summary';
+const _kSummaryChannelName = 'Resumen diario';
+const _kSummaryChannelDesc =
+    'Resumen diario de tareas programado por el usuario';
 
 int _notificationId(String key) => key.hashCode.abs() % 2147483647;
 
@@ -25,6 +29,10 @@ class _Settings {
   int quietStartMinute;
   int quietEndHour;
   int quietEndMinute;
+  String timezone;
+  bool dailyNotificationEnabled;
+  int dailyNotificationHour;
+  int dailyNotificationMinute;
 
   _Settings({
     this.notificationsEnabled = true,
@@ -36,6 +44,10 @@ class _Settings {
     this.quietStartMinute = 0,
     this.quietEndHour = 8,
     this.quietEndMinute = 0,
+    this.timezone = 'America/Mexico_City',
+    this.dailyNotificationEnabled = true,
+    this.dailyNotificationHour = 7,
+    this.dailyNotificationMinute = 0,
   });
 
   bool get isNowQuietHours {
@@ -68,6 +80,10 @@ class NotificationService {
     int? quietStartMinute,
     int? quietEndHour,
     int? quietEndMinute,
+    String? timezone,
+    bool? dailyNotificationEnabled,
+    int? dailyNotificationHour,
+    int? dailyNotificationMinute,
   }) {
     _settings = _Settings(
       notificationsEnabled: notificationsEnabled ?? _settings.notificationsEnabled,
@@ -79,6 +95,10 @@ class NotificationService {
       quietStartMinute: quietStartMinute ?? _settings.quietStartMinute,
       quietEndHour: quietEndHour ?? _settings.quietEndHour,
       quietEndMinute: quietEndMinute ?? _settings.quietEndMinute,
+      timezone: timezone ?? _settings.timezone,
+      dailyNotificationEnabled: dailyNotificationEnabled ?? _settings.dailyNotificationEnabled,
+      dailyNotificationHour: dailyNotificationHour ?? _settings.dailyNotificationHour,
+      dailyNotificationMinute: dailyNotificationMinute ?? _settings.dailyNotificationMinute,
     );
   }
 
@@ -123,6 +143,16 @@ class NotificationService {
           playSound: true,
         ),
       );
+      await android?.createNotificationChannel(
+        const AndroidNotificationChannel(
+          _kSummaryChannelId,
+          _kSummaryChannelName,
+          description: _kSummaryChannelDesc,
+          importance: Importance.defaultImportance,
+          enableVibration: false,
+          playSound: false,
+        ),
+      );
       await android?.requestNotificationsPermission();
       await android?.requestExactAlarmsPermission();
     }
@@ -149,6 +179,22 @@ class NotificationService {
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+    ),
+  );
+
+  static const NotificationDetails _summaryDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      _kSummaryChannelId,
+      _kSummaryChannelName,
+      channelDescription: _kSummaryChannelDesc,
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+      enableVibration: false,
+    ),
+    iOS: DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: false,
     ),
   );
 
@@ -263,6 +309,54 @@ class NotificationService {
         id: _notificationId('${taskId}_recur_$i'),
       )),
     );
+  }
+
+  static Future<void> scheduleDailySummary(int todayTaskCount) async {
+    if (!_initialized) return;
+    if (!_settings.notificationsEnabled || !_settings.dailyNotificationEnabled) {
+      await cancelDailySummary();
+      return;
+    }
+
+    await cancelDailySummary();
+
+    try {
+      final location = tz.getLocation(_settings.timezone);
+      final now = tz.TZDateTime.now(location);
+      var scheduledDate = tz.TZDateTime(
+        location,
+        now.year,
+        now.month,
+        now.day,
+        _settings.dailyNotificationHour,
+        _settings.dailyNotificationMinute,
+      );
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
+
+      final body = todayTaskCount > 0
+          ? 'Tienes $todayTaskCount tarea(s) para hoy'
+          : 'No tienes tareas pendientes para hoy';
+
+      await _plugin.zonedSchedule(
+        id: _notificationId('daily_summary'),
+        title: '☀️ Resumen diario',
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: _summaryDetails,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+        payload: 'daily_summary',
+      );
+    } catch (e) {
+      debugPrint('Error programando resumen diario: $e');
+    }
+  }
+
+  static Future<void> cancelDailySummary() async {
+    if (!_initialized) return;
+    await _plugin.cancel(id: _notificationId('daily_summary'));
   }
 
   static Future<void> rescheduleAll(List<Task> tasks) async {

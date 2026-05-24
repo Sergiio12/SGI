@@ -203,12 +203,17 @@ class ProjectCard extends StatelessWidget {
                     Expanded(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 8,
-                          backgroundColor: BrainTheme.borderDark,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(project.colorValue),
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0, end: progress),
+                          duration: const Duration(milliseconds: 800),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, value, _) => LinearProgressIndicator(
+                            value: value,
+                            minHeight: 8,
+                            backgroundColor: BrainTheme.borderDark,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(project.colorValue),
+                            ),
                           ),
                         ),
                       ),

@@ -19,6 +19,29 @@ class BrainTheme {
 
   static bool get _isLight => _brightness == Brightness.light;
 
+    // Design tokens — radios consistentes
+  static const double radiusXs = 6;
+  static const double radiusSm = 8;
+  static const double radiusMd = 12;
+  static const double radiusLg = 16;
+  static const double radiusXl = 20;
+  static const double radiusXxl = 24;
+  static const double radiusFull = 100;
+
+  // Design tokens — espaciado
+  static const double spaceXs = 4;
+  static const double spaceSm = 8;
+  static const double spaceMd = 12;
+  static const double spaceLg = 16;
+  static const double spaceXl = 20;
+  static const double spaceXxl = 24;
+
+  // Design tokens — elevación
+  static const double elevationNone = 0;
+  static const double elevationLow = 2;
+  static const double elevationMed = 8;
+  static const double elevationHigh = 24;
+
   // Colores principales
   static Color get primaryDark =>
       _isLight ? const Color(0xFFF8F9FA) : const Color(0xFF09090B);
