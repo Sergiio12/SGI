@@ -119,12 +119,12 @@ void main() {
     test('search finds by title', () async {
       await provider.addNote(title: 'Meeting notes');
       await provider.addNote(title: 'Random thought');
-      expect(provider.search('meeting').length, 1);
+      expect(provider.filteredNotes(searchQuery: 'meeting').length, 1);
     });
 
     test('search finds by content', () async {
       await provider.addNote(title: 'A', content: 'flutter tutorial');
-      expect(provider.search('tutorial').length, 1);
+      expect(provider.filteredNotes(searchQuery: 'tutorial').length, 1);
     });
 
     test('filteredNotes applies multiple filters', () async {

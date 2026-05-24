@@ -762,6 +762,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadingInitStorage => 'Initializing secure storage';
 
   @override
+  String get loadingRestore => 'Restoring backup data';
+
+  @override
   String get loadingTasks => 'Loading priority tasks';
 
   @override
@@ -1028,4 +1031,94 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unlink => 'Unlink';
+
+  @override
+  String get smartAlertsTitle => 'Smart Alerts';
+
+  @override
+  String get smartAlertDeadlines => 'Deadlines close';
+
+  @override
+  String smartAlertDeadlinesMsg(Object count) {
+    return '$count task(s) due in the next 24 hours.';
+  }
+
+  @override
+  String get smartAlertUrgentNotStarted => 'Urgent not started';
+
+  @override
+  String smartAlertUrgentNotStartedMsg(Object count) {
+    return '$count urgent task(s) still pending.';
+  }
+
+  @override
+  String get smartAlertLowActivity => 'Low activity';
+
+  @override
+  String smartAlertLowActivityMsg(Object count) {
+    return '$count important task(s) without progress for 3 days.';
+  }
+
+  @override
+  String get smartAlertDelayedProjects => 'Delayed projects';
+
+  @override
+  String smartAlertDelayedProjectsMsg(Object count) {
+    return '$count project(s) past their expected completion date.';
+  }
+
+  @override
+  String get settingsSearch => 'Search settings...';
+
+  @override
+  String get settingsNoResults => 'No results';
+
+  @override
+  String settingsNoResultsFor(Object query) {
+    return 'No settings found for \"$query\"';
+  }
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsNotifications => 'Notifications';
+
+  @override
+  String get settingsData => 'Data & Sync';
+
+  @override
+  String get settingsIntelligence => 'Intelligence';
+
+  @override
+  String get settingsSystem => 'System';
+
+  @override
+  String get settingsResetTitle => 'Reset settings';
+
+  @override
+  String get settingsResetDesc => 'Go back to factory configuration';
+
+  @override
+  String get settingsResetConfirm =>
+      'All saved preferences (theme, colors, notifications, etc.) will be cleared. Your data will not be affected.';
+
+  @override
+  String get settingsResetSuccess => 'Settings reset';
+
+  @override
+  String get settingsAboutDesc =>
+      'Your second digital brain to organize tasks, projects, goals and notes.';
+
+  @override
+  String get sectionMainMenu => 'Main menu';
+
+  @override
+  String get sectionPlanning => 'Planning';
+
+  @override
+  String get noteAttached => 'Note pinned';
+
+  @override
+  String get noteDetached => 'Note unpinned';
 }

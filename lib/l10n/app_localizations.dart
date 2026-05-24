@@ -1580,6 +1580,12 @@ abstract class AppLocalizations {
   /// **'Initializing secure storage'**
   String get loadingInitStorage;
 
+  /// No description provided for @loadingRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring backup data'**
+  String get loadingRestore;
+
   /// No description provided for @loadingTasks.
   ///
   /// In en, this message translates to:
@@ -2095,6 +2101,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unlink'**
   String get unlink;
+
+  /// No description provided for @smartAlertsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Alerts'**
+  String get smartAlertsTitle;
+
+  /// No description provided for @smartAlertDeadlines.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadlines close'**
+  String get smartAlertDeadlines;
+
+  /// No description provided for @smartAlertDeadlinesMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} task(s) due in the next 24 hours.'**
+  String smartAlertDeadlinesMsg(Object count);
+
+  /// No description provided for @smartAlertUrgentNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent not started'**
+  String get smartAlertUrgentNotStarted;
+
+  /// No description provided for @smartAlertUrgentNotStartedMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} urgent task(s) still pending.'**
+  String smartAlertUrgentNotStartedMsg(Object count);
+
+  /// No description provided for @smartAlertLowActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Low activity'**
+  String get smartAlertLowActivity;
+
+  /// No description provided for @smartAlertLowActivityMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} important task(s) without progress for 3 days.'**
+  String smartAlertLowActivityMsg(Object count);
+
+  /// No description provided for @smartAlertDelayedProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Delayed projects'**
+  String get smartAlertDelayedProjects;
+
+  /// No description provided for @smartAlertDelayedProjectsMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} project(s) past their expected completion date.'**
+  String smartAlertDelayedProjectsMsg(Object count);
+
+  /// No description provided for @settingsSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search settings...'**
+  String get settingsSearch;
+
+  /// No description provided for @settingsNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results'**
+  String get settingsNoResults;
+
+  /// No description provided for @settingsNoResultsFor.
+  ///
+  /// In en, this message translates to:
+  /// **'No settings found for \"{query}\"'**
+  String settingsNoResultsFor(Object query);
+
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get settingsNotifications;
+
+  /// No description provided for @settingsData.
+  ///
+  /// In en, this message translates to:
+  /// **'Data & Sync'**
+  String get settingsData;
+
+  /// No description provided for @settingsIntelligence.
+  ///
+  /// In en, this message translates to:
+  /// **'Intelligence'**
+  String get settingsIntelligence;
+
+  /// No description provided for @settingsSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsSystem;
+
+  /// No description provided for @settingsResetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset settings'**
+  String get settingsResetTitle;
+
+  /// No description provided for @settingsResetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back to factory configuration'**
+  String get settingsResetDesc;
+
+  /// No description provided for @settingsResetConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'All saved preferences (theme, colors, notifications, etc.) will be cleared. Your data will not be affected.'**
+  String get settingsResetConfirm;
+
+  /// No description provided for @settingsResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings reset'**
+  String get settingsResetSuccess;
+
+  /// No description provided for @settingsAboutDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your second digital brain to organize tasks, projects, goals and notes.'**
+  String get settingsAboutDesc;
+
+  /// No description provided for @sectionMainMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Main menu'**
+  String get sectionMainMenu;
+
+  /// No description provided for @sectionPlanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Planning'**
+  String get sectionPlanning;
+
+  /// No description provided for @noteAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Note pinned'**
+  String get noteAttached;
+
+  /// No description provided for @noteDetached.
+  ///
+  /// In en, this message translates to:
+  /// **'Note unpinned'**
+  String get noteDetached;
 }
 
 class _AppLocalizationsDelegate

@@ -10,424 +10,236 @@ import 'debug_screen.dart';
 import 'notifications_screen.dart';
 import 'widgets_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
   @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final settings = context.watch<SettingsProvider>();
+    final sync = context.watch<SyncProvider>();
+
+    final sections = _buildSections(context, settings, sync);
+    final filtered = _searchQuery.isEmpty
+        ? sections
+        : sections
+            .map((section) => _SettingSection(
+                  title: section.title,
+                  icon: section.icon,
+                  items: section.items.where((item) =>
+                      item.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                      item.subtitle.toLowerCase().contains(_searchQuery.toLowerCase())).toList(),
+                ))
+            .where((s) => s.items.isNotEmpty)
+            .toList();
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context).settings),
+        title: Text(l10n.settings),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _searchQuery.isNotEmpty ? Icons.search_off_rounded : Icons.search_rounded,
+            ),
+            onPressed: () {
+              setState(() {
+                if (_searchQuery.isNotEmpty) {
+                  _searchQuery = '';
+                  _searchController.clear();
+                } else {
+                  _searchController.text = ' ';
+                  _searchController.clear();
+                }
+              });
+            },
+          ),
+        ],
       ),
-      body: ListView(
+      body: Column(
         children: [
-          _buildSectionHeader('GENERAL'),
-          _buildSettingItem(
+          if (_searchQuery.isNotEmpty || _searchController.text.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: l10n.settingsSearch,
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, size: 18),
+                          onPressed: () {
+                            setState(() {
+                              _searchQuery = '';
+                              _searchController.clear();
+                            });
+                          },
+                        )
+                      : null,
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                onChanged: (v) => setState(() => _searchQuery = v),
+              ),
+            ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 100),
+              children: [
+                if (_searchQuery.isNotEmpty && filtered.isEmpty)
+                  _buildNoResults()
+                else
+                  ...filtered.expand((section) => [
+                    _buildSectionHeader(section.icon, section.title),
+                    ...section.items.map((item) => _buildSettingItem(
+                      icon: item.icon,
+                      title: item.title,
+                      subtitle: item.subtitle,
+                      trailing: item.trailing,
+                      onTap: item.onTap,
+                    )),
+                  ]),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoResults() {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 32),
+      child: Column(
+        children: [
+          Icon(Icons.search_off_rounded, size: 48, color: BrainTheme.textTertiary),
+          const SizedBox(height: 16),
+          Text(
+            l10n.settingsNoResults,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: BrainTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.settingsNoResultsFor(_searchQuery),
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<_SettingSection> _buildSections(
+    BuildContext context,
+    SettingsProvider settings,
+    SyncProvider sync,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    return [
+      _SettingSection(
+        title: l10n.settingsAppearance,
+        icon: Icons.palette_outlined,
+        items: [
+          _SettingItem(
             icon: Icons.palette_outlined,
-            title: AppLocalizations.of(context).appearance,
-            subtitle: 'Personaliza el tema y colores',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AppearanceScreen()),
-              );
-            },
+            title: 'Apariencia',
+            subtitle: 'Tema, color de acento y personalización visual',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AppearanceScreen())),
           ),
-          _buildSettingItem(
+          _SettingItem(
             icon: Icons.notifications_none_rounded,
-            title: AppLocalizations.of(context).notifications,
-            subtitle: 'Configura tus recordatorios',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-              );
-            },
+            title: 'Notificaciones',
+            subtitle: 'Recordatorios, horario silencioso y preferencias',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
           ),
-          _buildSettingItem(
+          _SettingItem(
             icon: Icons.widgets_rounded,
             title: 'Widgets',
             subtitle: 'Widget de tareas en la pantalla de inicio',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const WidgetsScreen()),
-              );
-            },
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WidgetsScreen())),
           ),
-          _buildAiSection(context),
-          Divider(color: BrainTheme.borderDark, indent: 16, endIndent: 16),
-          _buildSectionHeader('SISTEMA'),
-          _buildSettingItem(
+        ],
+      ),
+      _SettingSection(
+        title: l10n.settingsData,
+        icon: Icons.cloud_outlined,
+        items: [
+          _SettingItem(
             icon: Icons.cloud_done_outlined,
-            title: AppLocalizations.of(context).dataManagement,
-            subtitle: 'Exportar, importar y gestionar tus datos',
+            title: 'Gestión de datos',
+            subtitle: 'Exportar, importar y gestionar datos',
             onTap: () => Navigator.pushNamed(context, '/data'),
           ),
-          _buildResetSettingsItem(context),
-          _buildSyncSection(context),
-          _buildSettingItem(
+          _SettingItem(
+            icon: Icons.sync_rounded,
+            title: 'Sincronización en la nube',
+            subtitle: _syncStatusText(sync),
+            trailing: Switch(
+              value: settings.cloudSyncEnabled,
+              activeTrackColor: BrainTheme.currentAccent.withValues(alpha: 0.5),
+              activeThumbColor: BrainTheme.currentAccent,
+              onChanged: (v) => settings.setCloudSyncEnabled(v),
+            ),
+            onTap: settings.cloudSyncEnabled ? () => sync.triggerSync() : null,
+          ),
+        ],
+      ),
+      _SettingSection(
+        title: l10n.settingsSystem,
+        icon: Icons.settings_outlined,
+        items: [
+          _SettingItem(
+            icon: Icons.settings_backup_restore_rounded,
+            title: 'Restablecer ajustes',
+            subtitle: 'Vuelve a la configuración de fábrica',
+            onTap: () => _confirmReset(context),
+          ),
+          _SettingItem(
             icon: Icons.bug_report_outlined,
-            title: AppLocalizations.of(context).debug,
-            subtitle: 'Opciones de depuración y pruebas',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const DebugScreen()),
-              );
-            },
+            title: 'Debug',
+            subtitle: 'Pruebas y diagnóstico',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DebugScreen())),
           ),
-          _buildSettingItem(
+          _SettingItem(
             icon: Icons.info_outline_rounded,
-            title: AppLocalizations.of(context).about,
+            title: 'Acerca de',
             subtitle: 'Información de la aplicación',
-            onTap: () {
-              showAboutDialog(
-                context: context,
-                applicationName: AppLocalizations.of(context).appTitle,
-                applicationVersion: '1.0.1-beta',
-                applicationIcon: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    'assets/app_icon.png',
-                    width: 48,
-                    height: 48,
-                  ),
-                ),
-                applicationLegalese: '© 2026 Sergio Asensio',
-              );
-            },
+            onTap: () => _showAbout(context),
           ),
         ],
       ),
-    );
+    ];
   }
 
-  Widget _buildAiSection(BuildContext context) {
-    final settings = context.watch<SettingsProvider>();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: BrainTheme.cardDark,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: BrainTheme.borderDark),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: BrainTheme.surfaceDark,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: BrainTheme.borderDark),
-                    ),
-                    child: Icon(
-                      Icons.auto_awesome,
-                      color: BrainTheme.accentPurple,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Asistente IA',
-                          style: TextStyle(
-                            color: BrainTheme.textPrimary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Sugerencias inteligentes al crear tareas',
-                          style: TextStyle(
-                            color: BrainTheme.textSecondary,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Switch(
-                    value: settings.aiSuggestionsEnabled,
-                    activeThumbColor: BrainTheme.currentAccent,
-                    onChanged: (value) =>
-                        settings.setAiSuggestionsEnabled(value),
-                  ),
-                ],
-              ),
-              if (settings.aiSuggestionsEnabled) ...[
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.only(left: 52),
-                  child: Text(
-                    'Las sugerencias se generan localmente en el dispositivo. '
-                    'Ningún dato sale de tu teléfono.',
-                    style: TextStyle(
-                      color: BrainTheme.textTertiary,
-                      fontSize: 12,
-                      height: 1.3,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildResetSettingsItem(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: BrainTheme.cardDark,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: BrainTheme.borderDark),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: BrainTheme.surfaceDark,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: BrainTheme.borderDark),
-                    ),
-                    child: Icon(
-                      Icons.settings_backup_restore_rounded,
-                      color: BrainTheme.accentRed,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Restablecer ajustes',
-                          style: TextStyle(
-                            color: BrainTheme.textPrimary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Vuelve a la configuración de fábrica',
-                          style: TextStyle(
-                            color: BrainTheme.textSecondary,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _confirmReset(context),
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: const Text('Restablecer'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: BrainTheme.accentRed,
-                    side: BorderSide(
-                        color: BrainTheme.accentRed.withValues(alpha: 0.3)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _confirmReset(BuildContext context) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: BrainTheme.cardDark,
-        title: Text('Restablecer ajustes',
-            style: TextStyle(color: BrainTheme.textPrimary)),
-        content: Text(
-          'Se borrarán todas las preferencias guardadas (tema, colores, '
-          'notificaciones, etc.). Los datos de tareas, proyectos, notas y '
-          'objetivos no se verán afectados.',
-          style: TextStyle(color: BrainTheme.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancelar',
-                style: TextStyle(color: BrainTheme.textSecondary)),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-                backgroundColor: BrainTheme.accentRed,
-                foregroundColor: Colors.white),
-            child: const Text('Restablecer'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true && context.mounted) {
-      final settings = context.read<SettingsProvider>();
-      await settings.setThemeMode(ThemeMode.dark);
-      await settings.setAccentColor(BrainTheme.accentPurple);
-      await settings.setAiSuggestionsEnabled(true);
-      await settings.setHapticFeedback(true);
-      await settings.setNotificationsEnabled(true);
-      if (context.mounted) {
-        showSuccessNotification('Ajustes restablecidos');
-      }
-    }
-  }
-
-  Widget _buildSyncSection(BuildContext context) {
-    final sync = context.watch<SyncProvider>();
-    final settings = context.watch<SettingsProvider>();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Container(
-        decoration: BoxDecoration(
-          color: BrainTheme.cardDark,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: BrainTheme.borderDark),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: BrainTheme.surfaceDark,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: BrainTheme.borderDark),
-                    ),
-                    child: Icon(
-                      Icons.sync_rounded,
-                      color: _statusColor(sync.status),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sincronización en la nube',
-                          style: TextStyle(
-                            color: BrainTheme.textPrimary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          _statusText(sync.status),
-                          style: TextStyle(
-                            color: _statusColor(sync.status),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Switch(
-                    value: settings.cloudSyncEnabled,
-                    activeThumbColor: BrainTheme.currentAccent,
-                    onChanged: (value) => settings.setCloudSyncEnabled(value),
-                  ),
-                ],
-              ),
-              if (sync.lastSync != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  'Última sincronización: ${_formatLastSync(sync.lastSync!)}',
-                  style: TextStyle(
-                    color: BrainTheme.textTertiary,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: settings.cloudSyncEnabled
-                      ? () => sync.triggerSync()
-                      : null,
-                  icon: const Icon(Icons.sync, size: 18),
-                  label: const Text('Sincronizar ahora'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        BrainTheme.currentAccent.withValues(alpha: 0.15),
-                    foregroundColor: BrainTheme.currentAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Color _statusColor(SyncStatus status) {
-    switch (status) {
+  String _syncStatusText(SyncProvider sync) {
+    switch (sync.status) {
       case SyncStatus.synced:
-        return BrainTheme.accentGreen;
-      case SyncStatus.syncing:
-        return BrainTheme.accentBlue;
-      case SyncStatus.error:
-        return BrainTheme.accentRed;
-      case SyncStatus.disconnected:
-        return BrainTheme.textTertiary;
-    }
-  }
-
-  String _statusText(SyncStatus status) {
-    switch (status) {
-      case SyncStatus.synced:
-        return 'Conectado';
+        final last = sync.lastSync;
+        if (last == null) return 'Conectado';
+        final diff = DateTime.now().difference(last);
+        if (diff.inSeconds < 60) return 'Sincronizado ahora';
+        if (diff.inMinutes < 60) return 'Sincronizado hace ${diff.inMinutes} min';
+        return 'Sincronizado hace ${diff.inHours} h';
       case SyncStatus.syncing:
         return 'Sincronizando...';
       case SyncStatus.error:
@@ -437,26 +249,89 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
-  String _formatLastSync(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-    if (diff.inSeconds < 60) return 'ahora mismo';
-    if (diff.inMinutes < 60) return 'hace ${diff.inMinutes} min';
-    if (diff.inHours < 24) return 'hace ${diff.inHours} h';
-    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  void _confirmReset(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: BrainTheme.cardDark,
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: BrainTheme.accentOrange, size: 22),
+            const SizedBox(width: 8),
+            Text('Restablecer ajustes', style: TextStyle(color: BrainTheme.textPrimary)),
+          ],
+        ),
+        content: Text(
+          'Se borrarán todas las preferencias guardadas (tema, colores, '
+          'notificaciones, etc.). Los datos no se verán afectados.',
+          style: TextStyle(color: BrainTheme.textSecondary, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar', style: TextStyle(color: BrainTheme.textSecondary)),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: BrainTheme.accentRed,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Restablecer'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true && context.mounted) {
+      final s = context.read<SettingsProvider>();
+      await s.setThemeMode(ThemeMode.dark);
+      await s.setAccentColor(BrainTheme.accentPurple);
+      await s.setHapticFeedback(true);
+      await s.setNotificationsEnabled(true);
+      if (context.mounted) {
+        showSuccessNotification('Ajustes restablecidos');
+      }
+    }
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: BrainTheme.textTertiary,
-          letterSpacing: 1.2,
+  void _showAbout(BuildContext context) {
+    showAboutDialog(
+      context: context,
+      applicationName: AppLocalizations.of(context).appTitle,
+      applicationVersion: '1.0.1+2',
+      applicationIcon: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.asset('assets/app_icon.png', width: 48, height: 48),
+      ),
+      applicationLegalese: '© 2026 Sergio Asensio',
+      children: [
+        const SizedBox(height: 16),
+        Text(
+          'Tu segundo cerebro digital para organizar tareas, '
+          'proyectos, objetivos y notas.',
+          style: TextStyle(fontSize: 13, color: BrainTheme.textSecondary),
         ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(IconData icon, String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: BrainTheme.textTertiary),
+          const SizedBox(width: 8),
+          Text(
+            title.toUpperCase(),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: BrainTheme.textTertiary,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -465,38 +340,82 @@ class SettingsScreen extends StatelessWidget {
     required IconData icon,
     required String title,
     required String subtitle,
-    required VoidCallback onTap,
+    Widget? trailing,
+    VoidCallback? onTap,
   }) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: BrainTheme.surfaceDark,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: BrainTheme.borderDark),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      child: Material(
+        color: BrainTheme.cardDark,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: BrainTheme.borderDark.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: BrainTheme.surfaceDark,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: BrainTheme.accentPurple, size: 18),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          color: BrainTheme.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: BrainTheme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (trailing != null)
+                  trailing
+                else if (onTap != null)
+                  Icon(Icons.chevron_right_rounded, color: BrainTheme.textTertiary, size: 20),
+              ],
+            ),
+          ),
         ),
-        child: Icon(icon, color: BrainTheme.textSecondary, size: 20),
       ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: BrainTheme.textPrimary,
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          color: BrainTheme.textSecondary,
-          fontSize: 13,
-        ),
-      ),
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        color: BrainTheme.textTertiary,
-      ),
-      onTap: onTap,
     );
   }
+}
+
+class _SettingSection {
+  final String title;
+  final IconData icon;
+  final List<_SettingItem> items;
+  const _SettingSection({required this.title, required this.icon, required this.items});
+}
+
+class _SettingItem {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  const _SettingItem({required this.icon, required this.title, required this.subtitle, this.trailing, this.onTap});
 }

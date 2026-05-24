@@ -16,6 +16,7 @@ import 'dashboard_calendar_widget.dart';
 import 'dashboard_stats_widget.dart';
 import 'dashboard_focus_widget.dart';
 import 'dashboard_overdue_widget.dart';
+import 'dashboard_alerts_widget.dart';
 import 'dashboard_widgets.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -109,7 +110,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 planner: planner,
               ),
             ),
-            const SizedBox(height: 20),
+            SmartAlertsSection(alerts: dashboardData.alerts),
+            if (dashboardData.alerts.isNotEmpty) const SizedBox(height: 20),
             CalendarWeekRibbon(
               selectedDate: _selectedDate,
               weekDays: _weekDays,

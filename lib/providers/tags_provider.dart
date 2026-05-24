@@ -3,7 +3,6 @@ import 'package:uuid/uuid.dart';
 
 import '../models/tag.dart';
 import '../services/interfaces/storage_service_interface.dart';
-import '../utils/notification_service_v2.dart';
 
 class TagsProvider extends ChangeNotifier {
   final IStorageService _storage;
@@ -42,7 +41,6 @@ class TagsProvider extends ChangeNotifier {
     _tags.add(tag);
     await _storage.saveTags(_tags);
     notifyListeners();
-    showSuccessNotification('Etiqueta creada');
     return tag;
   }
 
@@ -52,7 +50,6 @@ class TagsProvider extends ChangeNotifier {
       _tags[idx] = tag;
       await _storage.saveTags(_tags);
       notifyListeners();
-      showSuccessNotification('Etiqueta actualizada');
     }
   }
 
@@ -60,7 +57,6 @@ class TagsProvider extends ChangeNotifier {
     _tags.removeWhere((t) => t.id == id);
     await _storage.saveTags(_tags);
     notifyListeners();
-    showSuccessNotification('Etiqueta eliminada');
   }
 
   Tag? getById(String id) {

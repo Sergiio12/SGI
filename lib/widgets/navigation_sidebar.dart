@@ -8,7 +8,7 @@ import '../providers/trash_provider.dart';
 import '../models/task.dart';
 import '../utils/haptic_helper.dart';
 
-class NavigationSidebar extends StatelessWidget {
+class NavigationSidebar extends StatefulWidget {
   final int currentIndex;
   final ValueChanged<int> onItemSelected;
 
@@ -17,6 +17,14 @@ class NavigationSidebar extends StatelessWidget {
     required this.currentIndex,
     required this.onItemSelected,
   });
+
+  @override
+  State<NavigationSidebar> createState() => _NavigationSidebarState();
+}
+
+class _NavigationSidebarState extends State<NavigationSidebar> {
+  bool _mainSectionExpanded = true;
+  bool _planningSectionExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +40,13 @@ class NavigationSidebar extends StatelessWidget {
       _SidebarItemData(Icons.sticky_note_2_outlined, l10n.navNotes, 4),
     ];
 
+    final planningItems = [
+      _PlanningItemData(Icons.today_rounded, l10n.todayView, '/today'),
+      _PlanningItemData(Icons.calendar_month_outlined, l10n.calendar, '/calendar'),
+      _PlanningItemData(Icons.center_focus_strong_outlined, l10n.focusMode, '/focus'),
+      _PlanningItemData(Icons.bar_chart_outlined, l10n.statistics, '/stats'),
+    ];
+
     return Container(
       width: 220,
       decoration: BoxDecoration(
@@ -45,157 +60,49 @@ class NavigationSidebar extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // ── Branding ──
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: BrainTheme.borderDark.withValues(alpha: 0.3),
-                ),
-              ),
-            ),
-            child: Row(
+          _buildHeader(l10n),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
               children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [BrainTheme.accentPurple, BrainTheme.accentBlue],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.psychology, color: Colors.white, size: 20),
+                _buildSection(
+                  title: l10n.sectionMainMenu,
+                  isExpanded: _mainSectionExpanded,
+                  onToggle: () => setState(() => _mainSectionExpanded = !_mainSectionExpanded),
+                  children: primaryItems.map((item) {
+                    final active = widget.currentIndex == item.index;
+                    return _SidebarNavItem(
+                      icon: item.icon,
+                      label: item.label,
+                      isActive: active,
+                      onTap: () {
+                        HapticHelper.selection();
+                        widget.onItemSelected(item.index);
+                      },
+                    );
+                  }).toList(),
                 ),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.appTitle,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: BrainTheme.textPrimary,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    Text(
-                      'Tu espacio personal',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: BrainTheme.textTertiary,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 4),
+                _buildSection(
+                  title: l10n.sectionPlanning,
+                  isExpanded: _planningSectionExpanded,
+                  onToggle: () => setState(() => _planningSectionExpanded = !_planningSectionExpanded),
+                  children: planningItems.map((item) {
+                    return _SidebarNavItem(
+                      icon: item.icon,
+                      label: item.label,
+                      onTap: () {
+                        HapticHelper.selection();
+                        Navigator.pushNamed(context, item.route);
+                      },
+                    );
+                  }).toList(),
                 ),
               ],
             ),
           ),
-
-          // ── Primary Nav ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 12, 8, 4),
-            child: _SectionLabel(label: 'Menú principal'),
-          ),
-          ...primaryItems.map((item) {
-            final active = currentIndex == item.index;
-            return _SidebarNavItem(
-              icon: item.icon,
-              label: item.label,
-              isActive: active,
-              onTap: () {
-                HapticHelper.selection();
-                onItemSelected(item.index);
-              },
-            );
-          }),
-
-          const SizedBox(height: 8),
-
-          // ── Secondary Nav ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
-            child: _SectionLabel(label: 'Planificación'),
-          ),
-          _SidebarNavItem(
-            icon: Icons.today_rounded,
-            label: l10n.todayView,
-            isActive: false,
-            onTap: () {
-              HapticHelper.selection();
-              Navigator.pushNamed(context, '/today');
-            },
-          ),
-          _SidebarNavItem(
-            icon: Icons.calendar_month_outlined,
-            label: l10n.calendar,
-            isActive: false,
-            onTap: () {
-              HapticHelper.selection();
-              Navigator.pushNamed(context, '/calendar');
-            },
-          ),
-          _SidebarNavItem(
-            icon: Icons.center_focus_strong_outlined,
-            label: l10n.focusMode,
-            isActive: false,
-            onTap: () {
-              HapticHelper.selection();
-              Navigator.pushNamed(context, '/focus');
-            },
-          ),
-          _SidebarNavItem(
-            icon: Icons.bar_chart_outlined,
-            label: l10n.statistics,
-            isActive: false,
-            onTap: () {
-              HapticHelper.selection();
-              Navigator.pushNamed(context, '/stats');
-            },
-          ),
-
-          const Spacer(),
-
-          // ── Quick Stats ──
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: BrainTheme.cardDark.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _StatDot(
-                      color: BrainTheme.statusColor(TaskStatus.pending),
-                      label: '${tasks.todoTasks.length}',
-                    ),
-                    _StatDot(
-                      color: BrainTheme.statusColor(TaskStatus.inProgress),
-                      label: '${tasks.inProgressTasks.length}',
-                    ),
-                    _StatDot(
-                      color: BrainTheme.statusColor(TaskStatus.inReview),
-                      label: '${tasks.inReviewTasks.length}',
-                    ),
-                    _StatDot(
-                      color: BrainTheme.statusColor(TaskStatus.completed),
-                      label: '${tasks.doneTasks.length}',
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // ── Bottom Actions ──
+          _buildQuickStats(tasks),
+          const SizedBox(height: 6),
           _SidebarNavItem(
             icon: Icons.delete_outline_rounded,
             label: l10n.trash,
@@ -234,9 +141,163 @@ class NavigationSidebar extends StatelessWidget {
       ),
     );
   }
-}
 
-// ─── Data classes ──────────────────────────────────────────────────
+  Widget _buildHeader(AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: BrainTheme.borderDark.withValues(alpha: 0.3),
+          ),
+        ),
+      ),
+      child: Tooltip(
+        message: 'Second Brain v1.0',
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [BrainTheme.accentPurple, BrainTheme.accentBlue],
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.psychology, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.appTitle,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: BrainTheme.textPrimary,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                  Text(
+                    'v1.0.1',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: BrainTheme.textTertiary,
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection({
+    required String title,
+    required bool isExpanded,
+    required VoidCallback onToggle,
+    required List<Widget> children,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: onToggle,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 10, 8, 4),
+            child: Row(
+              children: [
+                Text(
+                  title.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: BrainTheme.textTertiary.withValues(alpha: 0.6),
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const Spacer(),
+                AnimatedRotation(
+                  turns: isExpanded ? 0.5 : 0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 14,
+                    color: BrainTheme.textTertiary.withValues(alpha: 0.4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        AnimatedCrossFade(
+          firstChild: Column(children: children),
+          secondChild: const SizedBox.shrink(),
+          crossFadeState: isExpanded
+              ? CrossFadeState.showFirst
+              : CrossFadeState.showSecond,
+          duration: const Duration(milliseconds: 200),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickStats(TasksProvider tasks) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: BrainTheme.cardDark.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _StatDot(
+                color: BrainTheme.statusColor(TaskStatus.pending),
+                label: '${tasks.todoTasks.length}',
+                tooltip: 'Pendientes',
+              ),
+              _StatDot(
+                color: BrainTheme.statusColor(TaskStatus.inProgress),
+                label: '${tasks.inProgressTasks.length}',
+                tooltip: 'En progreso',
+              ),
+              _StatDot(
+                color: BrainTheme.statusColor(TaskStatus.inReview),
+                label: '${tasks.inReviewTasks.length}',
+                tooltip: 'En revisión',
+              ),
+              _StatDot(
+                color: BrainTheme.statusColor(TaskStatus.completed),
+                label: '${tasks.doneTasks.length}',
+                tooltip: 'Completadas',
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: tasks.completionRate,
+              backgroundColor: BrainTheme.borderDark.withValues(alpha: 0.3),
+              valueColor: AlwaysStoppedAnimation(
+                BrainTheme.accentGreen,
+              ),
+              minHeight: 3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _SidebarItemData {
   final IconData icon;
@@ -245,27 +306,11 @@ class _SidebarItemData {
   const _SidebarItemData(this.icon, this.label, this.index);
 }
 
-// ─── Widgets ───────────────────────────────────────────────────────
-
-class _SectionLabel extends StatelessWidget {
+class _PlanningItemData {
+  final IconData icon;
   final String label;
-  const _SectionLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      child: Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: BrainTheme.textTertiary.withValues(alpha: 0.6),
-          letterSpacing: 0.8,
-        ),
-      ),
-    );
-  }
+  final String route;
+  const _PlanningItemData(this.icon, this.label, this.route);
 }
 
 class _SidebarNavItem extends StatelessWidget {
@@ -296,81 +341,96 @@ class _SidebarNavItem extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             borderRadius: BorderRadius.circular(10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? BrainTheme.accentPurple.withValues(alpha: 0.1)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(10),
-              border: isActive
-                  ? Border.all(
-                      color: BrainTheme.accentPurple.withValues(alpha: 0.2),
-                      width: 0.5,
+            child: Container(
+              padding: const EdgeInsets.only(left: 10, right: 10, top: 8, bottom: 8),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? BrainTheme.accentPurple.withValues(alpha: 0.1)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  if (isActive)
+                    Container(
+                      width: 3,
+                      height: 18,
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: BrainTheme.accentPurple,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     )
-                  : null,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  size: 18,
-                  color: isActive
-                      ? BrainTheme.accentPurple
-                      : BrainTheme.textSecondary,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                      color: isActive
-                          ? BrainTheme.accentPurple
-                          : BrainTheme.textPrimary,
+                  else
+                    const SizedBox(width: 11),
+                  Icon(
+                    icon,
+                    size: 18,
+                    color: isActive
+                        ? BrainTheme.accentPurple
+                        : BrainTheme.textSecondary,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                        color: isActive
+                            ? BrainTheme.accentPurple
+                            : BrainTheme.textPrimary,
+                      ),
                     ),
                   ),
-                ),
-                if (trailing != null) trailing!,
-              ],
+                  if (trailing != null) trailing!,
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
 
 class _StatDot extends StatelessWidget {
   final Color color;
   final String label;
-  const _StatDot({required this.color, required this.label});
+  final String tooltip;
+
+  const _StatDot({
+    required this.color,
+    required this.label,
+    required this.tooltip,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
+    return Tooltip(
+      message: tooltip,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
           ),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: BrainTheme.textPrimary,
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: BrainTheme.textPrimary,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

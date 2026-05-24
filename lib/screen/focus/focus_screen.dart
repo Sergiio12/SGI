@@ -6,6 +6,7 @@ import '../../config/theme.dart';
 import '../../providers/tasks_provider.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/task_card.dart';
+import 'pomodoro_timer.dart';
 
 class FocusScreen extends StatelessWidget {
   const FocusScreen({super.key});
@@ -19,51 +20,60 @@ class FocusScreen extends StatelessWidget {
       body: Consumer<TasksProvider>(
         builder: (context, provider, _) {
           final tasks = provider.focusTasks;
-          if (tasks.isEmpty) {
-            return EmptyState(
-              emoji: '✨',
-              title: AppLocalizations.of(context).emptyState,
-              subtitle: AppLocalizations.of(context).emptyStateDescription,
-            );
-          }
-
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
             children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: BrainTheme.accentOrange.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: BrainTheme.accentOrange.withValues(alpha: 0.35),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.center_focus_strong,
-                      color: BrainTheme.accentOrange,
+              const PomodoroTimer(),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Icon(Icons.checklist_rounded, size: 16, color: BrainTheme.textTertiary),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Tareas en foco',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: BrainTheme.textPrimary,
                     ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        AppLocalizations.of(context).focusMode,
-                        style: TextStyle(color: BrainTheme.textSecondary),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: BrainTheme.accentPurple.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${tasks.length}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: BrainTheme.accentPurple,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              ...tasks.map(
-                (task) => TaskCard(
-                  task: task,
-                  onTap: () =>
-                      Navigator.pushNamed(context, '/task', arguments: task.id),
-                  onToggle: () => provider.toggleTaskStatus(task.id),
+              const SizedBox(height: 12),
+              if (tasks.isEmpty)
+                EmptyState(
+                  emoji: '🧘',
+                  title: 'Sin tareas en foco',
+                  subtitle: 'Las tareas urgentes y en progreso aparecerán aquí automáticamente.',
+                )
+              else
+                ...tasks.map(
+                  (task) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: TaskCard(
+                      task: task,
+                      onTap: () =>
+                          Navigator.pushNamed(context, '/task', arguments: task.id),
+                      onToggle: () => provider.toggleTaskStatus(task.id),
+                    ),
+                  ),
                 ),
-              ),
             ],
           );
         },

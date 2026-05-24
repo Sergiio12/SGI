@@ -163,7 +163,6 @@ class NotesProvider extends ChangeNotifier {
       _notes.add(note);
       _notifyAndScheduleSave();
       HapticHelper.light();
-      showSuccessNotification('Nota creada: ${note.title}');
       return Result.success(note);
     } catch (e, s) {
       final error = AppException(
@@ -203,7 +202,6 @@ class NotesProvider extends ChangeNotifier {
         _notes[index] = note.copyWith(isPinned: newPinned);
         _notifyAndScheduleSave();
         HapticHelper.selection();
-        showSuccessNotification(newPinned ? 'Nota anclada' : 'Nota desanclada');
       }
     } catch (e, s) {
       AppException(
@@ -245,7 +243,6 @@ class NotesProvider extends ChangeNotifier {
         await _storage.saveTrashNotes(trash);
         _notifyAndScheduleSave();
         HapticHelper.light();
-        showSuccessNotification('Nota restaurada');
       }
     } catch (e, s) {
       AppException(
@@ -262,7 +259,6 @@ class NotesProvider extends ChangeNotifier {
       final trash = await _storage.loadTrashNotes();
       trash.removeWhere((n) => n.id == noteId);
       await _storage.saveTrashNotes(trash);
-      showSuccessNotification('Nota eliminada permanentemente');
     } catch (e, s) {
       AppException(
               message: 'Error al eliminar nota permanentemente',
@@ -291,7 +287,6 @@ class NotesProvider extends ChangeNotifier {
         );
       }
       _notifyAndScheduleSave();
-      showSuccessNotification('Cuaderno renombrado');
     } catch (e, s) {
       AppException(
               message: 'Error al renombrar cuaderno',
@@ -310,7 +305,6 @@ class NotesProvider extends ChangeNotifier {
       }
       _notebookInfos.removeWhere((info) => info.name == name);
       _notifyAndScheduleSave();
-      showSuccessNotification('Cuaderno eliminado, notas movidas a General');
     } catch (e, s) {
       AppException(
               message: 'Error al eliminar cuaderno',
@@ -359,11 +353,6 @@ class NotesProvider extends ChangeNotifier {
     return note.title.toLowerCase().contains(lower) ||
         note.content.toLowerCase().contains(lower) ||
         note.notebook.toLowerCase().contains(lower);
-  }
-
-  List<Note> search(String query) {
-    if (query.isEmpty) return [];
-    return _notes.where((n) => _matchesQuery(n, query)).toList();
   }
 
   List<Note> filteredNotes({

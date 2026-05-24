@@ -21,24 +21,6 @@ class TasksProvider extends ChangeNotifier {
   bool _isLoaded = false;
   final _saveDebouncer = Debouncer(delay: const Duration(milliseconds: 500));
 
-  static const int pageSize = 50;
-  int _page = 1;
-
-  bool get hasMore => _page * pageSize < _tasks.length;
-  int get page => _page;
-  List<Task> get pagedTasks => _tasks.take(_page * pageSize).toList();
-
-  void loadNextPage() {
-    if (!hasMore) return;
-    _page++;
-    notifyListeners();
-  }
-
-  void resetPage() {
-    _page = 1;
-    notifyListeners();
-  }
-
   TasksProvider({required IStorageService storage}) : _storage = storage;
 
   List<Task>? __todoTasks;
@@ -109,7 +91,6 @@ class TasksProvider extends ChangeNotifier {
 
   Future<void> loadTasks() async {
     _tasks = await _storage.loadTasks();
-    _page = 1;
     _markDirty();
     _isLoaded = true;
     notifyListeners();
@@ -200,17 +181,6 @@ class TasksProvider extends ChangeNotifier {
     }
   }
 
-  Result<Task> getTaskByIdResult(String id) {
-    try {
-      return Result.success(_tasks.firstWhere((t) => t.id == id));
-    } catch (_) {
-      return Result.failure(AppException(
-        message: 'Tarea no encontrada: $id',
-        code: 'TASK_NOT_FOUND',
-      ));
-    }
-  }
-
   Future<Result<Task>> addTask({
     required String title,
     String description = '',
@@ -260,7 +230,6 @@ class TasksProvider extends ChangeNotifier {
         );
       }
       HapticHelper.light();
-      showSuccessNotification('Tarea creada: ${task.title}');
       return Result.success(task);
     } catch (e, s) {
       final error = AppException(
@@ -282,7 +251,6 @@ class TasksProvider extends ChangeNotifier {
         _notifyAndScheduleSave();
         _syncCalendarForTask(task);
         await NotificationService.scheduleTaskReminders(task);
-        showSuccessNotification('Tarea actualizada');
       }
     } catch (e, s) {
       AppException(
@@ -313,12 +281,10 @@ class TasksProvider extends ChangeNotifier {
           await NotificationService.cancelTaskReminders(taskId);
           await _generateNextRecurrence(task);
           HapticHelper.light();
-          showSuccessNotification('Tarea completada');
         } else {
           _syncCalendarForTask(updated);
           await NotificationService.scheduleTaskReminders(updated);
           HapticHelper.light();
-          showSuccessNotification('Tarea reabierta');
         }
       }
     } catch (e, s) {
@@ -353,13 +319,7 @@ class TasksProvider extends ChangeNotifier {
       } else {
         await NotificationService.scheduleTaskReminders(updated);
       }
-      final message = status == TaskStatus.completed
-          ? 'Tarea completada'
-          : status == TaskStatus.cancelled
-              ? 'Tarea anulada'
-              : 'Tarea actualizada';
       HapticHelper.light();
-      showSuccessNotification(message);
     } catch (e, s) {
       AppException(
               message: 'Error al mover tarea', code: 'MOVE_TASK', stackTrace: s)
@@ -416,6 +376,56 @@ class TasksProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> batchDelete(List<String> taskIds) async {
+    final trash = await _storage.loadTrashTasks();
+    for (final taskId in taskIds) {
+      final index = _tasks.indexWhere((t) => t.id == taskId);
+      if (index == -1) continue;
+      final task = _tasks.removeAt(index);
+      trash.add(task);
+      if (task.calendarEventId != null) {
+        unawaited(CalendarIntegrationService.removeTaskEvent(task.id, task.calendarEventId));
+      }
+      await NotificationService.cancelTaskReminders(taskId);
+    }
+    await _storage.saveTrashTasks(trash);
+    _notifyAndScheduleSave();
+    HapticHelper.medium();
+  }
+
+  Future<void> batchComplete(List<String> taskIds) async {
+    for (final taskId in taskIds) {
+      final index = _tasks.indexWhere((t) => t.id == taskId);
+      if (index == -1) continue;
+      final task = _tasks[index];
+      _tasks[index] = task.copyWith(
+        status: TaskStatus.completed,
+        lastActivityAt: DateTime.now(),
+      );
+      await NotificationService.cancelTaskReminders(taskId);
+      await _generateNextRecurrence(task);
+    }
+    _notifyAndScheduleSave();
+    HapticHelper.light();
+  }
+
+  Future<void> batchMoveToStatus(List<String> taskIds, TaskStatus status) async {
+    for (final taskId in taskIds) {
+      final index = _tasks.indexWhere((t) => t.id == taskId);
+      if (index == -1) continue;
+      final task = _tasks[index];
+      _tasks[index] = task.copyWith(
+        status: status,
+        lastActivityAt: DateTime.now(),
+      );
+      if (status == TaskStatus.completed || status == TaskStatus.cancelled) {
+        await NotificationService.cancelTaskReminders(taskId);
+      }
+    }
+    _notifyAndScheduleSave();
+    HapticHelper.light();
+  }
+
   Future<void> replaceAll(List<Task> tasks) async {
     _tasks = tasks;
     _notifyAndScheduleSave();
@@ -461,7 +471,6 @@ class TasksProvider extends ChangeNotifier {
         await _storage.saveTrashTasks(trash);
         _notifyAndScheduleSave();
         HapticHelper.light();
-        showSuccessNotification('Tarea restaurada');
       }
     } catch (e, s) {
       AppException(
@@ -478,7 +487,6 @@ class TasksProvider extends ChangeNotifier {
       final trash = await _storage.loadTrashTasks();
       trash.removeWhere((t) => t.id == taskId);
       await _storage.saveTrashTasks(trash);
-      showSuccessNotification('Tarea eliminada permanentemente');
     } catch (e, s) {
       AppException(
               message: 'Error al eliminar tarea permanentemente',

@@ -762,6 +762,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loadingInitStorage => 'Inicializando almacenamiento seguro';
 
   @override
+  String get loadingRestore => 'Restaurando copia de seguridad';
+
+  @override
   String get loadingTasks => 'Cargando tareas prioritarias';
 
   @override
@@ -1029,4 +1032,94 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get unlink => 'Desvincular';
+
+  @override
+  String get smartAlertsTitle => 'Alertas Inteligentes';
+
+  @override
+  String get smartAlertDeadlines => 'Deadlines cercanos';
+
+  @override
+  String smartAlertDeadlinesMsg(Object count) {
+    return '$count tarea(s) vencen en las próximas 24 horas.';
+  }
+
+  @override
+  String get smartAlertUrgentNotStarted => 'Urgentes sin iniciar';
+
+  @override
+  String smartAlertUrgentNotStartedMsg(Object count) {
+    return '$count tarea(s) urgente(s) siguen en pendiente.';
+  }
+
+  @override
+  String get smartAlertLowActivity => 'Baja actividad';
+
+  @override
+  String smartAlertLowActivityMsg(Object count) {
+    return '$count tarea(s) importante(s) llevan 3 días sin avance.';
+  }
+
+  @override
+  String get smartAlertDelayedProjects => 'Proyectos retrasados';
+
+  @override
+  String smartAlertDelayedProjectsMsg(Object count) {
+    return '$count proyecto(s) han superado su fecha estimada.';
+  }
+
+  @override
+  String get settingsSearch => 'Buscar en ajustes...';
+
+  @override
+  String get settingsNoResults => 'Sin resultados';
+
+  @override
+  String settingsNoResultsFor(Object query) {
+    return 'No se encontraron ajustes para \"$query\"';
+  }
+
+  @override
+  String get settingsAppearance => 'Apariencia';
+
+  @override
+  String get settingsNotifications => 'Notificaciones';
+
+  @override
+  String get settingsData => 'Datos y Sync';
+
+  @override
+  String get settingsIntelligence => 'Inteligencia';
+
+  @override
+  String get settingsSystem => 'Sistema';
+
+  @override
+  String get settingsResetTitle => 'Restablecer ajustes';
+
+  @override
+  String get settingsResetDesc => 'Vuelve a la configuración de fábrica';
+
+  @override
+  String get settingsResetConfirm =>
+      'Se borrarán todas las preferencias guardadas. Los datos no se verán afectados.';
+
+  @override
+  String get settingsResetSuccess => 'Ajustes restablecidos';
+
+  @override
+  String get settingsAboutDesc =>
+      'Tu segundo cerebro digital para organizar tareas, proyectos, objetivos y notas.';
+
+  @override
+  String get sectionMainMenu => 'Menú principal';
+
+  @override
+  String get sectionPlanning => 'Planificación';
+
+  @override
+  String get noteAttached => 'Nota anclada';
+
+  @override
+  String get noteDetached => 'Nota desanclada';
 }

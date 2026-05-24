@@ -18,6 +18,7 @@ import '../../providers/trash_provider.dart';
 import '../home_screen.dart';
 
 import '../../services/notification_service.dart';
+import '../../services/persistent_backup_service.dart';
 import '../../services/interfaces/storage_service_interface.dart';
 
 import '../../widgets/loading_animation.dart';
@@ -121,6 +122,15 @@ class _LoadingScreenState extends State<LoadingScreen>
           label: l10n.loadingInitStorage,
           action: () async {
             await context.read<IStorageService>().init();
+          },
+        ),
+        _InitStep(
+          progress: 0.20,
+          label: l10n.loadingRestore,
+          action: () async {
+            await PersistentBackupService.tryRestore(
+              context.read<IStorageService>(),
+            );
           },
         ),
         _InitStep(
@@ -287,6 +297,15 @@ class _LoadingScreenState extends State<LoadingScreen>
       );
 
       await context.read<DailyPlannerProvider>().load();
+
+      unawaited(
+        PersistentBackupService.saveSnapshot(
+          tasks: tasksProvider.tasks,
+          projects: context.read<ProjectsProvider>().projects,
+          notes: notesProvider.notes,
+          goals: goalsProvider.goals,
+        ),
+      );
     } catch (_) {}
   }
 

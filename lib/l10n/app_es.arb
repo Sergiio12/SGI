@@ -280,6 +280,7 @@
 
   "loadingInitSystem": "Inicializando sistema",
   "loadingInitStorage": "Inicializando almacenamiento seguro",
+  "loadingRestore": "Restaurando copia de seguridad",
   "loadingTasks": "Cargando tareas prioritarias",
   "loadingProjects": "Reconstruyendo proyectos",
   "loadingVisual": "Preparando entorno visual",
@@ -373,5 +374,35 @@
   "linkToTask": "Vincular a tarea",
   "linkToNote": "Vincular a nota",
   "linkToProject": "Vincular a proyecto",
-  "unlink": "Desvincular"
+  "unlink": "Desvincular",
+
+  "smartAlertsTitle": "Alertas Inteligentes",
+  "smartAlertDeadlines": "Deadlines cercanos",
+  "smartAlertDeadlinesMsg": "{count} tarea(s) vencen en las próximas 24 horas.",
+  "smartAlertUrgentNotStarted": "Urgentes sin iniciar",
+  "smartAlertUrgentNotStartedMsg": "{count} tarea(s) urgente(s) siguen en pendiente.",
+  "smartAlertLowActivity": "Baja actividad",
+  "smartAlertLowActivityMsg": "{count} tarea(s) importante(s) llevan 3 días sin avance.",
+  "smartAlertDelayedProjects": "Proyectos retrasados",
+  "smartAlertDelayedProjectsMsg": "{count} proyecto(s) han superado su fecha estimada.",
+
+  "settingsSearch": "Buscar en ajustes...",
+  "settingsNoResults": "Sin resultados",
+  "settingsNoResultsFor": "No se encontraron ajustes para \"{query}\"",
+  "settingsAppearance": "Apariencia",
+  "settingsNotifications": "Notificaciones",
+  "settingsData": "Datos y Sync",
+  "settingsIntelligence": "Inteligencia",
+  "settingsSystem": "Sistema",
+  "settingsResetTitle": "Restablecer ajustes",
+  "settingsResetDesc": "Vuelve a la configuración de fábrica",
+  "settingsResetConfirm": "Se borrarán todas las preferencias guardadas. Los datos no se verán afectados.",
+  "settingsResetSuccess": "Ajustes restablecidos",
+  "settingsAboutDesc": "Tu segundo cerebro digital para organizar tareas, proyectos, objetivos y notas.",
+
+  "sectionMainMenu": "Menú principal",
+  "sectionPlanning": "Planificación",
+
+  "noteAttached": "Nota anclada",
+  "noteDetached": "Nota desanclada"
 }

@@ -280,6 +280,7 @@
 
   "loadingInitSystem": "Initializing system",
   "loadingInitStorage": "Initializing secure storage",
+  "loadingRestore": "Restoring backup data",
   "loadingTasks": "Loading priority tasks",
   "loadingProjects": "Rebuilding projects",
   "loadingVisual": "Preparing visual environment",
@@ -373,5 +374,35 @@
   "linkToTask": "Link to task",
   "linkToNote": "Link to note",
   "linkToProject": "Link to project",
-  "unlink": "Unlink"
+  "unlink": "Unlink",
+
+  "smartAlertsTitle": "Smart Alerts",
+  "smartAlertDeadlines": "Deadlines close",
+  "smartAlertDeadlinesMsg": "{count} task(s) due in the next 24 hours.",
+  "smartAlertUrgentNotStarted": "Urgent not started",
+  "smartAlertUrgentNotStartedMsg": "{count} urgent task(s) still pending.",
+  "smartAlertLowActivity": "Low activity",
+  "smartAlertLowActivityMsg": "{count} important task(s) without progress for 3 days.",
+  "smartAlertDelayedProjects": "Delayed projects",
+  "smartAlertDelayedProjectsMsg": "{count} project(s) past their expected completion date.",
+
+  "settingsSearch": "Search settings...",
+  "settingsNoResults": "No results",
+  "settingsNoResultsFor": "No settings found for \"{query}\"",
+  "settingsAppearance": "Appearance",
+  "settingsNotifications": "Notifications",
+  "settingsData": "Data & Sync",
+  "settingsIntelligence": "Intelligence",
+  "settingsSystem": "System",
+  "settingsResetTitle": "Reset settings",
+  "settingsResetDesc": "Go back to factory configuration",
+  "settingsResetConfirm": "All saved preferences (theme, colors, notifications, etc.) will be cleared. Your data will not be affected.",
+  "settingsResetSuccess": "Settings reset",
+  "settingsAboutDesc": "Your second digital brain to organize tasks, projects, goals and notes.",
+
+  "sectionMainMenu": "Main menu",
+  "sectionPlanning": "Planning",
+
+  "noteAttached": "Note pinned",
+  "noteDetached": "Note unpinned"
 }

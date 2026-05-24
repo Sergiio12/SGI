@@ -12,6 +12,7 @@ import '../../models/task.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../providers/daily_planner_provider.dart';
+import '../../utils/haptic_helper.dart';
 import '../../utils/notification_service_v2.dart';
 import '../../widgets/skeleton_card.dart';
 import '../../widgets/task_card.dart';
@@ -45,6 +46,9 @@ class _TasksScreenState extends State<TasksScreen> {
   Set<TaskStatus> _visibleBoardColumns = TaskStatus.values.toSet();
   _TaskSortOption _sortOption = _TaskSortOption.priority;
   int _wipLimit = 15;
+
+  bool _selectionMode = false;
+  final Set<String> _selectedTaskIds = {};
 
   @override
   void dispose() {
@@ -217,6 +221,7 @@ class _TasksScreenState extends State<TasksScreen> {
         if (!provider.isLoaded) return const SkeletonList();
         return Column(
           children: [
+            if (_selectionMode) _buildBatchBar(context, provider) else const SizedBox.shrink(),
             TaskTodaySummary(
               pending: provider.todoTasks.length,
               inProgress: provider.inProgressTasks.length,
@@ -951,6 +956,76 @@ class _TasksScreenState extends State<TasksScreen> {
 
   Color _statusColor(TaskStatus status) => BrainTheme.statusColor(status);
 
+  void _toggleSelection(String taskId) {
+    setState(() {
+      if (_selectedTaskIds.contains(taskId)) {
+        _selectedTaskIds.remove(taskId);
+        if (_selectedTaskIds.isEmpty) _selectionMode = false;
+      } else {
+        _selectedTaskIds.add(taskId);
+      }
+    });
+  }
+
+  Widget _buildBatchBar(BuildContext context, TasksProvider provider) {
+    final count = _selectedTaskIds.length;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: BrainTheme.accentPurple.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: BrainTheme.accentPurple.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => setState(() {
+              _selectionMode = false;
+              _selectedTaskIds.clear();
+            }),
+            child: Icon(Icons.close, size: 16, color: BrainTheme.textSecondary),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '$count seleccionada(s)',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: BrainTheme.accentPurple,
+            ),
+          ),
+          const Spacer(),
+          _BatchAction(
+            icon: Icons.check_circle_outline,
+            color: BrainTheme.accentGreen,
+            label: 'Completar',
+            onTap: () {
+              provider.batchComplete(_selectedTaskIds.toList());
+              setState(() {
+                _selectionMode = false;
+                _selectedTaskIds.clear();
+              });
+            },
+          ),
+          const SizedBox(width: 4),
+          _BatchAction(
+            icon: Icons.delete_outline,
+            color: BrainTheme.accentRed,
+            label: 'Eliminar',
+            onTap: () {
+              provider.batchDelete(_selectedTaskIds.toList());
+              setState(() {
+                _selectionMode = false;
+                _selectedTaskIds.clear();
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTaskCard(Task task, TasksProvider provider) {
     final planner = context.read<DailyPlannerProvider>();
     final isPlanned = planner.isTaskPlanned(task.id);
@@ -958,21 +1033,64 @@ class _TasksScreenState extends State<TasksScreen> {
       padding: const EdgeInsets.only(right: 28),
       child: Stack(
         children: [
+          if (_selectionMode)
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: GestureDetector(
+                  onTap: () => _toggleSelection(task.id),
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    margin: const EdgeInsets.only(left: 4),
+                    decoration: BoxDecoration(
+                      color: _selectedTaskIds.contains(task.id)
+                          ? BrainTheme.accentPurple
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: _selectedTaskIds.contains(task.id)
+                            ? BrainTheme.accentPurple
+                            : BrainTheme.borderDark,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: _selectedTaskIds.contains(task.id)
+                        ? const Icon(Icons.check, size: 14, color: Colors.white)
+                        : null,
+                  ),
+                ),
+              ),
+            ),
           TaskCard(
             task: task,
-            enableSlide: false,
+            enableSlide: !_selectionMode,
             compact: true,
-            onTap: () =>
-                Navigator.pushNamed(context, '/task', arguments: task.id),
-            onDismissed: () {
-              final tid = task.id;
-              provider.deleteTask(tid);
-              showSuccessNotification(
-                'Tarea movida a la papelera',
-                actionLabel: AppLocalizations.of(context).undo,
-                onAction: () => provider.restoreTask(tid),
-              );
-            },
+            onTap: _selectionMode
+                ? () => _toggleSelection(task.id)
+                : () => Navigator.pushNamed(context, '/task', arguments: task.id),
+            onLongPress: _selectionMode
+                ? null
+                : () {
+                    HapticHelper.medium();
+                    setState(() {
+                      _selectionMode = true;
+                      _selectedTaskIds.add(task.id);
+                    });
+                  },
+            onDismissed: _selectionMode
+                ? null
+                : () {
+                    final tid = task.id;
+                    provider.deleteTask(tid);
+                    showSuccessNotification(
+                      'Tarea movida a la papelera',
+                      actionLabel: AppLocalizations.of(context).undo,
+                      onAction: () => provider.restoreTask(tid),
+                    );
+                  },
           ),
           Positioned(
             right: -24,
@@ -1020,6 +1138,49 @@ class _TasksScreenState extends State<TasksScreen> {
 }
 
 // ─── FILTER SECTION ──────────────────────────────────────────────────────
+
+class _BatchAction extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+  final VoidCallback onTap;
+
+  const _BatchAction({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _FilterSection extends StatelessWidget {
   final IconData icon;

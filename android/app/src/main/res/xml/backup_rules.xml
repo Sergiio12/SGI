@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Configuración de Android Auto Backup.
+  Incluye datos de Hive, SharedPreferences y excluye cachés.
+-->
+<full-backup-content>
+    <!-- Directorio app_flutter de Hive (boxes *.hive, *.lock) -->
+    <include domain="file" path="app_flutter/" />
+
+    <!-- SharedPreferences -->
+    <include domain="sharedpref" path="." />
+
+    <!-- Excluir directorio cache -->
+    <exclude domain="cache" path="." />
+    <!-- Excluir code_cache -->
+    <exclude domain="file" path="app_flutter/code_cache/" />
+    <!-- Excluir databases -->
+    <exclude domain="database" path="." />
+</full-backup-content>

@@ -100,7 +100,6 @@ class ProjectsProvider extends ChangeNotifier {
       _projects.add(project);
       _notifyAndScheduleSave();
       HapticHelper.light();
-      showSuccessNotification('Proyecto creado: ${project.title}');
       return Result.success(project);
     } catch (e, s) {
       final error = AppException(
@@ -120,47 +119,10 @@ class ProjectsProvider extends ChangeNotifier {
       if (index != -1) {
         _projects[index] = project;
         _notifyAndScheduleSave();
-        showSuccessNotification('Proyecto actualizado');
       }
     } catch (e, s) {
       AppException(message: 'Error al actualizar proyecto', code: 'UPDATE_PROJECT', stackTrace: s).log();
       showErrorNotification('Error al actualizar proyecto');
-    }
-  }
-
-  Future<void> addTaskToProject(String projectId, String taskId) async {
-    try {
-      final index = _projects.indexWhere((p) => p.id == projectId);
-      if (index != -1) {
-        final project = _projects[index];
-        if (!project.taskIds.contains(taskId)) {
-          _projects[index] = project.copyWith(
-            taskIds: [...project.taskIds, taskId],
-          );
-          _notifyAndScheduleSave();
-        }
-      }
-    } catch (e, s) {
-      AppException(message: 'Error al agregar tarea al proyecto', code: 'ADD_TASK_TO_PROJECT', stackTrace: s).log();
-      showErrorNotification('Error al agregar tarea al proyecto');
-    }
-  }
-
-  Future<void> addNoteToProject(String projectId, String noteId) async {
-    try {
-      final index = _projects.indexWhere((p) => p.id == projectId);
-      if (index != -1) {
-        final project = _projects[index];
-        if (!project.noteIds.contains(noteId)) {
-          _projects[index] = project.copyWith(
-            noteIds: [...project.noteIds, noteId],
-          );
-          _notifyAndScheduleSave();
-        }
-      }
-    } catch (e, s) {
-      AppException(message: 'Error al agregar nota al proyecto', code: 'ADD_NOTE_TO_PROJECT', stackTrace: s).log();
-      showErrorNotification('Error al agregar nota al proyecto');
     }
   }
 
@@ -190,7 +152,6 @@ class ProjectsProvider extends ChangeNotifier {
         await _storage.saveTrashProjects(trash);
         _notifyAndScheduleSave();
         HapticHelper.light();
-        showSuccessNotification('Proyecto restaurado');
       }
     } catch (e, s) {
       AppException(message: 'Error al restaurar proyecto', code: 'RESTORE_PROJECT', stackTrace: s).log();
@@ -203,7 +164,6 @@ class ProjectsProvider extends ChangeNotifier {
       final trash = await _storage.loadTrashProjects();
       trash.removeWhere((p) => p.id == projectId);
       await _storage.saveTrashProjects(trash);
-      showSuccessNotification('Proyecto eliminado permanentemente');
     } catch (e, s) {
       AppException(message: 'Error al eliminar proyecto permanentemente', code: 'PERM_DELETE_PROJECT', stackTrace: s).log();
       showErrorNotification('Error al eliminar proyecto');

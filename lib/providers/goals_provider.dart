@@ -39,17 +39,6 @@ class GoalsProvider extends ChangeNotifier {
     }
   }
 
-  Result<Goal> getGoalByIdResult(String id) {
-    try {
-      return Result.success(_goals.firstWhere((g) => g.id == id));
-    } catch (_) {
-      return Result.failure(AppException(
-        message: 'Objetivo no encontrado: $id',
-        code: 'GOAL_NOT_FOUND',
-      ));
-    }
-  }
-
   Future<void> loadGoals() async {
     _goals = await _storage.loadGoals();
     _markDirty();
@@ -99,7 +88,6 @@ class GoalsProvider extends ChangeNotifier {
       _goals.add(goal);
       _notifyAndScheduleSave();
       HapticHelper.light();
-      showSuccessNotification('Objetivo creado: ${goal.title}');
       return Result.success(goal);
     } catch (e, s) {
       final error = AppException(
@@ -119,7 +107,6 @@ class GoalsProvider extends ChangeNotifier {
       if (index != -1) {
         _goals[index] = goal;
         _notifyAndScheduleSave();
-        showSuccessNotification('Objetivo actualizado');
       }
     } catch (e, s) {
       AppException(message: 'Error al actualizar objetivo', code: 'UPDATE_GOAL', stackTrace: s).log();
@@ -153,7 +140,6 @@ class GoalsProvider extends ChangeNotifier {
         await _storage.saveTrashGoals(trash);
         _notifyAndScheduleSave();
         HapticHelper.light();
-        showSuccessNotification('Objetivo restaurado');
       }
     } catch (e, s) {
       AppException(message: 'Error al restaurar objetivo', code: 'RESTORE_GOAL', stackTrace: s).log();
@@ -166,7 +152,6 @@ class GoalsProvider extends ChangeNotifier {
       final trash = await _storage.loadTrashGoals();
       trash.removeWhere((g) => g.id == goalId);
       await _storage.saveTrashGoals(trash);
-      showSuccessNotification('Objetivo eliminado permanentemente');
     } catch (e, s) {
       AppException(message: 'Error al eliminar objetivo permanentemente', code: 'PERM_DELETE_GOAL', stackTrace: s).log();
       showErrorNotification('Error al eliminar objetivo');

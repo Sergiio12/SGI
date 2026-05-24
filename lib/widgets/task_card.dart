@@ -14,6 +14,7 @@ import '../utils/haptic_helper.dart';
 class TaskCard extends StatelessWidget {
   final Task task;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final VoidCallback? onToggle;
   final VoidCallback? onDismissed;
   final Widget? action;
@@ -24,6 +25,7 @@ class TaskCard extends StatelessWidget {
     super.key,
     required this.task,
     this.onTap,
+    this.onLongPress,
     this.onToggle,
     this.onDismissed,
     this.action,
@@ -64,6 +66,7 @@ class TaskCard extends StatelessWidget {
           HapticHelper.light();
           onTap?.call();
         },
+        onLongPress: onLongPress,
         child: Hero(
           tag: 'task_${task.id}',
           child: Container(

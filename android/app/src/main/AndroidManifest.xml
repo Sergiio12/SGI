@@ -14,7 +14,10 @@
     <application
         android:label="SGI"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/backup_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"
