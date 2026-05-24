@@ -223,6 +223,7 @@ class TasksProvider extends ChangeNotifier {
     List<String> tags = const [],
     List<SubTask> subtasks = const [],
     List<String> linkedNoteIds = const [],
+    List<String> linkedGoalIds = const [],
     RecurrenceRule? recurrence,
     String? sourceTaskId,
   }) async {
@@ -239,6 +240,7 @@ class TasksProvider extends ChangeNotifier {
         projectId: projectId,
         subtasks: subtasks,
         linkedNoteIds: linkedNoteIds,
+        linkedGoalIds: linkedGoalIds,
         tags: tags,
         recurrence: recurrence,
         sourceTaskId: sourceTaskId,

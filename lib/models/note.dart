@@ -13,6 +13,7 @@ class Note extends BrainItem {
   final String? projectId;
   final List<String> linkedTaskIds;
   final List<String> linkedNoteIds;
+  final List<String> linkedGoalIds;
   final bool isPinned;
   final int colorValue;
   final String emoji;
@@ -27,6 +28,7 @@ class Note extends BrainItem {
     this.projectId,
     this.linkedTaskIds = const [],
     this.linkedNoteIds = const [],
+    this.linkedGoalIds = const [],
     this.isPinned = false,
     this.colorValue = 0xFF1E1E2E,
     this.emoji = '📝',
@@ -44,6 +46,7 @@ class Note extends BrainItem {
     String? projectId,
     List<String>? linkedTaskIds,
     List<String>? linkedNoteIds,
+    List<String>? linkedGoalIds,
     bool? isPinned,
     int? colorValue,
     String? emoji,
@@ -59,6 +62,7 @@ class Note extends BrainItem {
       projectId: clearProjectId ? null : (projectId ?? this.projectId),
       linkedTaskIds: linkedTaskIds ?? this.linkedTaskIds,
       linkedNoteIds: linkedNoteIds ?? this.linkedNoteIds,
+      linkedGoalIds: linkedGoalIds ?? this.linkedGoalIds,
       isPinned: isPinned ?? this.isPinned,
       colorValue: colorValue ?? this.colorValue,
       emoji: emoji ?? this.emoji,
@@ -78,6 +82,8 @@ class Note extends BrainItem {
         'projectId': projectId,
         'linkedTaskIds': linkedTaskIds,
         'linkedNoteIds': linkedNoteIds,
+        'linkedGoalIds': linkedGoalIds,
+        'tags': tags,
         'isPinned': isPinned,
         'colorValue': colorValue,
         'emoji': emoji,
@@ -99,6 +105,8 @@ class Note extends BrainItem {
         projectId: json['projectId'],
         linkedTaskIds: List<String>.from(json['linkedTaskIds'] ?? []),
         linkedNoteIds: List<String>.from(json['linkedNoteIds'] ?? []),
+        linkedGoalIds: List<String>.from(json['linkedGoalIds'] ?? []),
+        tags: List<String>.from(json['tags'] ?? []),
         isPinned: json['isPinned'] ?? false,
         colorValue: json['colorValue'] ?? 0xFF1E1E2E,
         emoji: json['emoji'] ?? '📝',

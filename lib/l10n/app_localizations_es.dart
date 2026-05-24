@@ -905,4 +905,128 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get weeklyCalendar => 'Calendario Semanal';
+
+  @override
+  String get estimatedHours => 'Horas estimadas';
+
+  @override
+  String get actualHours => 'Horas reales';
+
+  @override
+  String get reminderMinutes => 'Recordatorio (min)';
+
+  @override
+  String get titleField => 'Título';
+
+  @override
+  String get estimated => 'Estimado';
+
+  @override
+  String get actual => 'Real';
+
+  @override
+  String get searchFilterType => 'Filtrar por tipo';
+
+  @override
+  String get searchAllTypes => 'Todos';
+
+  @override
+  String get searchTasksOnly => 'Solo tareas';
+
+  @override
+  String get searchProjectsOnly => 'Solo proyectos';
+
+  @override
+  String get searchNotesOnly => 'Solo notas';
+
+  @override
+  String get searchGoalsOnly => 'Solo objetivos';
+
+  @override
+  String get searchResultsByCategory => 'Resultados por categoría';
+
+  @override
+  String get searchNoResults => 'Sin resultados para';
+
+  @override
+  String get searchTypeTask => 'Tareas';
+
+  @override
+  String get searchTypeProject => 'Proyectos';
+
+  @override
+  String get searchTypeNote => 'Notas';
+
+  @override
+  String get searchTypeGoal => 'Objetivos';
+
+  @override
+  String get syncStatusDisconnected => 'Sin conexión';
+
+  @override
+  String get syncStatusSyncing => 'Sincronizando...';
+
+  @override
+  String get syncStatusSynced => 'Sincronizado';
+
+  @override
+  String get syncStatusError => 'Error de sincronización';
+
+  @override
+  String get syncLastSync => 'Última sincronización';
+
+  @override
+  String get syncNow => 'Sincronizar ahora';
+
+  @override
+  String get syncConflictDetected => 'Conflicto detectado';
+
+  @override
+  String get syncConflictDescription =>
+      'Este elemento tiene cambios tanto locales como en la nube.';
+
+  @override
+  String get syncKeepLocal => 'Mantener local';
+
+  @override
+  String get syncKeepCloud => 'Mantener nube';
+
+  @override
+  String get syncKeepBoth => 'Mantener ambos';
+
+  @override
+  String get syncResolveLater => 'Resolver después';
+
+  @override
+  String get linkedItems => 'Elementos vinculados';
+
+  @override
+  String get linkedTasks => 'Tareas vinculadas';
+
+  @override
+  String get linkedNotes => 'Notas vinculadas';
+
+  @override
+  String get linkedGoals => 'Objetivos vinculados';
+
+  @override
+  String get linkedProjects => 'Proyectos vinculados';
+
+  @override
+  String get noLinkedItems => 'Sin elementos vinculados';
+
+  @override
+  String get linkToGoal => 'Vincular a objetivo';
+
+  @override
+  String get linkToTask => 'Vincular a tarea';
+
+  @override
+  String get linkToNote => 'Vincular a nota';
+
+  @override
+  String get linkToProject => 'Vincular a proyecto';
+
+  @override
+  String get unlink => 'Desvincular';
 }

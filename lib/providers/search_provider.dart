@@ -25,16 +25,52 @@ class SearchResult {
   });
 }
 
+enum SearchFilter { all, tasks, projects, notes, goals }
+
 class SearchProvider extends ChangeNotifier {
   String _query = '';
   List<SearchResult> _results = [];
   Timer? _debounceTimer;
+  SearchFilter _filter = SearchFilter.all;
+  Set<String> _tagFilterIds = {};
 
   Map<String, List<SearchResult>> _invertedIndex = {};
   List<SearchResult> _allItems = [];
 
   String get query => _query;
   List<SearchResult> get results => _results;
+  SearchFilter get filter => _filter;
+  Set<String> get tagFilterIds => _tagFilterIds;
+
+  List<SearchResult> get tasksResults =>
+      _results.where((r) => r.type == 'task').toList();
+  List<SearchResult> get projectsResults =>
+      _results.where((r) => r.type == 'project').toList();
+  List<SearchResult> get notesResults =>
+      _results.where((r) => r.type == 'note').toList();
+  List<SearchResult> get goalsResults =>
+      _results.where((r) => r.type == 'goal').toList();
+
+  bool get hasTasks => tasksResults.isNotEmpty;
+  bool get hasProjects => projectsResults.isNotEmpty;
+  bool get hasNotes => notesResults.isNotEmpty;
+  bool get hasGoals => goalsResults.isNotEmpty;
+
+  void setFilter(SearchFilter filter) {
+    _filter = filter;
+    if (_query.isNotEmpty) {
+      _results = _searchO1(_query);
+      notifyListeners();
+    }
+  }
+
+  void setTagFilter(Set<String> tagIds) {
+    _tagFilterIds = tagIds;
+    if (_query.isNotEmpty) {
+      _results = _searchO1(_query);
+      notifyListeners();
+    }
+  }
 
   static final _tokenPattern = RegExp(r"[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ0-9]+");
 
@@ -150,7 +186,7 @@ class SearchProvider extends ChangeNotifier {
         .map((e) => e.key)
         .toSet();
 
-    return _allItems
+    var results = _allItems
         .where((item) => matchingIds.contains(item.id))
         .map((item) {
           final score = scored[item.id] ?? 1.0;
@@ -165,6 +201,18 @@ class SearchProvider extends ChangeNotifier {
         })
         .toList()
       ..sort((a, b) => b.relevance.compareTo(a.relevance));
+
+    if (_filter != SearchFilter.all) {
+      final typeMap = {
+        SearchFilter.tasks: 'task',
+        SearchFilter.projects: 'project',
+        SearchFilter.notes: 'note',
+        SearchFilter.goals: 'goal',
+      };
+      results = results.where((r) => r.type == typeMap[_filter]).toList();
+    }
+
+    return results;
   }
 
   void search({
@@ -195,6 +243,8 @@ class SearchProvider extends ChangeNotifier {
     _debounceTimer?.cancel();
     _query = '';
     _results = [];
+    _filter = SearchFilter.all;
+    _tagFilterIds = {};
     notifyListeners();
   }
 

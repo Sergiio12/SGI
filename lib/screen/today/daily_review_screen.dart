@@ -134,9 +134,6 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 GestureDetector(
-                                  onTap: () {
-                                    // TODO: set intention via planner
-                                  },
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 5),

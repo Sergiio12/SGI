@@ -10,12 +10,14 @@ import '../../utils/notification_service_v2.dart';
 import '../../models/recurrence_rule.dart';
 import '../../models/tag.dart';
 import '../../models/task.dart';
+import '../../models/goal.dart';
 import '../../providers/tags_provider.dart';
 import '../../providers/projects_provider.dart';
 import '../../providers/tasks_provider.dart';
 import '../../providers/ai_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/notes_provider.dart';
+import '../../providers/goals_provider.dart';
 import '../../widgets/tag_color_picker.dart';
 import '../../widgets/task_project_selector.dart';
 
@@ -44,6 +46,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   String _projectSearchQuery = '';
   List<SubTask> _subtasks = [];
   List<String> _linkedNoteIds = [];
+  List<String> _linkedGoalIds = [];
   List<String> _selectedTags = [];
   bool _showForm = false;
 
@@ -66,6 +69,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   String _initialReminder = '';
   List<SubTask> _initialSubtasks = [];
   List<String> _initialLinkedNoteIds = [];
+  List<String> _initialLinkedGoalIds = [];
   List<String> _initialSelectedTags = [];
   RecurrenceFrequency? _initialRecurrenceFrequency;
   String _initialRecurrenceInterval = '1';
@@ -88,6 +92,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
           _reminderController.text != _initialReminder ||
           !_listEquals(_subtasks, _initialSubtasks) ||
           !_listEquals(_linkedNoteIds, _initialLinkedNoteIds) ||
+          !_listEquals(_linkedGoalIds, _initialLinkedGoalIds) ||
           !_listEquals(_selectedTags, _initialSelectedTags) ||
           _recurrenceFrequency != _initialRecurrenceFrequency ||
           _recurrenceIntervalController.text != _initialRecurrenceInterval ||
@@ -143,6 +148,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             _subtasks = List.from(task.subtasks);
             _selectedTags = List.from(task.tags);
             _linkedNoteIds = List.from(task.linkedNoteIds);
+            _linkedGoalIds = List.from(task.linkedGoalIds);
             _initialTitle = task.title;
             _initialDesc = task.description;
             _initialPriority = task.priority;
@@ -157,6 +163,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             _initialSubtasks = List.from(task.subtasks);
             _initialSelectedTags = List.from(task.tags);
             _initialLinkedNoteIds = List.from(task.linkedNoteIds);
+            _initialLinkedGoalIds = List.from(task.linkedGoalIds);
             _recurrenceFrequency = task.recurrence?.frequency;
             _recurrenceIntervalController.text =
                 (task.recurrence?.interval ?? 1).toString();
@@ -267,7 +274,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
 
   Future<void> _save() async {
     if (_titleController.text.trim().isEmpty) {
-      showWarningNotification(AppLocalizations.of(context).task);
+      showWarningNotification(AppLocalizations.of(context).titleRequired);
       return;
     }
 
@@ -296,6 +303,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
           clearProjectId: _projectId == null,
           subtasks: _subtasks,
           linkedNoteIds: _linkedNoteIds,
+          linkedGoalIds: _linkedGoalIds,
           tags: _selectedTags,
           recurrence: recurrence,
           clearRecurrence: recurrence == null,
@@ -313,6 +321,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         projectId: _projectId,
         tags: _selectedTags,
         linkedNoteIds: _linkedNoteIds,
+        linkedGoalIds: _linkedGoalIds,
         subtasks: _subtasks,
         recurrence: recurrence,
       );
@@ -333,6 +342,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
       _initialSubtasks = List.from(_subtasks);
       _initialSelectedTags = List.from(_selectedTags);
       _initialLinkedNoteIds = List.from(_linkedNoteIds);
+      _initialLinkedGoalIds = List.from(_linkedGoalIds);
       _initialRecurrenceFrequency = _recurrenceFrequency;
       _initialRecurrenceInterval = _recurrenceIntervalController.text;
       _initialRecurrenceEndCondition = _recurrenceEndCondition;
@@ -474,7 +484,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                         letterSpacing: -0.5,
                       ),
                       decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context).sortTitle,
+                        hintText: AppLocalizations.of(context).titleField,
                         border: InputBorder.none,
                         filled: false,
                         contentPadding: EdgeInsets.zero,
@@ -526,7 +536,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       Expanded(
                         child: _FormTextField(
                           controller: _estimatedHoursController,
-                          label: AppLocalizations.of(context).task,
+                          label: AppLocalizations.of(context).estimatedHours,
                           icon: Icons.timer_outlined,
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true),
@@ -536,7 +546,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       Expanded(
                         child: _FormTextField(
                           controller: _actualHoursController,
-                          label: AppLocalizations.of(context).note,
+                          label: AppLocalizations.of(context).actualHours,
                           icon: Icons.schedule,
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true),
@@ -546,7 +556,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       Expanded(
                         child: _FormTextField(
                           controller: _reminderController,
-                          label: AppLocalizations.of(context).notifications,
+                          label: AppLocalizations.of(context).reminderMinutes,
                           icon: Icons.notifications_outlined,
                           keyboardType: TextInputType.number,
                           hint: '60',
@@ -697,6 +707,83 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           onPressed: _showLinkNotes,
                           icon: const Icon(Icons.add, size: 16),
                           label: Text(AppLocalizations.of(context).note),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: BrainTheme.accentPurple,
+                            side: BorderSide(
+                                color: BrainTheme.accentPurple
+                                    .withValues(alpha: 0.3)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _FormSection(
+                title: AppLocalizations.of(context).linkedGoals,
+                icon: Icons.track_changes_outlined,
+                children: [
+                  Consumer<GoalsProvider>(builder: (context, goalsProv, _) {
+                    return Column(
+                      children: [
+                        if (_linkedGoalIds.isNotEmpty)
+                          ..._linkedGoalIds.map((id) {
+                            final goal = goalsProv.getGoalById(id);
+                            if (goal == null) return const SizedBox.shrink();
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 6),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: BrainTheme.surfaceDark,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: BrainTheme.borderDark),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: Color(goal.colorValue),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(goal.title,
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                color: BrainTheme.textPrimary)),
+                                        Text(goal.horizon.name,
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                color: BrainTheme.textTertiary)),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.link_off,
+                                        size: 16, color: BrainTheme.accentRed),
+                                    onPressed: () => setState(
+                                        () => _linkedGoalIds.remove(id)),
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        OutlinedButton.icon(
+                          onPressed: _showLinkGoals,
+                          icon: const Icon(Icons.add, size: 16),
+                          label: Text(AppLocalizations.of(context).linkToGoal),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: BrainTheme.accentPurple,
                             side: BorderSide(
@@ -1759,6 +1846,100 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     );
   }
 
+  void _showLinkGoals() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: BrainTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        String query = '';
+        return StatefulBuilder(
+          builder: (sCtx, setS) {
+            final goalsProv = context.read<GoalsProvider>();
+            final goals = goalsProv.goals.where((g) {
+              if (query.isEmpty) return true;
+              return g.title.toLowerCase().contains(query.toLowerCase());
+            }).toList();
+            return Padding(
+              padding:
+                  EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+              child: Container(
+                height: 480,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(AppLocalizations.of(context).linkedGoals,
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: BrainTheme.textPrimary)),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close,
+                              color: BrainTheme.textSecondary),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Buscar objetivos...',
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        isDense: true,
+                      ),
+                      onChanged: (v) => setS(() => query = v),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: ListView(
+                        children: goals.map((g) {
+                          final isLinked = _linkedGoalIds.contains(g.id);
+                          return ListTile(
+                            leading: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Color(g.colorValue),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            title: Text(g.title,
+                                style:
+                                    TextStyle(color: BrainTheme.textPrimary)),
+                            subtitle: Text(g.horizon.name,
+                                style:
+                                    TextStyle(color: BrainTheme.textTertiary)),
+                            trailing: isLinked
+                                ? Icon(Icons.check_circle,
+                                    color: BrainTheme.accentGreen)
+                                : null,
+                            onTap: () {
+                              if (!isLinked) {
+                                setState(() => _linkedGoalIds.add(g.id));
+                              }
+                              Navigator.pop(ctx);
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   String _statusLabel(TaskStatus status, BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -2397,7 +2578,7 @@ class _TaskMetaSection extends StatelessWidget {
               _MetaTile(
                 icon: Icons.timer_outlined,
                 value: '${task.estimatedHours.toStringAsFixed(0)}h',
-                label: AppLocalizations.of(context).task,
+                label: AppLocalizations.of(context).estimated,
                 color: BrainTheme.accentBlue,
               ),
               const SizedBox(width: 8),
@@ -2406,7 +2587,7 @@ class _TaskMetaSection extends StatelessWidget {
                 value: task.actualHours != null
                     ? '${task.actualHours!.toStringAsFixed(0)}h'
                     : '—',
-                label: AppLocalizations.of(context).note,
+                label: AppLocalizations.of(context).actual,
                 color: BrainTheme.accentOrange,
               ),
               const SizedBox(width: 8),
@@ -2703,12 +2884,35 @@ class _TaskInfoTab extends StatelessWidget {
               const Divider(height: 16),
               _detailRow(
                   Icons.timer_outlined,
-                  AppLocalizations.of(context).task,
+                  AppLocalizations.of(context).estimated,
                   '${task.estimatedHours.toStringAsFixed(1)}h'),
               if (task.actualHours != null) ...[
                 const Divider(height: 16),
-                _detailRow(Icons.schedule, AppLocalizations.of(context).note,
+                _detailRow(Icons.schedule, AppLocalizations.of(context).actual,
                     '${task.actualHours!.toStringAsFixed(1)}h'),
+              ],
+              if (task.linkedGoalIds.isNotEmpty) ...[
+                const Divider(height: 16),
+                Consumer<GoalsProvider>(builder: (context, gp, _) {
+                  final goals = task.linkedGoalIds
+                      .map((id) => gp.getGoalById(id))
+                      .whereType<Goal>()
+                      .toList();
+                  return Column(
+                    children: [
+                      for (final goal in goals)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: _detailRow(
+                            Icons.track_changes_outlined,
+                            AppLocalizations.of(context).linkedGoals,
+                            goal.title,
+                            valueColor: Color(goal.colorValue),
+                          ),
+                        ),
+                    ],
+                  );
+                }),
               ],
             ],
           ),

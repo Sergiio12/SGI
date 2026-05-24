@@ -904,4 +904,128 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get weeklyCalendar => 'Weekly Calendar';
+
+  @override
+  String get estimatedHours => 'Estimated hours';
+
+  @override
+  String get actualHours => 'Actual hours';
+
+  @override
+  String get reminderMinutes => 'Reminder (min)';
+
+  @override
+  String get titleField => 'Title';
+
+  @override
+  String get estimated => 'Estimated';
+
+  @override
+  String get actual => 'Actual';
+
+  @override
+  String get searchFilterType => 'Filter by type';
+
+  @override
+  String get searchAllTypes => 'All';
+
+  @override
+  String get searchTasksOnly => 'Tasks only';
+
+  @override
+  String get searchProjectsOnly => 'Projects only';
+
+  @override
+  String get searchNotesOnly => 'Notes only';
+
+  @override
+  String get searchGoalsOnly => 'Goals only';
+
+  @override
+  String get searchResultsByCategory => 'Results by category';
+
+  @override
+  String get searchNoResults => 'No results for';
+
+  @override
+  String get searchTypeTask => 'Tasks';
+
+  @override
+  String get searchTypeProject => 'Projects';
+
+  @override
+  String get searchTypeNote => 'Notes';
+
+  @override
+  String get searchTypeGoal => 'Goals';
+
+  @override
+  String get syncStatusDisconnected => 'Disconnected';
+
+  @override
+  String get syncStatusSyncing => 'Syncing...';
+
+  @override
+  String get syncStatusSynced => 'Synced';
+
+  @override
+  String get syncStatusError => 'Sync error';
+
+  @override
+  String get syncLastSync => 'Last sync';
+
+  @override
+  String get syncNow => 'Sync now';
+
+  @override
+  String get syncConflictDetected => 'Conflict detected';
+
+  @override
+  String get syncConflictDescription =>
+      'This item has both local and cloud changes.';
+
+  @override
+  String get syncKeepLocal => 'Keep local';
+
+  @override
+  String get syncKeepCloud => 'Keep cloud';
+
+  @override
+  String get syncKeepBoth => 'Keep both';
+
+  @override
+  String get syncResolveLater => 'Resolve later';
+
+  @override
+  String get linkedItems => 'Linked Items';
+
+  @override
+  String get linkedTasks => 'Linked Tasks';
+
+  @override
+  String get linkedNotes => 'Linked Notes';
+
+  @override
+  String get linkedGoals => 'Linked Goals';
+
+  @override
+  String get linkedProjects => 'Linked Projects';
+
+  @override
+  String get noLinkedItems => 'No linked items';
+
+  @override
+  String get linkToGoal => 'Link to goal';
+
+  @override
+  String get linkToTask => 'Link to task';
+
+  @override
+  String get linkToNote => 'Link to note';
+
+  @override
+  String get linkToProject => 'Link to project';
+
+  @override
+  String get unlink => 'Unlink';
 }

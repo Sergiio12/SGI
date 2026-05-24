@@ -18,6 +18,7 @@ class Task extends BrainItem {
   final String? projectId;
   final List<SubTask> subtasks;
   final List<String> linkedNoteIds;
+  final List<String> linkedGoalIds;
   final RecurrenceRule? recurrence;
   final String? sourceTaskId;
   final String? calendarEventId;
@@ -36,6 +37,7 @@ class Task extends BrainItem {
     this.projectId,
     this.subtasks = const [],
     this.linkedNoteIds = const [],
+    this.linkedGoalIds = const [],
     this.recurrence,
     this.sourceTaskId,
     this.calendarEventId,
@@ -72,6 +74,7 @@ class Task extends BrainItem {
     String? projectId,
     List<SubTask>? subtasks,
     List<String>? linkedNoteIds,
+    List<String>? linkedGoalIds,
     List<String>? tags,
     RecurrenceRule? recurrence,
     String? sourceTaskId,
@@ -102,6 +105,7 @@ class Task extends BrainItem {
       projectId: clearProjectId ? null : (projectId ?? this.projectId),
       subtasks: subtasks ?? this.subtasks,
       linkedNoteIds: linkedNoteIds ?? this.linkedNoteIds,
+      linkedGoalIds: linkedGoalIds ?? this.linkedGoalIds,
       tags: tags ?? this.tags,
       recurrence: clearRecurrence ? null : (recurrence ?? this.recurrence),
       sourceTaskId:
@@ -129,6 +133,7 @@ class Task extends BrainItem {
         'projectId': projectId,
         'subtasks': subtasks.map((s) => s.toJson()).toList(),
         'linkedNoteIds': linkedNoteIds,
+        'linkedGoalIds': linkedGoalIds,
         'tags': tags,
         'createdAt': createdAt.toIso8601String(),
         'updatedAt': updatedAt.toIso8601String(),
@@ -157,6 +162,7 @@ class Task extends BrainItem {
                 .toList() ??
             [],
         linkedNoteIds: List<String>.from(json['linkedNoteIds'] ?? []),
+        linkedGoalIds: List<String>.from(json['linkedGoalIds'] ?? []),
         tags: List<String>.from(json['tags'] ?? []),
         recurrence: json['recurrence'] != null
             ? RecurrenceRule.fromJson(json['recurrence'])

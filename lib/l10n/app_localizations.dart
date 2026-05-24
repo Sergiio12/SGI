@@ -1849,6 +1849,252 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Weekly Calendar'**
   String get weeklyCalendar;
+
+  /// No description provided for @estimatedHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated hours'**
+  String get estimatedHours;
+
+  /// No description provided for @actualHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual hours'**
+  String get actualHours;
+
+  /// No description provided for @reminderMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder (min)'**
+  String get reminderMinutes;
+
+  /// No description provided for @titleField.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get titleField;
+
+  /// No description provided for @estimated.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated'**
+  String get estimated;
+
+  /// No description provided for @actual.
+  ///
+  /// In en, this message translates to:
+  /// **'Actual'**
+  String get actual;
+
+  /// No description provided for @searchFilterType.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by type'**
+  String get searchFilterType;
+
+  /// No description provided for @searchAllTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get searchAllTypes;
+
+  /// No description provided for @searchTasksOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks only'**
+  String get searchTasksOnly;
+
+  /// No description provided for @searchProjectsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects only'**
+  String get searchProjectsOnly;
+
+  /// No description provided for @searchNotesOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes only'**
+  String get searchNotesOnly;
+
+  /// No description provided for @searchGoalsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals only'**
+  String get searchGoalsOnly;
+
+  /// No description provided for @searchResultsByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Results by category'**
+  String get searchResultsByCategory;
+
+  /// No description provided for @searchNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results for'**
+  String get searchNoResults;
+
+  /// No description provided for @searchTypeTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get searchTypeTask;
+
+  /// No description provided for @searchTypeProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects'**
+  String get searchTypeProject;
+
+  /// No description provided for @searchTypeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get searchTypeNote;
+
+  /// No description provided for @searchTypeGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals'**
+  String get searchTypeGoal;
+
+  /// No description provided for @syncStatusDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get syncStatusDisconnected;
+
+  /// No description provided for @syncStatusSyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing...'**
+  String get syncStatusSyncing;
+
+  /// No description provided for @syncStatusSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Synced'**
+  String get syncStatusSynced;
+
+  /// No description provided for @syncStatusError.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync error'**
+  String get syncStatusError;
+
+  /// No description provided for @syncLastSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Last sync'**
+  String get syncLastSync;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get syncNow;
+
+  /// No description provided for @syncConflictDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Conflict detected'**
+  String get syncConflictDetected;
+
+  /// No description provided for @syncConflictDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This item has both local and cloud changes.'**
+  String get syncConflictDescription;
+
+  /// No description provided for @syncKeepLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep local'**
+  String get syncKeepLocal;
+
+  /// No description provided for @syncKeepCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep cloud'**
+  String get syncKeepCloud;
+
+  /// No description provided for @syncKeepBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep both'**
+  String get syncKeepBoth;
+
+  /// No description provided for @syncResolveLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolve later'**
+  String get syncResolveLater;
+
+  /// No description provided for @linkedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked Items'**
+  String get linkedItems;
+
+  /// No description provided for @linkedTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked Tasks'**
+  String get linkedTasks;
+
+  /// No description provided for @linkedNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked Notes'**
+  String get linkedNotes;
+
+  /// No description provided for @linkedGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked Goals'**
+  String get linkedGoals;
+
+  /// No description provided for @linkedProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked Projects'**
+  String get linkedProjects;
+
+  /// No description provided for @noLinkedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'No linked items'**
+  String get noLinkedItems;
+
+  /// No description provided for @linkToGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to goal'**
+  String get linkToGoal;
+
+  /// No description provided for @linkToTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to task'**
+  String get linkToTask;
+
+  /// No description provided for @linkToNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to note'**
+  String get linkToNote;
+
+  /// No description provided for @linkToProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to project'**
+  String get linkToProject;
+
+  /// No description provided for @unlink.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink'**
+  String get unlink;
 }
 
 class _AppLocalizationsDelegate

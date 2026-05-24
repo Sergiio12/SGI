@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/sync_provider.dart';
 import '../providers/tasks_provider.dart';
 import '../providers/projects_provider.dart';
 import '../providers/notes_provider.dart';
@@ -225,6 +226,162 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showSyncStatus(BuildContext context, SyncProvider sync) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: BrainTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: sync.status == SyncStatus.synced
+                          ? BrainTheme.accentGreen.withValues(alpha: 0.1)
+                          : sync.status == SyncStatus.error
+                              ? BrainTheme.accentRed.withValues(alpha: 0.1)
+                              : BrainTheme.accentPurple.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      sync.status == SyncStatus.synced
+                          ? Icons.cloud_done
+                          : sync.status == SyncStatus.error
+                              ? Icons.cloud_off
+                              : Icons.cloud_sync,
+                      color: sync.status == SyncStatus.synced
+                          ? BrainTheme.accentGreen
+                          : sync.status == SyncStatus.error
+                              ? BrainTheme.accentRed
+                              : BrainTheme.accentPurple,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Estado de sincronización',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: BrainTheme.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _syncInfoRow('Estado', sync.statusLabel),
+              if (sync.lastSync != null)
+                _syncInfoRow(
+                  'Última sincronización',
+                  _formatTimeAgo(sync.lastSync!),
+                ),
+              if (sync.hasConflicts) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: BrainTheme.accentRed.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: BrainTheme.accentRed.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded,
+                          color: BrainTheme.accentRed, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${sync.conflicts.length} conflicto(s) detectado(s)',
+                          style: TextStyle(
+                            color: BrainTheme.accentRed,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: sync.status == SyncStatus.syncing
+                      ? null
+                      : () {
+                          sync.triggerSync();
+                          Navigator.pop(ctx);
+                        },
+                  icon: sync.status == SyncStatus.syncing
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.sync, size: 18),
+                  label: Text('Sincronizar ahora'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: BrainTheme.accentPurple,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final diff = now.difference(dateTime);
+    if (diff.inMinutes < 1) return 'Ahora';
+    if (diff.inMinutes < 60) return 'Hace ${diff.inMinutes} min';
+    if (diff.inHours < 24) return 'Hace ${diff.inHours}h';
+    return 'Hace ${diff.inDays}d';
+  }
+
+  Widget _syncInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              color: BrainTheme.textSecondary,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: BrainTheme.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _submitTask(
     String text,
     BuildContext dialogContext,
@@ -416,6 +573,54 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       actions: [
+        Consumer<SyncProvider>(
+          builder: (context, sync, _) {
+            Color syncColor;
+            IconData syncIcon;
+            switch (sync.status) {
+              case SyncStatus.disconnected:
+                syncColor = BrainTheme.textTertiary;
+                syncIcon = Icons.cloud_off_outlined;
+                break;
+              case SyncStatus.syncing:
+                syncColor = BrainTheme.accentOrange;
+                syncIcon = Icons.sync;
+                break;
+              case SyncStatus.synced:
+                syncColor = BrainTheme.accentGreen;
+                syncIcon = Icons.cloud_done_outlined;
+                break;
+              case SyncStatus.error:
+                syncColor = BrainTheme.accentRed;
+                syncIcon = Icons.cloud_off;
+                break;
+            }
+            return Container(
+              margin: const EdgeInsets.only(right: 4),
+              decoration: BoxDecoration(
+                color: syncColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: syncColor.withValues(alpha: 0.2),
+                ),
+              ),
+              child: IconButton(
+                icon: sync.status == SyncStatus.syncing
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: syncColor,
+                        ),
+                      )
+                    : Icon(syncIcon, size: 18, color: syncColor),
+                onPressed: () => _showSyncStatus(context, sync),
+                tooltip: sync.statusLabel,
+              ),
+            );
+          },
+        ),
         Container(
           margin: const EdgeInsets.only(right: 4),
           decoration: BoxDecoration(
