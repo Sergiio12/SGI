@@ -69,9 +69,10 @@ class TaskProjectSelector extends StatelessWidget {
 
   void _showProjectPicker(BuildContext context) {
     String localQuery = searchQuery;
-    showModalBottomSheet(
+      showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: BrainTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -86,145 +87,147 @@ class TaskProjectSelector extends StatelessWidget {
                         .toLowerCase()
                         .contains(localQuery.toLowerCase()))
                     .toList();
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(ctx).viewInsets.bottom,
-              ),
-              child: Container(
-                height: 420,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Seleccionar proyecto',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: BrainTheme.textPrimary,
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Seleccionar proyecto',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: BrainTheme.textPrimary,
+                              ),
                             ),
                           ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.close,
-                              color: BrainTheme.textSecondary),
-                          onPressed: () => Navigator.pop(ctx),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      autofocus: true,
-                      onChanged: (v) => setS(() {
-                        localQuery = v;
-                        onSearchChanged(v);
-                      }),
-                      decoration: InputDecoration(
-                        hintText: searchHint,
-                        prefixIcon: const Icon(Icons.search, size: 18),
-                        isDense: true,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 10),
-                        filled: true,
-                        fillColor: BrainTheme.cardDark,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: BrainTheme.borderDark),
+                          IconButton(
+                            icon: Icon(Icons.close,
+                                color: BrainTheme.textSecondary),
+                            onPressed: () => Navigator.pop(ctx),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        onChanged: (v) => setS(() {
+                          localQuery = v;
+                          onSearchChanged(v);
+                        }),
+                        decoration: InputDecoration(
+                          hintText: searchHint,
+                          prefixIcon: const Icon(Icons.search, size: 18),
+                          isDense: true,
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 10),
+                          filled: true,
+                          fillColor: BrainTheme.cardDark,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: BrainTheme.borderDark),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: ListView.builder(
-                        keyboardDismissBehavior:
-                            ScrollViewKeyboardDismissBehavior.onDrag,
-                        itemCount: filtered.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
+                      const SizedBox(height: 12),
+                      Flexible(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          itemCount: filtered.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              return ListTile(
+                                dense: true,
+                                leading: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: BrainTheme.accentPurple
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(Icons.folder_off_outlined,
+                                      size: 16, color: BrainTheme.accentPurple),
+                                ),
+                                title: Text(
+                                  emptyLabel,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: selectedProjectId == null
+                                        ? FontWeight.w700
+                                        : FontWeight.w400,
+                                    color: BrainTheme.textPrimary,
+                                  ),
+                                ),
+                                trailing: selectedProjectId == null
+                                    ? Icon(Icons.check,
+                                        size: 18, color: BrainTheme.accentGreen)
+                                    : null,
+                                onTap: () {
+                                  onSelected(null);
+                                  Navigator.pop(ctx);
+                                },
+                              );
+                            }
+
+                            final project = filtered[index - 1];
+                            final isSelected = project.id == selectedProjectId;
+
                             return ListTile(
                               dense: true,
                               leading: Container(
                                 width: 32,
                                 height: 32,
                                 decoration: BoxDecoration(
-                                  color: BrainTheme.accentPurple
+                                  color: Color(project.colorValue)
                                       .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Icon(Icons.folder_off_outlined,
-                                    size: 16, color: BrainTheme.accentPurple),
+                                child: Center(
+                                  child: Text(project.emoji,
+                                      style: const TextStyle(fontSize: 16)),
+                                ),
                               ),
                               title: Text(
-                                emptyLabel,
+                                project.title,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  fontWeight: selectedProjectId == null
+                                  fontWeight: isSelected
                                       ? FontWeight.w700
                                       : FontWeight.w400,
                                   color: BrainTheme.textPrimary,
                                 ),
                               ),
-                              trailing: selectedProjectId == null
+                              subtitle: Text(
+                                '${project.taskIds.length} tareas',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: BrainTheme.textTertiary,
+                                ),
+                              ),
+                              trailing: isSelected
                                   ? Icon(Icons.check,
                                       size: 18, color: BrainTheme.accentGreen)
                                   : null,
                               onTap: () {
-                                onSelected(null);
+                                onSelected(project.id);
                                 Navigator.pop(ctx);
                               },
                             );
-                          }
-
-                          final project = filtered[index - 1];
-                          final isSelected = project.id == selectedProjectId;
-
-                          return ListTile(
-                            dense: true,
-                            leading: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: Color(project.colorValue)
-                                    .withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: Text(project.emoji,
-                                    style: const TextStyle(fontSize: 16)),
-                              ),
-                            ),
-                            title: Text(
-                              project.title,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: isSelected
-                                    ? FontWeight.w700
-                                    : FontWeight.w400,
-                                color: BrainTheme.textPrimary,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${project.taskIds.length} tareas',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: BrainTheme.textTertiary,
-                              ),
-                            ),
-                            trailing: isSelected
-                                ? Icon(Icons.check,
-                                    size: 18, color: BrainTheme.accentGreen)
-                                : null,
-                            onTap: () {
-                              onSelected(project.id);
-                              Navigator.pop(ctx);
-                            },
-                          );
-                        },
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );

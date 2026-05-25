@@ -32,9 +32,6 @@ Future<String?> showNotebookPickerModal(
           padding:
               EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
           child: Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(ctx).size.height * 0.7,
-            ),
             padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -120,19 +117,22 @@ Future<String?> showNotebookPickerModal(
                 const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => showDialog(
-                      context: context,
-                      builder: (_) =>
-                          _CreateNotebookDialog(provider: provider),
-                    ),
-                    icon: const Icon(Icons.add, size: 18),
-                    label: Text(AppLocalizations.of(context).newNotebook),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: BrainTheme.accentPurple,
-                      side: BorderSide(color: BrainTheme.accentPurple.withValues(alpha: 0.3)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  child: SafeArea(
+                    top: false,
+                    child: OutlinedButton.icon(
+                      onPressed: () => showDialog(
+                        context: context,
+                        builder: (_) =>
+                            _CreateNotebookDialog(provider: provider),
+                      ),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: Text(AppLocalizations.of(context).newNotebook),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: BrainTheme.accentPurple,
+                        side: BorderSide(color: BrainTheme.accentPurple.withValues(alpha: 0.3)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),

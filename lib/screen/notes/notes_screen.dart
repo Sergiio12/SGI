@@ -110,35 +110,38 @@ class _NotesScreenState extends State<NotesScreen> {
     final notebooks = provider.notebooks;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Mover a cuaderno',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: BrainTheme.textPrimary)),
-            const SizedBox(height: 12),
-            ...notebooks.map((nb) => ListTile(
-                  leading: Icon(Icons.folder_outlined,
-                      color: BrainTheme.textSecondary),
-                  title:
-                      Text(nb, style: TextStyle(color: BrainTheme.textPrimary)),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    for (final id in _selectedNoteIds) {
-                      final note = provider.getNoteById(id);
-                      if (note != null) {
-                        await provider.updateNote(note.copyWith(notebook: nb));
+      builder: (ctx) => SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Mover a cuaderno',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: BrainTheme.textPrimary)),
+              const SizedBox(height: 12),
+              ...notebooks.map((nb) => ListTile(
+                    leading: Icon(Icons.folder_outlined,
+                        color: BrainTheme.textSecondary),
+                    title: Text(nb,
+                        style: TextStyle(color: BrainTheme.textPrimary)),
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      for (final id in _selectedNoteIds) {
+                        final note = provider.getNoteById(id);
+                        if (note != null) {
+                          await provider.updateNote(
+                              note.copyWith(notebook: nb));
+                        }
                       }
-                    }
-                    _exitSelectionMode();
-                  },
-                )),
-          ],
+                      _exitSelectionMode();
+                    },
+                  )),
+            ],
+          ),
         ),
       ),
     );
@@ -213,32 +216,35 @@ class _NotesScreenState extends State<NotesScreen> {
     final notebooks = provider.notebooks;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(AppLocalizations.of(context).moveToNotebook,
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: BrainTheme.textPrimary)),
-            const SizedBox(height: 12),
-            ...notebooks.map((nb) => ListTile(
-                  leading: Icon(Icons.folder_outlined,
-                      color: BrainTheme.textSecondary),
-                  title:
-                      Text(nb, style: TextStyle(color: BrainTheme.textPrimary)),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    await provider.updateNote(note.copyWith(notebook: nb));
-                    if (mounted) {
-                      _showTopNotification('Nota movida a "$nb"');
-                    }
-                  },
-                )),
-          ],
+      builder: (ctx) => SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(AppLocalizations.of(context).moveToNotebook,
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: BrainTheme.textPrimary)),
+              const SizedBox(height: 12),
+              ...notebooks.map((nb) => ListTile(
+                    leading: Icon(Icons.folder_outlined,
+                        color: BrainTheme.textSecondary),
+                    title: Text(nb,
+                        style: TextStyle(color: BrainTheme.textPrimary)),
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      await provider.updateNote(
+                          note.copyWith(notebook: nb));
+                      if (mounted) {
+                        _showTopNotification('Nota movida a "$nb"');
+                      }
+                    },
+                  )),
+            ],
+          ),
         ),
       ),
     );

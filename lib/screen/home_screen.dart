@@ -229,6 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showSyncStatus(BuildContext context, SyncProvider sync) {
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
       backgroundColor: BrainTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
