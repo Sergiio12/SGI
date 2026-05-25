@@ -52,12 +52,12 @@ class _EmojiPickerContent extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? BrainTheme.accentPurple.withValues(alpha: 0.2)
+                        ? BrainTheme.accentOf(context).withValues(alpha: 0.2)
                         : BrainTheme.surfaceDark,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
-                          ? BrainTheme.accentPurple
+                          ? BrainTheme.accentOf(context)
                           : BrainTheme.borderDark,
                     ),
                   ),

@@ -20,7 +20,7 @@ class SmartAlertsSection extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 12),
           child: Row(
             children: [
-              Icon(Icons.psychology_rounded, size: 18, color: BrainTheme.accentPurple),
+              Icon(Icons.psychology_rounded, size: 18, color: BrainTheme.accentOf(context)),
               const SizedBox(width: 8),
               Text(
                 'Alertas Inteligentes',

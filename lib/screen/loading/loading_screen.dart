@@ -344,7 +344,7 @@ class _LoadingScreenState extends State<LoadingScreen>
             left: -120,
             child: LoadingGlowOrb(
               size: 320,
-              color: BrainTheme.accentPurple.withValues(
+              color: BrainTheme.accentOf(context).withValues(
                 alpha: 0.16,
               ),
             )
@@ -434,7 +434,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                               width: 7,
                               height: 7,
                               decoration: BoxDecoration(
-                                color: BrainTheme.accentPurple,
+                                color: BrainTheme.accentOf(context),
                                 borderRadius: BorderRadius.circular(
                                   100,
                                 ),

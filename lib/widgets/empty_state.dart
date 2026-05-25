@@ -37,7 +37,7 @@ class EmptyState extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: BrainTheme.accentPurple.withValues(alpha: 0.1),
+                    color: BrainTheme.accentOf(context).withValues(alpha: 0.1),
                     blurRadius: 30,
                     spreadRadius: 5,
                   ),
@@ -76,10 +76,10 @@ class EmptyState extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.w600, letterSpacing: -0.2),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: BrainTheme.accentPurple,
+                  backgroundColor: BrainTheme.accentOf(context),
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shadowColor: BrainTheme.accentPurple.withValues(alpha: 0.5),
+                  shadowColor: BrainTheme.accentOf(context).withValues(alpha: 0.5),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 28,
                     vertical: 16,

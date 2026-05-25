@@ -126,7 +126,7 @@ class ProgressScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            BrainTheme.accentPurple.withValues(alpha: 0.9),
+            BrainTheme.accentOf(context).withValues(alpha: 0.9),
             BrainTheme.accentBlue.withValues(alpha: 0.6),
           ],
           begin: Alignment.topLeft,
@@ -445,7 +445,7 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: BrainTheme.accentPurple),
+        Icon(icon, size: 16, color: BrainTheme.accentOf(context)),
         const SizedBox(width: 8),
         Text(
           label,

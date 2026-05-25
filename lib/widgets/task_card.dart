@@ -161,7 +161,7 @@ class TaskCard extends StatelessWidget {
                               valueColor: AlwaysStoppedAnimation(
                                 subtaskProgress >= 1.0
                                     ? BrainTheme.accentGreen
-                                    : BrainTheme.accentPurple,
+                                    : BrainTheme.accentOf(context),
                               ),
                             );
                           },

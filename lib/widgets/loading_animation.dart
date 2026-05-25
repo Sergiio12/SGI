@@ -84,7 +84,7 @@ class _LoadingAnimationState extends State<LoadingAnimation> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: BrainTheme.accentPurple.withValues(alpha: 0.08),
+                        color: BrainTheme.accentOf(context).withValues(alpha: 0.08),
                       ),
                     ),
                   ),
@@ -95,10 +95,10 @@ class _LoadingAnimationState extends State<LoadingAnimation> {
                       height: 5,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: BrainTheme.accentPurple,
+                        color: BrainTheme.accentOf(context),
                         boxShadow: [
                           BoxShadow(
-                            color: BrainTheme.accentPurple,
+                            color: BrainTheme.accentOf(context),
                             blurRadius: 5,
                             spreadRadius: 1.5,
                           ),
@@ -152,7 +152,7 @@ class _LoadingAnimationState extends State<LoadingAnimation> {
                       boxShadow: [
                         BoxShadow(
                           color: Color.lerp(
-                            BrainTheme.accentPurple,
+                            BrainTheme.accentOf(context),
                             BrainTheme.accentBlue,
                             widget.progress.clamp(0.0, 1.0),
                           )!.withValues(alpha: 0.22),

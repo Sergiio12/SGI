@@ -416,7 +416,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: emoji == _emoji
-                            ? BrainTheme.accentPurple
+                            ? BrainTheme.accentOf(context)
                             : BrainTheme.borderDark,
                       ),
                     ),
@@ -456,7 +456,7 @@ class _HeaderSliver extends StatelessWidget {
     final projColor = Color(project.colorValue);
 
     return SliverAppBar(
-      expandedHeight: 280,
+      expandedHeight: MediaQuery.of(context).size.height * 0.35,
       pinned: false,
       floating: false,
       backgroundColor: Colors.transparent,
@@ -795,7 +795,7 @@ class _QuickActions extends StatelessWidget {
           _QuickActionButton(
             icon: Icons.timer_outlined,
             label: AppLocalizations.of(context).projectsProgress,
-            color: BrainTheme.accentPurple,
+            color: BrainTheme.accentOf(context),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -889,7 +889,7 @@ class _ProjectMeta extends StatelessWidget {
                 icon: Icons.task_alt,
                 value: '$totalTasks',
                 label: AppLocalizations.of(context).totalTasks,
-                color: BrainTheme.accentPurple,
+                color: BrainTheme.accentOf(context),
               ),
               const SizedBox(width: 10),
               _MetaCard(
@@ -1147,9 +1147,9 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
       color: BrainTheme.primaryDark,
       child: TabBar(
         controller: tabController,
-        labelColor: BrainTheme.accentPurple,
+        labelColor: BrainTheme.accentOf(context),
         unselectedLabelColor: BrainTheme.textTertiary,
-        indicatorColor: BrainTheme.accentPurple,
+        indicatorColor: BrainTheme.accentOf(context),
         indicatorSize: TabBarIndicatorSize.label,
         indicatorWeight: 3,
         labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
@@ -1177,7 +1177,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+                      color: BrainTheme.accentOf(context).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -1185,7 +1185,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: BrainTheme.accentPurple,
+                        color: BrainTheme.accentOf(context),
                       ),
                     ),
                   ),
@@ -1206,7 +1206,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+                      color: BrainTheme.accentOf(context).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -1214,7 +1214,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: BrainTheme.accentPurple,
+                        color: BrainTheme.accentOf(context),
                       ),
                     ),
                   ),
@@ -1273,7 +1273,7 @@ class _ProjectInfoTab extends StatelessWidget {
                     Row(
                       children: [
                         Icon(Icons.analytics_outlined,
-                            size: 18, color: BrainTheme.accentPurple),
+                            size: 18, color: BrainTheme.accentOf(context)),
                         const SizedBox(width: 8),
                         Text(
                           AppLocalizations.of(context).statistics,
@@ -1326,7 +1326,7 @@ class _ProjectInfoTab extends StatelessWidget {
                           icon: Icons.notes_outlined,
                           value: '${projectNotes.length}',
                           label: AppLocalizations.of(context).notes,
-                          color: BrainTheme.accentPurple,
+                          color: BrainTheme.accentOf(context),
                         ),
                         const SizedBox(width: 8),
                         _StatTile(
@@ -1444,7 +1444,7 @@ class _ProjectInfoTab extends StatelessWidget {
                       Row(
                         children: [
                           Icon(Icons.notes_outlined,
-                              size: 18, color: BrainTheme.accentPurple),
+                              size: 18, color: BrainTheme.accentOf(context)),
                           const SizedBox(width: 8),
                           Text(
                             AppLocalizations.of(context).recentNotes,

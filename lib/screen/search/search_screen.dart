@@ -158,7 +158,7 @@ class _SearchScreenState extends State<SearchScreen> {
               label: l10n.searchTypeGoal,
               selected: search.filter == SearchFilter.goals,
               onSelected: () => search.setFilter(SearchFilter.goals),
-              color: BrainTheme.accentPurple,
+              color: BrainTheme.accentOf(context),
             ),
           ],
         ),
@@ -214,7 +214,7 @@ class _SearchScreenState extends State<SearchScreen> {
         if (search.hasGoals)
           _buildCategorySection(
             l10n.searchTypeGoal,
-            BrainTheme.accentPurple,
+            BrainTheme.accentOf(context),
             Icons.track_changes_outlined,
             search.goalsResults,
           ),
@@ -371,7 +371,7 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chipColor = color ?? BrainTheme.accentPurple;
+    final chipColor = color ?? BrainTheme.accentOf(context);
     return GestureDetector(
       onTap: onSelected,
       child: AnimatedContainer(

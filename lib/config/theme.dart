@@ -6,6 +6,8 @@ import '../models/task.dart';
 class BrainTheme {
   static Brightness _brightness = Brightness.dark;
   static Color _accentColor = const Color(0xFF9D4EDD);
+  static bool _compactMode = false;
+  static bool _reduceMotion = false;
 
   static void updateBrightness(Brightness brightness) {
     _brightness = brightness;
@@ -13,6 +15,14 @@ class BrainTheme {
 
   static void updateAccentColor(Color color) {
     _accentColor = color;
+  }
+
+  static void updateCompactMode(bool value) {
+    _compactMode = value;
+  }
+
+  static void updateReduceMotion(bool value) {
+    _reduceMotion = value;
   }
 
   static Color get currentAccent => _accentColor;
@@ -54,6 +64,8 @@ class BrainTheme {
 
   // Acentos Neon/Vibrantes
   static Color get accentPurple => const Color(0xFF9D4EDD);
+  static Color accentOf(BuildContext context) =>
+      Theme.of(context).colorScheme.primary;
   static const Color accentBlue = Color(0xFF3B82F6);
   static const Color accentGreen = Color(0xFF10B981);
   static const Color accentOrange = Color(0xFFF59E0B);
@@ -75,6 +87,8 @@ class BrainTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
+      visualDensity: _compactMode ? VisualDensity.compact : VisualDensity.standard,
+      splashFactory: _reduceMotion ? NoSplash.splashFactory : InkSplash.splashFactory,
       scaffoldBackgroundColor: const Color(0xFF09090B),
       textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
       colorScheme: ColorScheme.dark(
@@ -191,6 +205,8 @@ class BrainTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
+      visualDensity: _compactMode ? VisualDensity.compact : VisualDensity.standard,
+      splashFactory: _reduceMotion ? NoSplash.splashFactory : InkSplash.splashFactory,
       scaffoldBackgroundColor: const Color(0xFFF8F9FA),
       textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
       colorScheme: ColorScheme.light(

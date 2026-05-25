@@ -41,7 +41,7 @@ class FocusScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: BrainTheme.accentPurple.withValues(alpha: 0.12),
+                      color: BrainTheme.accentOf(context).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -49,7 +49,7 @@ class FocusScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: BrainTheme.accentPurple,
+                        color: BrainTheme.accentOf(context),
                       ),
                     ),
                   ),

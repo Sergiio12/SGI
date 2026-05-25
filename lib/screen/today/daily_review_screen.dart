@@ -97,7 +97,7 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            BrainTheme.accentPurple.withValues(alpha: 0.9),
+            BrainTheme.accentOf(context).withValues(alpha: 0.9),
             BrainTheme.accentBlue.withValues(alpha: 0.6),
           ],
           begin: Alignment.topLeft,
@@ -184,12 +184,12 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
         color: BrainTheme.cardDark.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(14),
         border:
-            Border.all(color: BrainTheme.accentPurple.withValues(alpha: 0.2)),
+            Border.all(color: BrainTheme.accentOf(context).withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.format_quote, size: 18, color: BrainTheme.accentPurple),
+          Icon(Icons.format_quote, size: 18, color: BrainTheme.accentOf(context)),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -299,7 +299,7 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
                 valueColor: AlwaysStoppedAnimation(
                   completed == total
                       ? BrainTheme.accentGreen
-                      : BrainTheme.accentPurple,
+                      : BrainTheme.accentOf(context),
                 ),
               ),
             ),
@@ -323,7 +323,7 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
           Row(
             children: [
               Icon(Icons.auto_stories,
-                  size: 18, color: BrainTheme.accentPurple),
+                  size: 18, color: BrainTheme.accentOf(context)),
               const SizedBox(width: 8),
               Text(
                 'Reflexión',

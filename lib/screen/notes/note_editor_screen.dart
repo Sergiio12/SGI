@@ -338,7 +338,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       case 'webp':
         return Colors.cyanAccent;
       default:
-        return BrainTheme.accentPurple;
+        return BrainTheme.accentOf(context);
     }
   }
 
@@ -529,7 +529,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           filled: false,
         ),
         maxLines: null,
-        minLines: 12,
+        minLines: MediaQuery.of(context).size.height > 600 ? 12 : 6,
         keyboardType: TextInputType.multiline,
       ),
     );
@@ -620,7 +620,7 @@ class _MetadataChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveColor = color ??
         (active
-            ? (activeColor ?? BrainTheme.accentPurple)
+            ? (activeColor ?? BrainTheme.accentOf(context))
             : BrainTheme.textSecondary);
     return GestureDetector(
       onTap: onTap,
@@ -628,12 +628,12 @@ class _MetadataChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: active
-              ? (activeColor ?? BrainTheme.accentPurple).withValues(alpha: 0.1)
+              ? (activeColor ?? BrainTheme.accentOf(context)).withValues(alpha: 0.1)
               : BrainTheme.surfaceDark,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: active
-                ? (activeColor ?? BrainTheme.accentPurple)
+                ? (activeColor ?? BrainTheme.accentOf(context))
                     .withValues(alpha: 0.3)
                 : BrainTheme.borderDark,
           ),

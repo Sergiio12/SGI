@@ -83,7 +83,7 @@ class _TagPickerBodyState extends State<_TagPickerBody> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.add, color: BrainTheme.accentPurple),
+                      icon: Icon(Icons.add, color: BrainTheme.accentOf(context)),
                       tooltip: l10n.createNewTag,
                       onPressed: () => setState(() => _showNewTagInput = true),
                     ),
@@ -196,14 +196,14 @@ class _TagPickerBodyState extends State<_TagPickerBody> {
                 icon: const Icon(Icons.check_rounded, size: 16),
                 label: Text(l10n.accept, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                 style: FilledButton.styleFrom(
-                  backgroundColor: BrainTheme.accentPurple,
+                  backgroundColor: BrainTheme.accentOf(context),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                   elevation: 2,
-                  shadowColor: BrainTheme.accentPurple.withValues(alpha: 0.4),
+                  shadowColor: BrainTheme.accentOf(context).withValues(alpha: 0.4),
                 ),
               ),
             ),

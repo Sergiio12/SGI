@@ -87,7 +87,7 @@ class StatsScreen extends StatelessWidget {
                 title: AppLocalizations.of(context).goals,
                 value: '${goals.goals.length}',
                 icon: Icons.track_changes_rounded,
-                color: BrainTheme.accentPurple,
+                color: BrainTheme.accentOf(context),
               ),
             ),
           ],
@@ -118,7 +118,7 @@ class StatsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             SizedBox(
-              height: 200,
+              height: MediaQuery.of(context).size.height * 0.3,
               child: PieChart(
                 PieChartData(
                   sections: [
@@ -188,7 +188,7 @@ class StatsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             SizedBox(
-              height: 200,
+              height: MediaQuery.of(context).size.height * 0.3,
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,

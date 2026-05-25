@@ -443,7 +443,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 AppLocalizations.of(context).save,
                 style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: BrainTheme.accentPurple),
+                    color: BrainTheme.accentOf(context)),
               ),
             ),
           ],
@@ -613,9 +613,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                               '${selected.isEmpty ? AppLocalizations.of(context).tags : '${selected.length} ${AppLocalizations.of(context).tags.toLowerCase()}'}',
                             ),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: BrainTheme.accentPurple,
+                              foregroundColor: BrainTheme.accentOf(context),
                               side: BorderSide(
-                                  color: BrainTheme.accentPurple
+                                  color: BrainTheme.accentOf(context)
                                       .withValues(alpha: 0.3)),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -688,9 +688,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           icon: const Icon(Icons.add, size: 16),
                           label: Text(AppLocalizations.of(context).note),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: BrainTheme.accentPurple,
+                            foregroundColor: BrainTheme.accentOf(context),
                             side: BorderSide(
-                                color: BrainTheme.accentPurple
+                                color: BrainTheme.accentOf(context)
                                     .withValues(alpha: 0.3)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -765,9 +765,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                           icon: const Icon(Icons.add, size: 16),
                           label: Text(AppLocalizations.of(context).linkToGoal),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: BrainTheme.accentPurple,
+                            foregroundColor: BrainTheme.accentOf(context),
                             side: BorderSide(
-                                color: BrainTheme.accentPurple
+                                color: BrainTheme.accentOf(context)
                                     .withValues(alpha: 0.3)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -804,7 +804,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                             valueColor: AlwaysStoppedAnimation(
                               subtaskProgress >= 1.0
                                   ? BrainTheme.accentGreen
-                                  : BrainTheme.accentPurple,
+                                  : BrainTheme.accentOf(context),
                             ),
                           );
                         },
@@ -891,7 +891,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       ),
                       IconButton(
                         icon: Icon(Icons.add_circle,
-                            color: BrainTheme.accentPurple),
+                            color: BrainTheme.accentOf(context)),
                         onPressed: _addSubtask,
                       ),
                     ],
@@ -1448,7 +1448,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
   void _showTagManager() {
     final searchController = TextEditingController();
     final nameController = TextEditingController();
-    int newTagColorValue = BrainTheme.accentPurple.toARGB32();
+    int newTagColorValue = BrainTheme.accentOf(context).toARGB32();
 
     showModalBottomSheet(
       context: context,
@@ -1658,7 +1658,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                               nameController.clear();
                               setModalState(() {
                                 newTagColorValue =
-                                    BrainTheme.accentPurple.toARGB32();
+                                    BrainTheme.accentOf(context).toARGB32();
                               });
                             },
                             style: FilledButton.styleFrom(
@@ -2098,10 +2098,10 @@ class _FormSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: BrainTheme.accentPurple.withValues(alpha: 0.1),
+                  color: BrainTheme.accentOf(context).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, size: 14, color: BrainTheme.accentPurple),
+                child: Icon(icon, size: 14, color: BrainTheme.accentOf(context)),
               ),
               const SizedBox(width: 8),
               Text(title,
@@ -2145,7 +2145,7 @@ class _TaskHeaderSliver extends StatelessWidget {
     final priColor = BrainTheme.priorityColor(task.priority.index);
 
     return SliverAppBar(
-      expandedHeight: 220,
+      expandedHeight: MediaQuery.of(context).size.height * 0.35,
       pinned: false,
       floating: false,
       backgroundColor: Colors.transparent,
@@ -2459,7 +2459,7 @@ class _TaskMetaSection extends StatelessWidget {
                 icon: Icons.checklist,
                 value: '${task.subtasks.length}',
                 label: AppLocalizations.of(context).subtasks,
-                color: BrainTheme.accentPurple,
+                color: BrainTheme.accentOf(context),
               ),
               const SizedBox(width: 8),
               _MetaTile(
@@ -2527,7 +2527,7 @@ class _TaskMetaSection extends StatelessWidget {
                                 valueColor: AlwaysStoppedAnimation(
                                   subtaskProgress >= 1.0
                                       ? BrainTheme.accentGreen
-                                      : BrainTheme.accentPurple,
+                                      : BrainTheme.accentOf(context),
                                 ),
                               );
                             },
@@ -2544,7 +2544,7 @@ class _TaskMetaSection extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       color: subtaskProgress >= 1.0
                           ? BrainTheme.accentGreen
-                          : BrainTheme.accentPurple,
+                          : BrainTheme.accentOf(context),
                     ),
                   ),
                 ],
@@ -2632,9 +2632,9 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
       color: BrainTheme.primaryDark,
       child: TabBar(
         controller: tabController,
-        labelColor: BrainTheme.accentPurple,
+        labelColor: BrainTheme.accentOf(context),
         unselectedLabelColor: BrainTheme.textTertiary,
-        indicatorColor: BrainTheme.accentPurple,
+        indicatorColor: BrainTheme.accentOf(context),
         indicatorSize: TabBarIndicatorSize.label,
         indicatorWeight: 3,
         labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
@@ -2652,7 +2652,7 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
             Text(AppLocalizations.of(context).subtasks),
             if (subtaskCount > 0) ...[
               const SizedBox(width: 4),
-              _tabCount(subtaskCount),
+              _tabCount(subtaskCount, context),
             ],
           ])),
           Tab(
@@ -2662,7 +2662,7 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
             Text(AppLocalizations.of(context).notes),
             if (noteCount > 0) ...[
               const SizedBox(width: 4),
-              _tabCount(noteCount),
+              _tabCount(noteCount, context),
             ],
           ])),
         ],
@@ -2670,18 +2670,18 @@ class _TaskTabBarDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  Widget _tabCount(int count) {
+  Widget _tabCount(int count, BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       decoration: BoxDecoration(
-        color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+        color: BrainTheme.accentOf(context).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text('$count',
           style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: BrainTheme.accentPurple)),
+              color: BrainTheme.accentOf(context))),
     );
   }
 
@@ -2711,7 +2711,7 @@ class _TaskInfoTab extends StatelessWidget {
       children: [
         _InfoCard(
           icon: Icons.description_outlined,
-          iconColor: BrainTheme.accentPurple,
+          iconColor: BrainTheme.accentOf(context),
           title: AppLocalizations.of(context).description,
           child: Text(
             task.description.isNotEmpty

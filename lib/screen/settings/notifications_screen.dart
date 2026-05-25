@@ -387,7 +387,7 @@ class _SettingsSwitch extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: value
-                      ? BrainTheme.accentPurple.withValues(alpha: 0.12)
+                      ? BrainTheme.accentOf(context).withValues(alpha: 0.12)
                       : BrainTheme.surfaceDark,
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -395,7 +395,7 @@ class _SettingsSwitch extends StatelessWidget {
                   icon,
                   size: 20,
                   color:
-                      value ? BrainTheme.accentPurple : BrainTheme.textTertiary,
+                      value ? BrainTheme.accentOf(context) : BrainTheme.textTertiary,
                 ),
               ),
               const SizedBox(width: 14),
@@ -424,9 +424,9 @@ class _SettingsSwitch extends StatelessWidget {
               Switch(
                 value: value,
                 onChanged: onChanged,
-                activeThumbColor: BrainTheme.accentPurple,
+                activeThumbColor: BrainTheme.accentOf(context),
                 activeTrackColor:
-                    BrainTheme.accentPurple.withValues(alpha: 0.4),
+                    BrainTheme.accentOf(context).withValues(alpha: 0.4),
               ),
             ],
           ),
@@ -683,6 +683,7 @@ class _TimezoneSelector extends StatelessWidget {
   void _showPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: BrainTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -714,9 +715,9 @@ class _TimezoneSelector extends StatelessWidget {
                 ),
               ),
               const Divider(),
-              SizedBox(
-                height: 300,
+              Flexible(
                 child: ListView.builder(
+                  shrinkWrap: true,
                   itemCount: _timezones.length,
                   itemBuilder: (context, index) {
                     final tz = _timezones[index];
@@ -726,7 +727,7 @@ class _TimezoneSelector extends StatelessWidget {
                         tz.split('/').last.replaceAll('_', ' '),
                         style: TextStyle(
                           color: selected
-                              ? BrainTheme.accentPurple
+                              ? BrainTheme.accentOf(context)
                               : BrainTheme.textPrimary,
                           fontWeight:
                               selected ? FontWeight.w600 : FontWeight.w400,
@@ -741,7 +742,7 @@ class _TimezoneSelector extends StatelessWidget {
                       ),
                       trailing: selected
                           ? Icon(Icons.check,
-                              color: BrainTheme.accentPurple, size: 18)
+                              color: BrainTheme.accentOf(context), size: 18)
                           : null,
                       onTap: () {
                         onChanged(tz);

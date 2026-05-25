@@ -29,7 +29,7 @@ class CalendarWeekRibbon extends StatelessWidget {
         Row(
           children: [
             Icon(Icons.date_range_rounded,
-                color: BrainTheme.accentPurple, size: 18),
+                color: BrainTheme.accentOf(context), size: 18),
             const SizedBox(width: 8),
             Text(
               'Calendario Semanal',
@@ -53,23 +53,23 @@ class CalendarWeekRibbon extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color:
-                        BrainTheme.accentPurple.withValues(alpha: 0.15),
+                        BrainTheme.accentOf(context).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                         color:
-                            BrainTheme.accentPurple.withValues(alpha: 0.3)),
+                            BrainTheme.accentOf(context).withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.today,
-                          size: 12, color: BrainTheme.accentPurple),
+                          size: 12, color: BrainTheme.accentOf(context)),
                       const SizedBox(width: 4),
                       Text(
                         'Hoy',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: BrainTheme.accentPurple,
+                          color: BrainTheme.accentOf(context),
                         ),
                       ),
                     ],
@@ -106,7 +106,7 @@ class CalendarWeekRibbon extends StatelessWidget {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              BrainTheme.accentPurple,
+                              BrainTheme.accentOf(context),
                               Color(0xFF6D28D9)
                             ],
                           )
@@ -117,14 +117,14 @@ class CalendarWeekRibbon extends StatelessWidget {
                       color: isSelected
                           ? Colors.transparent
                           : isDayToday
-                              ? BrainTheme.accentPurple.withValues(alpha: 0.4)
+                              ? BrainTheme.accentOf(context).withValues(alpha: 0.4)
                               : Colors.white.withValues(alpha: 0.05),
                       width: isDayToday ? 1.5 : 1,
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: BrainTheme.accentPurple
+                              color: BrainTheme.accentOf(context)
                                   .withValues(alpha: 0.3),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
@@ -155,7 +155,7 @@ class CalendarWeekRibbon extends StatelessWidget {
                           color: isSelected
                               ? Colors.white
                               : isDayToday
-                                  ? BrainTheme.accentPurple
+                                  ? BrainTheme.accentOf(context)
                                   : BrainTheme.textPrimary,
                         ),
                       ),
@@ -168,7 +168,7 @@ class CalendarWeekRibbon extends StatelessWidget {
                           color: hasTasks
                               ? (isSelected
                                   ? Colors.white
-                                  : BrainTheme.accentPurple)
+                                  : BrainTheme.accentOf(context))
                               : Colors.transparent,
                         ),
                       ),

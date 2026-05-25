@@ -71,7 +71,7 @@ class TaskMetricsScreen extends StatelessWidget {
               _MetricsCard(
                 label: AppLocalizations.of(context).today,
                 value: '$dueTodayTasks',
-                color: BrainTheme.accentPurple,
+                color: BrainTheme.accentOf(context),
               ),
               _MetricsCard(
                 label: AppLocalizations.of(context).overdueTasks,
@@ -167,7 +167,7 @@ class ProjectMetricsScreen extends StatelessWidget {
               _MetricsCard(
                 label: AppLocalizations.of(context).statusCompleted,
                 value: '$completedProjects',
-                color: BrainTheme.accentPurple,
+                color: BrainTheme.accentOf(context),
               ),
               _MetricsCard(
                 label: AppLocalizations.of(context).goalPaused,
@@ -254,7 +254,7 @@ class GoalMetricsScreen extends StatelessWidget {
               _MetricsCard(
                 label: 'Total',
                 value: '$totalGoals',
-                color: BrainTheme.accentPurple,
+                color: BrainTheme.accentOf(context),
               ),
               _MetricsCard(
                 label: AppLocalizations.of(context).statusCompleted,
@@ -346,7 +346,7 @@ class NoteMetricsScreen extends StatelessWidget {
               _MetricsCard(
                 label: 'Ancladas',
                 value: '$pinnedNotes',
-                color: BrainTheme.accentPurple,
+                color: BrainTheme.accentOf(context),
               ),
               _MetricsCard(
                 label: AppLocalizations.of(context).sortRecent,
@@ -397,35 +397,39 @@ class _MetricsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width / 2 - 24,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: BrainTheme.cardDark,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: BrainTheme.textSecondary,
-              fontWeight: FontWeight.w600,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) => SizedBox(
+        width: constraints.maxWidth > 0 ? (constraints.maxWidth - 12) / 2 : MediaQuery.of(context).size.width / 2 - 24,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: BrainTheme.cardDark,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
           ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 24,
-              color: BrainTheme.textPrimary,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: BrainTheme.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 24,
+                  color: BrainTheme.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

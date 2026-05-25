@@ -77,7 +77,7 @@ class DashboardStatsGrid extends StatelessWidget {
               title: l10n.goals,
               value: '${data.activeGoalsCount}',
               icon: Icons.track_changes_outlined,
-              color: BrainTheme.accentPurple,
+              color: BrainTheme.accentOf(context),
               subtitle: l10n.active,
               progress: data.averageGoalProgress,
               progressLabel:

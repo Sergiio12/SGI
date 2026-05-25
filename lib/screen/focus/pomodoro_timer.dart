@@ -157,7 +157,7 @@ class _PomodoroTimerState extends State<PomodoroTimer> with WidgetsBindingObserv
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final isWorking = _state == PomodoroState.working;
-    final accentColor = isWorking ? BrainTheme.accentPurple : BrainTheme.accentGreen;
+    final accentColor = isWorking ? BrainTheme.accentOf(context) : BrainTheme.accentGreen;
 
     return Container(
       padding: const EdgeInsets.all(20),

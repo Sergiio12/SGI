@@ -41,7 +41,7 @@ class _LoadingScreen extends StatelessWidget {
               height: 64,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [BrainTheme.accentPurple, BrainTheme.accentBlue],
+                  colors: [BrainTheme.accentOf(context), BrainTheme.accentBlue],
                 ),
                 borderRadius: BorderRadius.circular(18),
               ),
@@ -64,7 +64,7 @@ class _LoadingScreen extends StatelessWidget {
               height: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                color: BrainTheme.accentPurple,
+                color: BrainTheme.accentOf(context),
               ),
             ),
           ],
@@ -143,13 +143,13 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: BrainTheme.accentPurple.withValues(alpha: 0.2),
+                color: BrainTheme.accentOf(context).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 Icons.flash_on,
                 size: 22,
-                color: BrainTheme.accentPurple,
+                color: BrainTheme.accentOf(context),
               ),
             ),
             const SizedBox(width: 12),
@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: BrainTheme.accentPurple,
+                color: BrainTheme.accentOf(context),
                 width: 2,
               ),
             ),
@@ -209,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   notificationController);
             },
             style: FilledButton.styleFrom(
-              backgroundColor: BrainTheme.accentPurple,
+              backgroundColor: BrainTheme.accentOf(context),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -250,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? BrainTheme.accentGreen.withValues(alpha: 0.1)
                           : sync.status == SyncStatus.error
                               ? BrainTheme.accentRed.withValues(alpha: 0.1)
-                              : BrainTheme.accentPurple.withValues(alpha: 0.1),
+                              : BrainTheme.accentOf(context).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
@@ -263,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? BrainTheme.accentGreen
                           : sync.status == SyncStatus.error
                               ? BrainTheme.accentRed
-                              : BrainTheme.accentPurple,
+                              : BrainTheme.accentOf(context),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -336,7 +336,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       : const Icon(Icons.sync, size: 18),
                   label: Text('Sincronizar ahora'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: BrainTheme.accentPurple,
+                    backgroundColor: BrainTheme.accentOf(context),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
@@ -538,8 +538,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      BrainTheme.accentPurple,
-                      BrainTheme.accentPurple.withValues(alpha: 0.7),
+                      BrainTheme.accentOf(context),
+                      BrainTheme.accentOf(context).withValues(alpha: 0.7),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(8),
@@ -552,8 +552,8 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    BrainTheme.accentPurple,
-                    BrainTheme.accentPurple.withValues(alpha: 0.7),
+                    BrainTheme.accentOf(context),
+                    BrainTheme.accentOf(context).withValues(alpha: 0.7),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(8),
@@ -685,7 +685,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: _onTabChanged,
           type: BottomNavigationBarType.fixed,
           backgroundColor: BrainTheme.primaryDark,
-          selectedItemColor: BrainTheme.accentPurple,
+          selectedItemColor: BrainTheme.accentOf(context),
           unselectedItemColor: BrainTheme.textTertiary,
           selectedLabelStyle: const TextStyle(
             fontSize: 11,
@@ -705,8 +705,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          BrainTheme.accentPurple.withValues(alpha: 0.2),
-                          BrainTheme.accentPurple.withValues(alpha: 0.05),
+                          BrainTheme.accentOf(context).withValues(alpha: 0.2),
+                          BrainTheme.accentOf(context).withValues(alpha: 0.05),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -714,7 +714,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(tab.icon,
-                        size: 22, color: BrainTheme.accentPurple),
+                        size: 22, color: BrainTheme.accentOf(context)),
                   ),
                   label: tab.title,
                 ),

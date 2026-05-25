@@ -128,8 +128,8 @@ Future<String?> showNotebookPickerModal(
                       icon: const Icon(Icons.add, size: 18),
                       label: Text(AppLocalizations.of(context).newNotebook),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: BrainTheme.accentPurple,
-                        side: BorderSide(color: BrainTheme.accentPurple.withValues(alpha: 0.3)),
+                        foregroundColor: BrainTheme.accentOf(context),
+                        side: BorderSide(color: BrainTheme.accentOf(context).withValues(alpha: 0.3)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -168,7 +168,7 @@ class _NotebookTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 6),
       color: isSelected
-          ? BrainTheme.accentPurple.withValues(alpha: 0.1)
+          ? BrainTheme.accentOf(context).withValues(alpha: 0.1)
           : BrainTheme.surfaceDark,
       child: ListTile(
         dense: true,
@@ -192,7 +192,7 @@ class _NotebookTile extends StatelessWidget {
         ),
         trailing: isSelected
             ? Icon(Icons.check_circle,
-                color: BrainTheme.accentPurple, size: 20)
+                color: BrainTheme.accentOf(context), size: 20)
             : null,
         onTap: onTap,
       ),
@@ -301,7 +301,7 @@ class _CreateNotebookDialogState extends State<_CreateNotebookDialog> {
         FilledButton(
           onPressed: _create,
           style: FilledButton.styleFrom(
-            backgroundColor: BrainTheme.accentPurple,
+            backgroundColor: BrainTheme.accentOf(context),
           ),
           child: const Text('Crear'),
         ),

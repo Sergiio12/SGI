@@ -20,6 +20,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  bool _showSearch = false;
 
   @override
   void dispose() {
@@ -53,15 +54,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           IconButton(
             icon: Icon(
-              _searchQuery.isNotEmpty ? Icons.search_off_rounded : Icons.search_rounded,
+              _showSearch ? Icons.search_off_rounded : Icons.search_rounded,
             ),
             onPressed: () {
               setState(() {
-                if (_searchQuery.isNotEmpty) {
+                _showSearch = !_showSearch;
+                if (!_showSearch) {
                   _searchQuery = '';
-                  _searchController.clear();
-                } else {
-                  _searchController.text = ' ';
                   _searchController.clear();
                 }
               });
@@ -71,7 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: Column(
         children: [
-          if (_searchQuery.isNotEmpty || _searchController.text.isNotEmpty)
+          if (_showSearch)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: TextField(
@@ -285,9 +284,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirm == true && context.mounted) {
       final s = context.read<SettingsProvider>();
       await s.setThemeMode(ThemeMode.dark);
-      await s.setAccentColor(BrainTheme.accentPurple);
+      await s.setAccentColor(BrainTheme.accentOf(context));
       await s.setHapticFeedback(true);
       await s.setNotificationsEnabled(true);
+      await s.setRemind24h(true);
+      await s.setRemind1h(true);
+      await s.setDefaultReminderMinutes(30);
+      await s.setQuietHoursEnabled(false);
+      await s.setQuietStart(const TimeOfDay(hour: 22, minute: 0));
+      await s.setQuietEnd(const TimeOfDay(hour: 8, minute: 0));
+      await s.setNotifyOnComplete(true);
+      await s.setNotifyOnOverdue(true);
+      await s.setWidgetEnabled(true);
+      await s.setCalendarSyncEnabled(false);
+      await s.setDefaultCalendarReminderMinutes(30);
+      await s.setCloudSyncEnabled(false);
+      await s.setCompactMode(false);
+      await s.setReduceMotion(false);
+      await s.setDefaultTaskView('board');
+      await s.setDefaultNoteView('grid');
+      await s.setDailyNotificationEnabled(true);
+      await s.setDailyNotificationTime(const TimeOfDay(hour: 7, minute: 0));
       if (context.mounted) {
         showSuccessNotification('Ajustes restablecidos');
       }
@@ -365,7 +382,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: BrainTheme.surfaceDark,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: BrainTheme.accentPurple, size: 18),
+                  child: Icon(icon, color: BrainTheme.accentOf(context), size: 18),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

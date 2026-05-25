@@ -404,13 +404,13 @@ class _TasksScreenState extends State<TasksScreen> {
                   height: hovering ? 40 : 0,
                   decoration: BoxDecoration(
                     color: hovering
-                        ? BrainTheme.accentPurple.withValues(alpha: 0.1)
+                        ? BrainTheme.accentOf(context).withValues(alpha: 0.1)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                     border: hovering
                         ? Border.all(
                             color:
-                                BrainTheme.accentPurple.withValues(alpha: 0.3),
+                                BrainTheme.accentOf(context).withValues(alpha: 0.3),
                           )
                         : null,
                   ),
@@ -419,14 +419,14 @@ class _TasksScreenState extends State<TasksScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.add,
-                                size: 14, color: BrainTheme.accentPurple),
+                                size: 14, color: BrainTheme.accentOf(context)),
                             const SizedBox(width: 6),
                             Text(
                               AppLocalizations.of(context).dropToAddToMyDay,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: BrainTheme.accentPurple,
+                                color: BrainTheme.accentOf(context),
                               ),
                             ),
                           ],
@@ -571,30 +571,29 @@ class _TasksScreenState extends State<TasksScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
                     children: TaskPriority.values.map((p) {
                       final selected = priority == p;
                       final color = BrainTheme.priorityColor(p.index);
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: ChoiceChip(
-                          label: Text(_priorityLabel(p, context)),
-                          selected: selected,
-                          selectedColor: color.withValues(alpha: 0.15),
-                          backgroundColor: BrainTheme.cardDark,
-                          labelStyle: TextStyle(
-                            color: selected ? color : BrainTheme.textSecondary,
-                            fontSize: 11,
-                            fontWeight:
-                                selected ? FontWeight.w600 : FontWeight.w400,
-                          ),
-                          side: BorderSide(
-                            color: selected
-                                ? color.withValues(alpha: 0.4)
-                                : BrainTheme.borderDark,
-                          ),
-                          onSelected: (_) => setModalState(() => priority = p),
+                      return ChoiceChip(
+                        label: Text(_priorityLabel(p, context)),
+                        selected: selected,
+                        selectedColor: color.withValues(alpha: 0.15),
+                        backgroundColor: BrainTheme.cardDark,
+                        labelStyle: TextStyle(
+                          color: selected ? color : BrainTheme.textSecondary,
+                          fontSize: 11,
+                          fontWeight:
+                              selected ? FontWeight.w600 : FontWeight.w400,
                         ),
+                        side: BorderSide(
+                          color: selected
+                              ? color.withValues(alpha: 0.4)
+                              : BrainTheme.borderDark,
+                        ),
+                        onSelected: (_) => setModalState(() => priority = p),
                       );
                     }).toList(),
                   ),
@@ -646,7 +645,7 @@ class _TasksScreenState extends State<TasksScreen> {
                           Navigator.pop(ctx, true);
                         },
                         style: FilledButton.styleFrom(
-                          backgroundColor: BrainTheme.accentPurple,
+                          backgroundColor: BrainTheme.accentOf(context),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -796,7 +795,7 @@ class _TasksScreenState extends State<TasksScreen> {
                         children: [
                           SwitchListTile(
                             value: onlyWithDescription,
-                            activeThumbColor: BrainTheme.accentPurple,
+                            activeThumbColor: BrainTheme.accentOf(context),
                             title: Text(
                                 AppLocalizations.of(context)
                                     .onlyWithDescription,
@@ -811,7 +810,7 @@ class _TasksScreenState extends State<TasksScreen> {
                           ),
                       SwitchListTile(
                         value: onlyWithProject,
-                        activeThumbColor: BrainTheme.accentPurple,
+                        activeThumbColor: BrainTheme.accentOf(context),
                         title: Text(
                             AppLocalizations.of(context).onlyWithProject,
                             style: TextStyle(
@@ -984,7 +983,7 @@ class _TasksScreenState extends State<TasksScreen> {
                               Navigator.pop(context);
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: BrainTheme.accentPurple,
+                              backgroundColor: BrainTheme.accentOf(context),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -1079,9 +1078,9 @@ class _TasksScreenState extends State<TasksScreen> {
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: BrainTheme.accentPurple.withValues(alpha: 0.1),
+        color: BrainTheme.accentOf(context).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: BrainTheme.accentPurple.withValues(alpha: 0.2)),
+        border: Border.all(color: BrainTheme.accentOf(context).withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -1098,7 +1097,7 @@ class _TasksScreenState extends State<TasksScreen> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: BrainTheme.accentPurple,
+              color: BrainTheme.accentOf(context),
             ),
           ),
           const Spacer(),
@@ -1153,12 +1152,12 @@ class _TasksScreenState extends State<TasksScreen> {
                     margin: const EdgeInsets.only(left: 4),
                     decoration: BoxDecoration(
                       color: _selectedTaskIds.contains(task.id)
-                          ? BrainTheme.accentPurple
+                          ? BrainTheme.accentOf(context)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
                         color: _selectedTaskIds.contains(task.id)
-                            ? BrainTheme.accentPurple
+                            ? BrainTheme.accentOf(context)
                             : BrainTheme.borderDark,
                         width: 1.5,
                       ),
@@ -1216,12 +1215,12 @@ class _TasksScreenState extends State<TasksScreen> {
                   height: 22,
                   decoration: BoxDecoration(
                     color: isPlanned
-                        ? BrainTheme.accentPurple.withValues(alpha: 0.2)
+                        ? BrainTheme.accentOf(context).withValues(alpha: 0.2)
                         : BrainTheme.surfaceDark,
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: isPlanned
-                          ? BrainTheme.accentPurple
+                          ? BrainTheme.accentOf(context)
                           : BrainTheme.borderDark,
                       width: 1.2,
                     ),
@@ -1230,7 +1229,7 @@ class _TasksScreenState extends State<TasksScreen> {
                     isPlanned ? Icons.check : Icons.add,
                     size: 12,
                     color: isPlanned
-                        ? BrainTheme.accentPurple
+                        ? BrainTheme.accentOf(context)
                         : BrainTheme.textTertiary,
                   ),
                 ),

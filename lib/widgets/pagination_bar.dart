@@ -40,12 +40,12 @@ class PaginationBar extends StatelessWidget {
                   height: 32,
                   decoration: BoxDecoration(
                     color: isCurrent
-                        ? BrainTheme.accentPurple.withValues(alpha: 0.2)
+                        ? BrainTheme.accentOf(context).withValues(alpha: 0.2)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isCurrent
-                          ? BrainTheme.accentPurple
+                          ? BrainTheme.accentOf(context)
                           : BrainTheme.borderDark,
                     ),
                   ),
@@ -56,7 +56,7 @@ class PaginationBar extends StatelessWidget {
                         fontSize: 13,
                         fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
                         color: isCurrent
-                            ? BrainTheme.accentPurple
+                            ? BrainTheme.accentOf(context)
                             : BrainTheme.textSecondary,
                       ),
                     ),

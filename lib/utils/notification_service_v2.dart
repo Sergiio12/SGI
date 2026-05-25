@@ -466,14 +466,14 @@ class _NotificationCardState extends State<_NotificationCard>
                       TextButton(
                         onPressed: notif.onAction,
                         style: TextButton.styleFrom(
-                          foregroundColor: BrainTheme.accentPurple,
+                          foregroundColor: BrainTheme.accentOf(context),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 14, vertical: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                           backgroundColor:
-                              BrainTheme.accentPurple.withValues(alpha: 0.08),
+                              BrainTheme.accentOf(context).withValues(alpha: 0.08),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           minimumSize: const Size(0, 0),
                         ),

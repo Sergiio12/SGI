@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:second_brain/l10n/app_localizations.dart';
 import '../../config/theme.dart';
 import '../../services/notification_service.dart';
-import '../../utils/haptic_helper.dart';
 import '../../utils/notification_service_v2.dart';
 
 class DebugScreen extends StatelessWidget {
@@ -70,22 +69,7 @@ class DebugScreen extends StatelessWidget {
               );
             },
           ),
-          const SizedBox(height: 16),
-          _DebugCard(
-            title: 'Feedback háptico',
-            description:
-                'Prueba las vibraciones hápticas (ligera, selección, media).',
-            icon: Icons.vibration_rounded,
-            iconColor: BrainTheme.accentPurple,
-            buttonLabel: 'Probar hápticos',
-            onPressed: () {
-              HapticHelper.light();
-              Future.delayed(
-                  const Duration(milliseconds: 300), HapticHelper.selection);
-              Future.delayed(
-                  const Duration(milliseconds: 600), HapticHelper.medium);
-            },
-          ),
+
         ],
       ),
     );
@@ -128,7 +112,7 @@ class _DebugCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: iconColor ?? BrainTheme.accentPurple),
+                Icon(icon, color: iconColor ?? BrainTheme.accentOf(context)),
                 const SizedBox(width: 12),
                 Text(
                   title,
@@ -154,7 +138,7 @@ class _DebugCard extends StatelessWidget {
               child: FilledButton(
                 onPressed: onPressed,
                 style: FilledButton.styleFrom(
-                  backgroundColor: iconColor ?? BrainTheme.accentPurple,
+                  backgroundColor: iconColor ?? BrainTheme.accentOf(context),
                 ),
                 child: Text(buttonLabel),
               ),

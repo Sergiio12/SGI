@@ -26,6 +26,10 @@ class SettingsProvider extends ChangeNotifier {
   static const _kCloudSyncEnabled = 'cloud_sync_enabled';
   static const _kWidgetEnabled = 'widget_enabled';
   static const _kTimezone = 'timezone';
+  static const _kCompactMode = 'compact_mode';
+  static const _kReduceMotion = 'reduce_motion';
+  static const _kDefaultTaskView = 'default_task_view';
+  static const _kDefaultNoteView = 'default_note_view';
   static const _kDailyNotificationEnabled = 'daily_notification_enabled';
   static const _kDailyNotificationHour = 'daily_notification_hour';
   static const _kDailyNotificationMinute = 'daily_notification_minute';
@@ -55,6 +59,10 @@ class SettingsProvider extends ChangeNotifier {
   int _defaultCalendarReminderMinutes = 30;
   bool _cloudSyncEnabled = false;
   String _timezone = 'America/Mexico_City';
+  bool _compactMode = false;
+  bool _reduceMotion = false;
+  String _defaultTaskView = 'board';
+  String _defaultNoteView = 'grid';
   bool _dailyNotificationEnabled = true;
   int _dailyNotificationHour = 7;
   int _dailyNotificationMinute = 0;
@@ -65,6 +73,10 @@ class SettingsProvider extends ChangeNotifier {
   Locale get locale => Locale(_languageCode);
   ThemeMode get themeMode => _themeMode;
   Color get accentColor => _accentColor;
+  bool get compactMode => _compactMode;
+  bool get reduceMotion => _reduceMotion;
+  String get defaultTaskView => _defaultTaskView;
+  String get defaultNoteView => _defaultNoteView;
   bool get notificationsEnabled => _notificationsEnabled;
   bool get remind24h => _remind24h;
   bool get remind1h => _remind1h;
@@ -121,11 +133,18 @@ class SettingsProvider extends ChangeNotifier {
     _widgetEnabled = _prefs.getBool(_kWidgetEnabled) ?? true;
     _languageCode = _prefs.getString(_kLanguageCode) ?? 'es';
     _accentColor = Color(_prefs.getInt(_kAccentColor) ?? BrainTheme.accentPurple.toARGB32());
+    BrainTheme.updateAccentColor(_accentColor);
     _calendarSyncEnabled = _prefs.getBool(_kCalendarSyncEnabled) ?? false;
     _defaultCalendarReminderMinutes =
         _prefs.getInt(_kDefaultCalendarReminderMinutes) ?? 30;
     _cloudSyncEnabled = _prefs.getBool(_kCloudSyncEnabled) ?? false;
     _timezone = _prefs.getString(_kTimezone) ?? 'America/Mexico_City';
+    _compactMode = _prefs.getBool(_kCompactMode) ?? false;
+    _reduceMotion = _prefs.getBool(_kReduceMotion) ?? false;
+    _defaultTaskView = _prefs.getString(_kDefaultTaskView) ?? 'board';
+    _defaultNoteView = _prefs.getString(_kDefaultNoteView) ?? 'grid';
+    BrainTheme.updateCompactMode(_compactMode);
+    BrainTheme.updateReduceMotion(_reduceMotion);
     _dailyNotificationEnabled = _prefs.getBool(_kDailyNotificationEnabled) ?? true;
     _dailyNotificationHour = _prefs.getInt(_kDailyNotificationHour) ?? 7;
     _dailyNotificationMinute = _prefs.getInt(_kDailyNotificationMinute) ?? 0;
@@ -269,6 +288,32 @@ class SettingsProvider extends ChangeNotifier {
     BrainTheme.updateAccentColor(color);
     notifyListeners();
     await _prefs.setInt(_kAccentColor, color.toARGB32());
+  }
+
+  Future<void> setCompactMode(bool value) async {
+    _compactMode = value;
+    BrainTheme.updateCompactMode(value);
+    notifyListeners();
+    await _prefs.setBool(_kCompactMode, value);
+  }
+
+  Future<void> setReduceMotion(bool value) async {
+    _reduceMotion = value;
+    BrainTheme.updateReduceMotion(value);
+    notifyListeners();
+    await _prefs.setBool(_kReduceMotion, value);
+  }
+
+  Future<void> setDefaultTaskView(String value) async {
+    _defaultTaskView = value;
+    notifyListeners();
+    await _prefs.setString(_kDefaultTaskView, value);
+  }
+
+  Future<void> setDefaultNoteView(String value) async {
+    _defaultNoteView = value;
+    notifyListeners();
+    await _prefs.setString(_kDefaultNoteView, value);
   }
 
   void _syncNotificationService() {

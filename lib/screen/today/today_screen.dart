@@ -193,7 +193,7 @@ class _TodayScreenState extends State<TodayScreen> {
               icon: const Icon(Icons.auto_awesome, size: 18),
               label: const Text('Sugerir tareas'),
               style: FilledButton.styleFrom(
-                backgroundColor: BrainTheme.accentPurple,
+                backgroundColor: BrainTheme.accentOf(context),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
@@ -223,7 +223,7 @@ class _TodayScreenState extends State<TodayScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [BrainTheme.accentPurple, BrainTheme.accentBlue],
+          colors: [BrainTheme.accentOf(context), BrainTheme.accentBlue],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -349,7 +349,7 @@ class _TodayScreenState extends State<TodayScreen> {
           Row(
             children: [
               Icon(Icons.track_changes,
-                  size: 16, color: BrainTheme.accentPurple),
+                  size: 16, color: BrainTheme.accentOf(context)),
               const SizedBox(width: 8),
               Text(
                 'Intención del día',
@@ -499,7 +499,7 @@ class _TodayScreenState extends State<TodayScreen> {
                           Navigator.pop(ctx);
                         },
                         style: FilledButton.styleFrom(
-                          backgroundColor: BrainTheme.accentPurple,
+                          backgroundColor: BrainTheme.accentOf(context),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -786,7 +786,7 @@ class _PlannedTaskCard extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(Icons.schedule_send,
-                size: 16, color: BrainTheme.accentPurple),
+                size: 16, color: BrainTheme.accentOf(context)),
             onPressed: onTimeBlock,
             tooltip: 'Asignar bloque',
             visualDensity: VisualDensity.compact,

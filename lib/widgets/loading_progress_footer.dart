@@ -64,13 +64,13 @@ class LoadingProgressFooter extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          BrainTheme.accentPurple,
+                          BrainTheme.accentOf(context),
                           BrainTheme.accentBlue,
                         ],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: BrainTheme.accentPurple.withValues(alpha: 0.4),
+                          color: BrainTheme.accentOf(context).withValues(alpha: 0.4),
                           blurRadius: 14,
                         ),
                       ],
@@ -88,7 +88,7 @@ class LoadingProgressFooter extends StatelessWidget {
             Text(
               '${(progress * 100).toInt()}%',
               style: GoogleFonts.inter(
-                color: BrainTheme.accentPurple,
+                color: BrainTheme.accentOf(context),
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),

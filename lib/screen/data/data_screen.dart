@@ -283,14 +283,14 @@ class _ActionCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: (isDestructive
                             ? BrainTheme.accentRed
-                            : BrainTheme.accentPurple)
+                            : BrainTheme.accentOf(context))
                         .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon,
                       color: isDestructive
                           ? BrainTheme.accentRed
-                          : BrainTheme.accentPurple),
+                          : BrainTheme.accentOf(context)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

@@ -248,7 +248,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                           context,
                           AppLocalizations.of(context).goalQuarterly,
                           quarterly,
-                          BrainTheme.accentPurple,
+                          BrainTheme.accentOf(context),
                           Icons.view_week_outlined,
                           projectsProvider,
                         ),
@@ -517,11 +517,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
                           label: Text(_progressFilterLabel(filter, l10n)),
                           selected: selected,
                           selectedColor:
-                              BrainTheme.accentPurple.withValues(alpha: 0.18),
+                              BrainTheme.accentOf(context).withValues(alpha: 0.18),
                           backgroundColor: BrainTheme.cardDark,
                           labelStyle: TextStyle(
                             color: selected
-                                ? BrainTheme.accentPurple
+                                ? BrainTheme.accentOf(context)
                                 : BrainTheme.textSecondary,
                           ),
                           onSelected: (_) {
@@ -551,12 +551,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
                             ChoiceChip(
                               label: Text(l10n.all),
                               selected: selectedProjectId == null,
-                              selectedColor: BrainTheme.accentPurple
+                              selectedColor: BrainTheme.accentOf(context)
                                   .withValues(alpha: 0.18),
                               backgroundColor: BrainTheme.cardDark,
                               labelStyle: TextStyle(
                                 color: selectedProjectId == null
-                                    ? BrainTheme.accentPurple
+                                    ? BrainTheme.accentOf(context)
                                     : BrainTheme.textSecondary,
                               ),
                               onSelected: (_) {
@@ -611,7 +611,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                               Navigator.pop(context);
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: BrainTheme.accentPurple,
+                              backgroundColor: BrainTheme.accentOf(context),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
@@ -714,7 +714,7 @@ class _StatsBar extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            BrainTheme.accentPurple.withValues(alpha: 0.12),
+            BrainTheme.accentOf(context).withValues(alpha: 0.12),
             BrainTheme.accentGreen.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
@@ -722,7 +722,7 @@ class _StatsBar extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+          color: BrainTheme.accentOf(context).withValues(alpha: 0.15),
         ),
       ),
       child: Row(
@@ -732,7 +732,7 @@ class _StatsBar extends StatelessWidget {
             icon: Icons.track_changes_rounded,
             value: '$total',
             label: AppLocalizations.of(context).totalTasks,
-            color: BrainTheme.accentPurple,
+            color: BrainTheme.accentOf(context),
           ),
           _StatItem(
             icon: Icons.calendar_view_month,
@@ -843,7 +843,7 @@ class _FilterBar extends StatelessWidget {
                       _FilterChip(
                         label: AppLocalizations.of(context).all,
                         selected: horizonFilter == null,
-                        color: BrainTheme.accentPurple,
+                        color: BrainTheme.accentOf(context),
                         onTap: () => onHorizonFilterChanged(null),
                       ),
                       const SizedBox(width: 8),
@@ -887,7 +887,7 @@ class _FilterBar extends StatelessWidget {
               _IconButton(
                 icon: Icons.search,
                 isActive: showSearch || searchQuery.isNotEmpty,
-                activeColor: BrainTheme.accentPurple,
+                activeColor: BrainTheme.accentOf(context),
                 onTap: onToggleSearch,
               ),
               const SizedBox(width: 6),
@@ -896,7 +896,7 @@ class _FilterBar extends StatelessWidget {
               _FilterIconButton(
                 icon: Icons.filter_list,
                 isActive: activeFilterCount > 0,
-                activeColor: BrainTheme.accentPurple,
+                activeColor: BrainTheme.accentOf(context),
                 badgeCount: activeFilterCount,
                 onTap: onAdvancedFilters,
               ),

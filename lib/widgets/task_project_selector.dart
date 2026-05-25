@@ -151,12 +151,12 @@ class TaskProjectSelector extends StatelessWidget {
                                   width: 32,
                                   height: 32,
                                   decoration: BoxDecoration(
-                                    color: BrainTheme.accentPurple
+                                    color: BrainTheme.accentOf(context)
                                         .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(Icons.folder_off_outlined,
-                                      size: 16, color: BrainTheme.accentPurple),
+                                      size: 16, color: BrainTheme.accentOf(context)),
                                 ),
                                 title: Text(
                                   emptyLabel,

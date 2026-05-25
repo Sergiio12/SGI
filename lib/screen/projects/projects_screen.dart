@@ -366,7 +366,7 @@ class _StatsBar extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            BrainTheme.accentPurple.withValues(alpha: 0.12),
+            BrainTheme.accentOf(context).withValues(alpha: 0.12),
             BrainTheme.accentBlue.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
@@ -374,7 +374,7 @@ class _StatsBar extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+          color: BrainTheme.accentOf(context).withValues(alpha: 0.15),
         ),
       ),
       child: Row(
@@ -384,7 +384,7 @@ class _StatsBar extends StatelessWidget {
             icon: Icons.folder_outlined,
             value: '$total',
             label: AppLocalizations.of(context).all,
-            color: BrainTheme.accentPurple,
+            color: BrainTheme.accentOf(context),
           ),
           _StatItem(
             icon: Icons.play_arrow_rounded,
@@ -491,7 +491,7 @@ class _FilterBar extends StatelessWidget {
                       _FilterChip(
                         label: AppLocalizations.of(context).all,
                         selected: statusFilter == null,
-                        color: BrainTheme.accentPurple,
+                        color: BrainTheme.accentOf(context),
                         onTap: () => onStatusFilterChanged(null),
                       ),
                       const SizedBox(width: 8),
@@ -546,7 +546,7 @@ class _FilterBar extends StatelessWidget {
               _IconButton(
                 icon: Icons.search,
                 isActive: showSearch || searchQuery.isNotEmpty,
-                activeColor: BrainTheme.accentPurple,
+                activeColor: BrainTheme.accentOf(context),
                 onTap: onToggleSearch,
               ),
               const SizedBox(width: 6),

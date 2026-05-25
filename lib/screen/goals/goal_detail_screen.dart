@@ -1024,7 +1024,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
                               Navigator.pop(context);
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: BrainTheme.accentPurple,
+                              backgroundColor: BrainTheme.accentOf(context),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
@@ -1087,7 +1087,7 @@ class _HeaderSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 280,
+      expandedHeight: MediaQuery.of(context).size.height * 0.35,
       pinned: true,
       backgroundColor: BrainTheme.primaryDark,
       leading: IconButton(

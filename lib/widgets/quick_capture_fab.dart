@@ -68,7 +68,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB> {
             _MiniFAB(
               icon: Icons.track_changes_outlined,
               label: AppLocalizations.of(context).goal,
-              color: BrainTheme.accentPurple,
+              color: BrainTheme.accentOf(context),
               onTap: () {
                 HapticHelper.medium();
                 _toggle();
@@ -82,7 +82,7 @@ class _QuickCaptureFABState extends State<QuickCaptureFAB> {
             button: true,
             child: FloatingActionButton(
               onPressed: _toggle,
-              backgroundColor: BrainTheme.accentPurple.withValues(alpha: 0.9),
+              backgroundColor: BrainTheme.accentOf(context).withValues(alpha: 0.9),
               elevation: 4,
               child: AnimatedRotation(
                 turns: _isOpen ? 0.125 : 0,

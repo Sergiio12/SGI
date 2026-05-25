@@ -24,6 +24,7 @@ class AppearanceScreen extends StatelessWidget {
                 title: AppLocalizations.of(context).themeLight,
                 subtitle: 'Fondo claro, texto oscuro',
                 selected: settings.themeMode == ThemeMode.light,
+                accentColor: settings.accentColor,
                 onTap: () => settings.setThemeMode(ThemeMode.light),
               ),
               const SizedBox(height: 4),
@@ -32,6 +33,7 @@ class AppearanceScreen extends StatelessWidget {
                 title: AppLocalizations.of(context).themeDark,
                 subtitle: 'Fondo oscuro, texto claro',
                 selected: settings.themeMode == ThemeMode.dark,
+                accentColor: settings.accentColor,
                 onTap: () => settings.setThemeMode(ThemeMode.dark),
               ),
               const SizedBox(height: 4),
@@ -40,6 +42,7 @@ class AppearanceScreen extends StatelessWidget {
                 title: AppLocalizations.of(context).themeSystem,
                 subtitle: 'Sigue la configuración del dispositivo',
                 selected: settings.themeMode == ThemeMode.system,
+                accentColor: settings.accentColor,
                 onTap: () => settings.setThemeMode(ThemeMode.system),
               ),
               const SizedBox(height: 24),
@@ -48,6 +51,40 @@ class AppearanceScreen extends StatelessWidget {
               _AccentColorPicker(
                 selectedColor: settings.accentColor,
                 onColorSelected: (color) => settings.setAccentColor(color),
+              ),
+              const SizedBox(height: 24),
+              const _SectionHeader(title: 'DISTRIBUCIÓN'),
+              const SizedBox(height: 8),
+              _CompactModeTile(
+                value: settings.compactMode,
+                onChanged: (v) => settings.setCompactMode(v),
+              ),
+              const SizedBox(height: 4),
+              _ReduceMotionTile(
+                value: settings.reduceMotion,
+                onChanged: (v) => settings.setReduceMotion(v),
+              ),
+              const SizedBox(height: 24),
+              const _SectionHeader(title: 'VISTAS POR DEFECTO'),
+              const SizedBox(height: 8),
+              _DefaultViewSelector(
+                icon: Icons.checklist_rounded,
+                title: 'Vista de tareas',
+                value: settings.defaultTaskView,
+                accentColor: settings.accentColor,
+                options: const ['board', 'list'],
+                optionLabels: const ['Board', 'Lista'],
+                onChanged: (v) => settings.setDefaultTaskView(v),
+              ),
+              const SizedBox(height: 4),
+              _DefaultViewSelector(
+                icon: Icons.sticky_note_2_rounded,
+                title: 'Vista de notas',
+                value: settings.defaultNoteView,
+                accentColor: settings.accentColor,
+                options: const ['grid', 'list'],
+                optionLabels: const ['Cuadrícula', 'Lista'],
+                onChanged: (v) => settings.setDefaultNoteView(v),
               ),
               const SizedBox(height: 24),
               const _SectionHeader(title: 'VISTA PREVIA'),
@@ -77,7 +114,7 @@ class AppearanceScreen extends StatelessWidget {
                         ),
                         gradient: LinearGradient(
                           colors: [
-                            BrainTheme.accentPurple,
+                            settings.accentColor,
                             BrainTheme.accentBlue
                           ],
                           begin: Alignment.topCenter,
@@ -171,6 +208,216 @@ class _AccentColorPicker extends StatelessWidget {
   }
 }
 
+class _CompactModeTile extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _CompactModeTile({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => onChanged(!value),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Theme.of(context).dividerColor),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.density_medium_rounded,
+                size: 24,
+                color: BrainTheme.textSecondary,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Modo compacto',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: BrainTheme.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      'Reduce el espaciado para mostrar más contenido',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: BrainTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: value,
+                onChanged: onChanged,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ReduceMotionTile extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _ReduceMotionTile({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => onChanged(!value),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Theme.of(context).dividerColor),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.animation_rounded,
+                size: 24,
+                color: BrainTheme.textSecondary,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Reducir animaciones',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: BrainTheme.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      'Minimiza las transiciones y efectos visuales',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: BrainTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: value,
+                onChanged: onChanged,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DefaultViewSelector extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final Color accentColor;
+  final List<String> options;
+  final List<String> optionLabels;
+  final ValueChanged<String> onChanged;
+
+  const _DefaultViewSelector({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.accentColor,
+    required this.options,
+    required this.optionLabels,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Theme.of(context).dividerColor),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 24, color: BrainTheme.textSecondary),
+            const SizedBox(width: 14),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: BrainTheme.textPrimary,
+              ),
+            ),
+            const Spacer(),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Theme.of(context).dividerColor),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(options.length, (i) {
+                  final isSelected = value == options[i];
+                  return GestureDetector(
+                    onTap: () => onChanged(options[i]),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? accentColor : Colors.transparent,
+                        borderRadius: i == 0
+                            ? const BorderRadius.only(
+                                topLeft: Radius.circular(9),
+                                bottomLeft: Radius.circular(9),
+                              )
+                            : const BorderRadius.only(
+                                topRight: Radius.circular(9),
+                                bottomRight: Radius.circular(9),
+                              ),
+                      ),
+                      child: Text(
+                        optionLabels[i],
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                          color: isSelected ? Colors.white : BrainTheme.textSecondary,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SectionHeader extends StatelessWidget {
   final String title;
   const _SectionHeader({required this.title});
@@ -194,6 +441,7 @@ class _ThemeOption extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool selected;
+  final Color accentColor;
   final VoidCallback onTap;
 
   const _ThemeOption({
@@ -201,6 +449,7 @@ class _ThemeOption extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.selected,
+    required this.accentColor,
     required this.onTap,
   });
 
@@ -217,12 +466,12 @@ class _ThemeOption extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: selected
-                  ? BrainTheme.accentPurple
+                  ? accentColor
                   : Theme.of(context).dividerColor,
               width: selected ? 2 : 1,
             ),
             color: selected
-                ? BrainTheme.accentPurple.withValues(alpha: 0.08)
+                ? accentColor.withValues(alpha: 0.08)
                 : Colors.transparent,
           ),
           child: Row(
@@ -231,7 +480,7 @@ class _ThemeOption extends StatelessWidget {
                 icon,
                 size: 24,
                 color: selected
-                    ? BrainTheme.accentPurple
+                    ? accentColor
                     : BrainTheme.textSecondary,
               ),
               const SizedBox(width: 14),
@@ -245,7 +494,7 @@ class _ThemeOption extends StatelessWidget {
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: selected
-                            ? BrainTheme.accentPurple
+                            ? accentColor
                             : BrainTheme.textPrimary,
                       ),
                     ),
@@ -260,15 +509,15 @@ class _ThemeOption extends StatelessWidget {
                 ),
               ),
               if (selected)
-                Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: BrainTheme.accentPurple,
+                  Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: accentColor,
+                    ),
+                    child: const Icon(Icons.check, size: 14, color: Colors.white),
                   ),
-                  child: const Icon(Icons.check, size: 14, color: Colors.white),
-                ),
             ],
           ),
         ),

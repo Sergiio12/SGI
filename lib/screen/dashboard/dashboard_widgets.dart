@@ -196,7 +196,7 @@ class TimelineAgenda extends StatelessWidget {
                     border: h == DateTime.now().hour
                         ? Border(
                             top: BorderSide(
-                              color: BrainTheme.accentPurple
+                              color: BrainTheme.accentOf(context)
                                   .withValues(alpha: 0.3),
                               width: 1,
                             ),
@@ -648,7 +648,7 @@ class WeeklyHeatmap extends StatelessWidget {
           Row(
             children: [
               Icon(Icons.grid_view_rounded,
-                  size: 16, color: BrainTheme.accentPurple),
+                  size: 16, color: BrainTheme.accentOf(context)),
               const SizedBox(width: 8),
               Text(
                 l10n.heatmap,

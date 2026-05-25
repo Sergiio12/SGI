@@ -40,12 +40,12 @@ class DashboardHeader extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+          color: BrainTheme.accentOf(context).withValues(alpha: 0.15),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: BrainTheme.accentPurple.withValues(alpha: 0.05),
+            color: BrainTheme.accentOf(context).withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           )
@@ -77,7 +77,7 @@ class DashboardHeader extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: BrainTheme.accentPurple,
+                        color: BrainTheme.accentOf(context),
                       ),
                     ),
                   ],
@@ -149,7 +149,7 @@ class _CircularProgress extends StatelessWidget {
             valueColor: AlwaysStoppedAnimation<Color>(
               progress == 1.0
                   ? BrainTheme.accentGreen
-                  : BrainTheme.accentPurple,
+                  : BrainTheme.accentOf(context),
             ),
           ),
           Column(
@@ -192,17 +192,17 @@ class _IntentionBanner extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: BrainTheme.accentPurple.withValues(alpha: 0.08),
+          color: BrainTheme.accentOf(context).withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+            color: BrainTheme.accentOf(context).withValues(alpha: 0.15),
             width: 0.5,
           ),
         ),
         child: Row(
           children: [
             Icon(Icons.lightbulb_outline_rounded,
-                size: 14, color: BrainTheme.accentPurple),
+                size: 14, color: BrainTheme.accentOf(context)),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -221,11 +221,11 @@ class _IntentionBanner extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: BrainTheme.accentPurple.withValues(alpha: 0.15),
+                color: BrainTheme.accentOf(context).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Icon(Icons.edit_outlined,
-                  size: 12, color: BrainTheme.accentPurple),
+                  size: 12, color: BrainTheme.accentOf(context)),
             ),
           ],
         ),
@@ -264,7 +264,7 @@ class _IntentionBanner extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: BrainTheme.accentPurple),
+              borderSide: BorderSide(color: BrainTheme.accentOf(context)),
             ),
             fillColor: BrainTheme.surfaceDark,
             filled: true,
@@ -285,7 +285,7 @@ class _IntentionBanner extends StatelessWidget {
               Navigator.pop(ctx);
             },
             style: FilledButton.styleFrom(
-              backgroundColor: BrainTheme.accentPurple,
+              backgroundColor: BrainTheme.accentOf(context),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),

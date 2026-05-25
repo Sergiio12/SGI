@@ -50,12 +50,12 @@ class NoteCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
           color: isSelected
-              ? BrainTheme.accentPurple
+              ? BrainTheme.accentOf(context)
               : BrainTheme.borderDark.withValues(alpha: 0.5),
           width: isSelected ? 2 : 1,
         ),
       ),
-      color: isSelected ? BrainTheme.accentPurple.withValues(alpha: 0.05) : BrainTheme.cardDark,
+      color: isSelected ? BrainTheme.accentOf(context).withValues(alpha: 0.05) : BrainTheme.cardDark,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: inSelectionMode ? () => onSelect!(!isSelected) : onTap,
@@ -435,7 +435,7 @@ class _NoteTypeBadge extends StatelessWidget {
         color = BrainTheme.accentGreen;
       case NoteType.journal:
         label = 'Diario';
-        color = BrainTheme.accentPurple;
+        color = BrainTheme.accentOf(context);
       case NoteType.reference:
         label = 'Referencia';
         color = BrainTheme.accentOrange;

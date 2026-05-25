@@ -161,7 +161,7 @@ class _NavigationSidebarState extends State<NavigationSidebar> {
               height: 34,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [BrainTheme.accentPurple, BrainTheme.accentBlue],
+                  colors: [BrainTheme.accentOf(context), BrainTheme.accentBlue],
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -345,7 +345,7 @@ class _SidebarNavItem extends StatelessWidget {
               padding: const EdgeInsets.only(left: 10, right: 10, top: 8, bottom: 8),
               decoration: BoxDecoration(
                 color: isActive
-                    ? BrainTheme.accentPurple.withValues(alpha: 0.1)
+                    ? BrainTheme.accentOf(context).withValues(alpha: 0.1)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -357,7 +357,7 @@ class _SidebarNavItem extends StatelessWidget {
                       height: 18,
                       margin: const EdgeInsets.only(right: 8),
                       decoration: BoxDecoration(
-                        color: BrainTheme.accentPurple,
+                        color: BrainTheme.accentOf(context),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     )
@@ -367,7 +367,7 @@ class _SidebarNavItem extends StatelessWidget {
                     icon,
                     size: 18,
                     color: isActive
-                        ? BrainTheme.accentPurple
+                        ? BrainTheme.accentOf(context)
                         : BrainTheme.textSecondary,
                   ),
                   const SizedBox(width: 10),
@@ -378,7 +378,7 @@ class _SidebarNavItem extends StatelessWidget {
                         fontSize: 13,
                         fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                         color: isActive
-                            ? BrainTheme.accentPurple
+                            ? BrainTheme.accentOf(context)
                             : BrainTheme.textPrimary,
                       ),
                     ),
