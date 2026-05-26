@@ -246,6 +246,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activeProjects => 'Active projects';
 
   @override
+  String get totalGoals => 'Total goals';
+
+  @override
   String get activeGoals => 'Active goals';
 
   @override

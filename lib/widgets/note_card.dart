@@ -38,11 +38,10 @@ class NoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typeLabel = note.type == NoteType.freeform ? 'Nota libre' : note.type == NoteType.checklist ? 'Checklist' : 'Lista';
     final inSelectionMode = onSelect != null;
 
     Widget card = Semantics(
-      label: '${note.title}, $typeLabel',
+      label: note.title,
       child: Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
@@ -321,7 +320,6 @@ class NoteCard extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _NoteTypeBadge(type: note.type),
               if (note.attachments.isNotEmpty) ...[
                 const SizedBox(width: 8),
                 _MetaBadge(
@@ -414,49 +412,6 @@ class NoteCard extends StatelessWidget {
         ],
       );
     });
-  }
-}
-
-class _NoteTypeBadge extends StatelessWidget {
-  final NoteType type;
-
-  const _NoteTypeBadge({required this.type});
-
-  @override
-  Widget build(BuildContext context) {
-    String label;
-    Color color;
-    switch (type) {
-      case NoteType.freeform:
-        label = 'Nota libre';
-        color = BrainTheme.accentBlue;
-      case NoteType.checklist:
-        label = 'Checklist';
-        color = BrainTheme.accentGreen;
-      case NoteType.journal:
-        label = 'Diario';
-        color = BrainTheme.accentOf(context);
-      case NoteType.reference:
-        label = 'Referencia';
-        color = BrainTheme.accentOrange;
-      case NoteType.meetingNotes:
-        label = 'Reunion';
-        color = BrainTheme.accentCyan;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-            fontSize: 10, color: color, fontWeight: FontWeight.w600),
-      ),
-    );
   }
 }
 

@@ -424,9 +424,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             const SizedBox(width: 8),
           ],
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 100),
-          child: Column(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 100),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildEmojiAndTitle(),
@@ -441,7 +442,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildEmojiAndTitle() {

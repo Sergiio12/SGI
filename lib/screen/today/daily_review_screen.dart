@@ -22,7 +22,7 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
       appBar: AppBar(
         title: Text('Revisión del día'),
       ),
-      body: Consumer2<DailyPlannerProvider, TasksProvider>(
+      body: SafeArea(child: Consumer2<DailyPlannerProvider, TasksProvider>(
         builder: (context, planner, tasksProv, _) {
           final now = DateTime.now();
           final dateStr = DateFormat("d 'de' MMMM", 'es').format(now);
@@ -86,7 +86,7 @@ class _DailyReviewScreenState extends State<DailyReviewScreen> {
             ],
           );
         },
-      ),
+      )),
     );
   }
 

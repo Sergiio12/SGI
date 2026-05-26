@@ -36,7 +36,7 @@ class ProjectsProvider extends ChangeNotifier {
       __abandonedProjects ??= _projects.where((p) => p.status == ProjectStatus.abandoned).toList();
 
   List<Project> getProjectsByGoal(String goalId) =>
-      _projects.where((p) => p.goalId == goalId).toList();
+      _projects.where((p) => p.goalIds.contains(goalId)).toList();
 
   Project? getProjectById(String id) {
     try {
@@ -76,7 +76,9 @@ class ProjectsProvider extends ChangeNotifier {
     DateTime? deadline,
     TaskPriority priority = TaskPriority.medium,
     String objective = '',
-    String? goalId,
+    List<String> goalIds = const [],
+    List<String> taskIds = const [],
+    List<String> noteIds = const [],
     List<String> tags = const [],
   }) async {
     try {
@@ -92,7 +94,9 @@ class ProjectsProvider extends ChangeNotifier {
         deadline: deadline,
         priority: priority,
         objective: objective,
-        goalId: goalId,
+        goalIds: goalIds,
+        taskIds: taskIds,
+        noteIds: noteIds,
         tags: tags,
         createdAt: now,
         updatedAt: now,

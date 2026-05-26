@@ -68,6 +68,7 @@ class TaskProjectSelector extends StatelessWidget {
   }
 
   void _showProjectPicker(BuildContext context) {
+    FocusScope.of(context).unfocus();
     String localQuery = searchQuery;
       showModalBottomSheet(
       context: context,

@@ -187,7 +187,6 @@ void main() {
 
     test('creates with defaults', () {
       final note = Note(id: '1', title: 'Note', createdAt: now, updatedAt: now);
-      expect(note.type, NoteType.freeform);
       expect(note.notebook, 'General');
       expect(note.isPinned, false);
     });
@@ -195,7 +194,7 @@ void main() {
     test('toJson / fromJson roundtrip', () {
       final note = Note(
         id: 'n1', title: 'My Note', content: 'Content',
-        type: NoteType.journal, notebook: 'Ideas',
+        notebook: 'Ideas',
         projectId: 'p1', isPinned: true, colorValue: 0xFF123456,
         emoji: '📕', tags: ['personal'],
         linkedTaskIds: ['t1'], linkedNoteIds: ['n2'],
@@ -206,7 +205,6 @@ void main() {
       expect(restored.id, 'n1');
       expect(restored.title, 'My Note');
       expect(restored.content, 'Content');
-      expect(restored.type, NoteType.journal);
       expect(restored.notebook, 'Ideas');
       expect(restored.projectId, 'p1');
       expect(restored.isPinned, true);
@@ -258,7 +256,7 @@ void main() {
         status: ProjectStatus.paused,
         deadline: DateTime(2026, 7, 1),
         priority: TaskPriority.high, objective: 'Launch',
-        goalId: 'g1', areas: ['dev', 'design'],
+        goalIds: ['g1'], areas: ['dev', 'design'],
         tags: ['work'],
         createdAt: now, updatedAt: now,
       );
@@ -270,7 +268,7 @@ void main() {
       expect(restored.deadline, DateTime(2026, 7, 1));
       expect(restored.priority, TaskPriority.high);
       expect(restored.objective, 'Launch');
-      expect(restored.goalId, 'g1');
+      expect(restored.goalIds, ['g1']);
       expect(restored.areas, ['dev', 'design']);
     });
 
@@ -307,14 +305,14 @@ void main() {
       }
     });
 
-    test('copyWith clears goalId and deadline', () {
+    test('copyWith clears deadline', () {
       final project = Project(
-        id: '1', title: 'Test', goalId: 'g1',
+        id: '1', title: 'Test', goalIds: ['g1'],
         deadline: DateTime(2026, 6, 1),
         createdAt: now, updatedAt: now,
       );
-      final copy = project.copyWith(clearGoalId: true, clearDeadline: true);
-      expect(copy.goalId, isNull);
+      final copy = project.copyWith(clearDeadline: true);
+      expect(copy.goalIds, ['g1']);
       expect(copy.deadline, isNull);
     });
   });

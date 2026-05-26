@@ -39,7 +39,7 @@ void main() {
         deadline: deadline,
         priority: TaskPriority.high,
         objective: 'Launch MVP',
-        goalId: 'goal-1',
+        goalIds: ['goal-1'],
         tags: ['tech'],
       );
       expect(result.isSuccess, isTrue);
@@ -49,7 +49,7 @@ void main() {
       expect(project.deadline, deadline);
       expect(project.priority, TaskPriority.high);
       expect(project.objective, 'Launch MVP');
-      expect(project.goalId, 'goal-1');
+      expect(project.goalIds, ['goal-1']);
       expect(project.tags, ['tech']);
     });
 
@@ -66,9 +66,9 @@ void main() {
     });
 
     test('getProjectsByGoal filters correctly', () async {
-      await provider.addProject(title: 'Goal A', goalId: 'g1');
-      await provider.addProject(title: 'Goal B', goalId: 'g1');
-      await provider.addProject(title: 'Other', goalId: 'g2');
+      await provider.addProject(title: 'Goal A', goalIds: ['g1']);
+      await provider.addProject(title: 'Goal B', goalIds: ['g1']);
+      await provider.addProject(title: 'Other', goalIds: ['g2']);
       expect(provider.getProjectsByGoal('g1').length, 2);
       expect(provider.getProjectsByGoal('g2').length, 1);
     });

@@ -32,12 +32,13 @@ class TaskMetricsScreen extends StatelessWidget {
         backgroundColor: BrainTheme.primaryDark.withValues(alpha: 0.95),
         title: const Text('Métricas de Tareas'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const SizedBox(height: 4),
-          Text(
-            'Vistas clave para tus tareas',
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              'Vistas clave para tus tareas',
             style: TextStyle(
               fontSize: 14,
               color: BrainTheme.textSecondary,
@@ -104,6 +105,7 @@ class TaskMetricsScreen extends StatelessWidget {
             ),
         ],
       ),
+      ),
     );
   }
 }
@@ -138,12 +140,13 @@ class ProjectMetricsScreen extends StatelessWidget {
         backgroundColor: BrainTheme.primaryDark.withValues(alpha: 0.95),
         title: const Text('Métricas de Proyectos'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const SizedBox(height: 4),
-          Text(
-            'Visión completa de tus proyectos',
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              'Visión completa de tus proyectos',
             style: TextStyle(
               fontSize: 14,
               color: BrainTheme.textSecondary,
@@ -203,6 +206,7 @@ class ProjectMetricsScreen extends StatelessWidget {
             ),
         ],
       ),
+      ),
     );
   }
 }
@@ -235,12 +239,13 @@ class GoalMetricsScreen extends StatelessWidget {
         backgroundColor: BrainTheme.primaryDark.withValues(alpha: 0.95),
         title: const Text('Métricas de Objetivos'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const SizedBox(height: 4),
-          Text(
-            'Rendimiento y progreso de tus objetivos',
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              'Rendimiento y progreso de tus objetivos',
             style: TextStyle(
               fontSize: 14,
               color: BrainTheme.textSecondary,
@@ -300,6 +305,7 @@ class GoalMetricsScreen extends StatelessWidget {
             ),
         ],
       ),
+      ),
     );
   }
 }
@@ -322,12 +328,13 @@ class NoteMetricsScreen extends StatelessWidget {
         backgroundColor: BrainTheme.primaryDark.withValues(alpha: 0.95),
         title: const Text('Métricas de Notas'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const SizedBox(height: 4),
-          Text(
-            'Resumen rápido de tus notas y cuadernos',
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              'Resumen rápido de tus notas y cuadernos',
             style: TextStyle(
               fontSize: 14,
               color: BrainTheme.textSecondary,
@@ -379,6 +386,7 @@ class NoteMetricsScreen extends StatelessWidget {
               }).toList(),
             ),
         ],
+      ),
       ),
     );
   }

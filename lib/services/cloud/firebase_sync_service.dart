@@ -1,3 +1,7 @@
+// TODO: La sincronización con Firebase está pendiente de implementación completa.
+// El servicio está preparado pero requiere autenticación real, revisión de reglas
+// de seguridad y pruebas exhaustivas antes de su activación.
+
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,6 +15,7 @@ import '../../models/project.dart';
 import '../../models/task.dart';
 import 'sync_service.dart';
 
+// TODO: Implementar lógica real de sincronización con Firebase
 class FirebaseSyncService implements SyncService {
   FirebaseFirestore? _firestore;
   auth.User? _user;

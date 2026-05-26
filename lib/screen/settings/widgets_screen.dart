@@ -15,7 +15,8 @@ class WidgetsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Widgets'),
       ),
-      body: ListView(
+      body: SafeArea(
+        child: ListView(
         children: [
           const SizedBox(height: 8),
           _buildSectionHeader('WIDGET DE HOY'),
@@ -181,6 +182,7 @@ class WidgetsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
         ],
+      ),
       ),
     );
   }

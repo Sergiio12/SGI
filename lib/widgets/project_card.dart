@@ -295,6 +295,7 @@ class ProjectCard extends StatelessWidget {
   void _showQuickActions(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
       backgroundColor: BrainTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -387,6 +388,7 @@ class ProjectCard extends StatelessWidget {
   void _showStatusPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
       backgroundColor: BrainTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),

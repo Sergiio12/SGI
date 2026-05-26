@@ -24,19 +24,21 @@ class StatsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).statistics),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildOverviewCards(context, tasks, projects, goals),
-          const SizedBox(height: 20),
-          _buildCompletionChart(context, tasks),
-          const SizedBox(height: 20),
-          _buildTaskDistribution(context, tasks),
-          const SizedBox(height: 20),
-          _buildPriorityChart(context, tasks),
-          const SizedBox(height: 20),
-          _buildGoalsProgress(context, goals),
-        ],
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _buildOverviewCards(context, tasks, projects, goals),
+            const SizedBox(height: 20),
+            _buildCompletionChart(context, tasks),
+            const SizedBox(height: 20),
+            _buildTaskDistribution(context, tasks),
+            const SizedBox(height: 20),
+            _buildPriorityChart(context, tasks),
+            const SizedBox(height: 20),
+            _buildGoalsProgress(context, goals),
+          ],
+        ),
       ),
     );
   }

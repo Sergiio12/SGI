@@ -142,12 +142,15 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
 
     for (final project in projectsProvider.projects) {
       final shouldBeLinked = _projectIds.contains(project.id);
-      if (shouldBeLinked && project.goalId != savedGoalId) {
+      final isCurrentlyLinked = project.goalIds.contains(savedGoalId);
+      if (shouldBeLinked && !isCurrentlyLinked) {
+        final updatedGoalIds = List<String>.from(project.goalIds)..add(savedGoalId);
         await projectsProvider
-            .updateProject(project.copyWith(goalId: savedGoalId));
-      } else if (!shouldBeLinked && project.goalId == savedGoalId) {
+            .updateProject(project.copyWith(goalIds: updatedGoalIds));
+      } else if (!shouldBeLinked && isCurrentlyLinked) {
+        final updatedGoalIds = List<String>.from(project.goalIds)..remove(savedGoalId);
         await projectsProvider
-            .updateProject(project.copyWith(clearGoalId: true));
+            .updateProject(project.copyWith(goalIds: updatedGoalIds));
       }
     }
 
@@ -201,7 +204,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
     final color = Color(_colorValue);
 
     return Scaffold(
-      body: _isEditing ? _buildFormView(color) : _buildDetailView(color),
+      body: SafeArea(child: _isEditing ? _buildFormView(color) : _buildDetailView(color)),
       bottomNavigationBar: _isEditing ? null : _buildViewBottomBar(),
     );
   }
@@ -811,78 +814,82 @@ class _GoalDetailScreenState extends State<GoalDetailScreen>
   void _showColorPicker() {
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
       backgroundColor: BrainTheme.cardDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16, left: 0),
-              decoration: BoxDecoration(
-                color: BrainTheme.textTertiary.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16, left: 0),
+                decoration: BoxDecoration(
+                  color: BrainTheme.textTertiary.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            Text(
-              AppLocalizations.of(context).goalChooseColor,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: BrainTheme.textPrimary,
+              Text(
+                AppLocalizations.of(context).goalChooseColor,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: BrainTheme.textPrimary,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: BrainTheme.projectColors.map((c) {
-                final isSelected = c == _colorValue;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() => _colorValue = c);
-                    Navigator.pop(ctx);
-                  },
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Color(c),
-                      shape: BoxShape.circle,
-                      border: isSelected
-                          ? Border.all(color: Colors.white, width: 3)
-                          : null,
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: Color(c).withValues(alpha: 0.4),
-                                blurRadius: 12,
-                                spreadRadius: 1,
-                              )
-                            ]
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: BrainTheme.projectColors.map((c) {
+                  final isSelected = c == _colorValue;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _colorValue = c);
+                      Navigator.pop(ctx);
+                    },
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Color(c),
+                        shape: BoxShape.circle,
+                        border: isSelected
+                            ? Border.all(color: Colors.white, width: 3)
+                            : null,
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: Color(c).withValues(alpha: 0.4),
+                                  blurRadius: 12,
+                                  spreadRadius: 1,
+                                )
+                              ]
+                            : null,
+                      ),
+                      child: isSelected
+                          ? const Icon(Icons.check, size: 22, color: Colors.white)
                           : null,
                     ),
-                    child: isSelected
-                        ? const Icon(Icons.check, size: 22, color: Colors.white)
-                        : null,
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 20),
-          ],
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
   }
 
   void _showProjectPicker(List<Project> allProjects, List<String> currentIds) {
+    FocusScope.of(context).unfocus();
     final searchController = TextEditingController();
     var searchQuery = '';
     var selectedIds = currentIds.toList();

@@ -19,7 +19,7 @@ class ProgressScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      body: Consumer4<TasksProvider, ProjectsProvider, NotesProvider,
+      body: SafeArea(child: Consumer4<TasksProvider, ProjectsProvider, NotesProvider,
           GoalsProvider>(
         builder: (context, tasks, projects, notes, goals, _) {
           final activeTasks = tasks.tasks.where((t) => t.isActive).length;
@@ -111,7 +111,7 @@ class ProgressScreen extends StatelessWidget {
             ],
           );
         },
-      ),
+      )),
     );
   }
 

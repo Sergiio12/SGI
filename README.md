@@ -234,7 +234,7 @@ Goal ─────► [Project]       (via project.goalId)
 | **NotebookInfo** | `notebook_info.dart` | name, colorHex | `toJson()` / `NotebookInfo.fromJson()` |
 | **BrainItem** | `brain_item.dart` | **Base class**: id, tags, createdAt, updatedAt (extended by Task, Project, Note, Goal) | abstract |
 
-**Enums:** `TaskStatus` (pending, inProgress, inReview, completed, cancelled), `TaskPriority` (low, medium, high, urgent), `ProjectStatus` (active, paused, completed, abandoned), `GoalHorizon` (monthly, quarterly, yearly), `NoteType` (free, checklist, journal, reference, meeting)
+**Enums:** `TaskStatus` (pending, inProgress, inReview, completed, cancelled), `TaskPriority` (low, medium, high, urgent), `ProjectStatus` (active, paused, completed, abandoned), `GoalHorizon` (monthly, quarterly, yearly)
 
 ---
 

@@ -14,7 +14,7 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context).notifications)),
-      body: Consumer<SettingsProvider>(
+      body: SafeArea(child: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -330,7 +330,7 @@ class NotificationsScreen extends StatelessWidget {
             ],
           );
         },
-      ),
+      )),
     );
   }
 }
@@ -684,6 +684,7 @@ class _TimezoneSelector extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: BrainTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),

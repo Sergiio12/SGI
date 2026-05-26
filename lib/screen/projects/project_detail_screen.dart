@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:second_brain/l10n/app_localizations.dart';
 
 import '../../config/theme.dart';
+import '../../models/goal.dart';
+import '../../models/note.dart';
 import '../../models/project.dart';
 import '../../models/task.dart';
 import '../../providers/goals_provider.dart';
@@ -37,7 +39,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
   TaskPriority _priority = TaskPriority.medium;
   DateTime _startDate = DateTime.now();
   DateTime? _deadline;
-  String? _goalId;
+  List<String> _goalIds = [];
+  List<String> _taskIds = [];
+  List<String> _noteIds = [];
   bool _isEditing = false;
   bool _showForm = false;
 
@@ -64,7 +68,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
             _priority = project.priority;
             _startDate = project.startDate;
             _deadline = project.deadline;
-            _goalId = project.goalId;
+            _goalIds = List<String>.from(project.goalIds);
+            _taskIds = List<String>.from(project.taskIds);
+            _noteIds = List<String>.from(project.noteIds);
           });
         }
       });
@@ -103,8 +109,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
           priority: _priority,
           startDate: _startDate,
           deadline: _deadline,
-          goalId: _goalId,
-          clearGoalId: _goalId == null,
+          goalIds: _goalIds,
+          taskIds: _taskIds,
+          noteIds: _noteIds,
         ));
       }
     } else {
@@ -118,7 +125,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
         priority: _priority,
         startDate: _startDate,
         deadline: _deadline,
-        goalId: _goalId,
+        goalIds: _goalIds,
+        taskIds: _taskIds,
+        noteIds: _noteIds,
       );
     }
 
@@ -133,9 +142,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
         : null;
 
     return Scaffold(
-      body: project == null && _isEditing
-          ? const Center(child: CircularProgressIndicator())
-          : _buildBody(project),
+      body: SafeArea(
+        child: project == null && _isEditing
+            ? const Center(child: CircularProgressIndicator())
+            : _buildBody(project),
+      ),
     );
   }
 
@@ -280,20 +291,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
               ),
               maxLines: null,
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _objectiveController,
-              style: TextStyle(
-                fontSize: 14,
-                color: BrainTheme.textPrimary,
-              ),
-              decoration: InputDecoration(
-                hintText: AppLocalizations.of(context).objective,
-                border: InputBorder.none,
-                filled: false,
-              ),
-              maxLines: null,
-            ),
             const SizedBox(height: 16),
             Text(
               AppLocalizations.of(context).color,
@@ -329,12 +326,16 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
               priority: _priority,
               startDate: _startDate,
               deadline: _deadline,
-              goalId: _goalId,
+              goalIds: _goalIds,
+              taskIds: _taskIds,
+              noteIds: _noteIds,
               onStatusChanged: (value) => setState(() => _status = value),
               onPriorityChanged: (value) => setState(() => _priority = value),
               onStartDateChanged: (value) => setState(() => _startDate = value),
               onDeadlineChanged: (value) => setState(() => _deadline = value),
-              onGoalChanged: (value) => setState(() => _goalId = value),
+              onGoalIdsChanged: (value) => setState(() => _goalIds = value),
+              onTaskIdsChanged: (value) => setState(() => _taskIds = value),
+              onNoteIdsChanged: (value) => setState(() => _noteIds = value),
             ),
             const SizedBox(height: 100),
           ],
@@ -388,15 +389,17 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
   void _showEmojiPicker() {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context).emoji,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+      useSafeArea: true,
+      builder: (ctx) => SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.of(context).emoji,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
             Wrap(
@@ -429,6 +432,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -1724,24 +1728,32 @@ class _ProjectMetaGrid extends StatelessWidget {
   final TaskPriority priority;
   final DateTime startDate;
   final DateTime? deadline;
-  final String? goalId;
+  final List<String> goalIds;
+  final List<String> taskIds;
+  final List<String> noteIds;
   final ValueChanged<ProjectStatus> onStatusChanged;
   final ValueChanged<TaskPriority> onPriorityChanged;
   final ValueChanged<DateTime> onStartDateChanged;
   final ValueChanged<DateTime?> onDeadlineChanged;
-  final ValueChanged<String?> onGoalChanged;
+  final ValueChanged<List<String>> onGoalIdsChanged;
+  final ValueChanged<List<String>> onTaskIdsChanged;
+  final ValueChanged<List<String>> onNoteIdsChanged;
 
   _ProjectMetaGrid({
     required this.status,
     required this.priority,
     required this.startDate,
     required this.deadline,
-    required this.goalId,
+    required this.goalIds,
+    required this.taskIds,
+    required this.noteIds,
     required this.onStatusChanged,
     required this.onPriorityChanged,
     required this.onStartDateChanged,
     required this.onDeadlineChanged,
-    required this.onGoalChanged,
+    required this.onGoalIdsChanged,
+    required this.onTaskIdsChanged,
+    required this.onNoteIdsChanged,
   });
 
   @override
@@ -1837,30 +1849,608 @@ class _ProjectMetaGrid extends StatelessWidget {
           label: AppLocalizations.of(context).objective,
           child: Consumer<GoalsProvider>(
             builder: (context, goals, _) {
-              return DropdownButton<String?>(
-                value: goalId,
-                isExpanded: true,
-                dropdownColor: BrainTheme.cardDark,
-                underline: const SizedBox.shrink(),
-                hint: Text(AppLocalizations.of(context).noDueDate),
-                items: [
-                  DropdownMenuItem(
-                    value: null,
-                    child: Text(AppLocalizations.of(context).noDueDate),
-                  ),
-                  ...goals.goals.map(
-                    (goal) => DropdownMenuItem(
-                      value: goal.id,
-                      child: Text(goal.title),
-                    ),
-                  ),
-                ],
-                onChanged: onGoalChanged,
+              final selectedGoals = goals.goals.where((g) => goalIds.contains(g.id)).toList();
+              return InkWell(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                  _showGoalPicker(context, goals.goals, goalIds, onGoalIdsChanged);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: selectedGoals.isEmpty
+                      ? Text(
+                          AppLocalizations.of(context).noDueDate,
+                          style: TextStyle(color: BrainTheme.textTertiary),
+                        )
+                      : Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: selectedGoals.map((g) => Chip(
+                            label: Text(g.title, style: const TextStyle(fontSize: 12)),
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                            deleteIcon: const Icon(Icons.close, size: 14),
+                            onDeleted: () {
+                              final updated = List<String>.from(goalIds)..remove(g.id);
+                              onGoalIdsChanged(updated);
+                            },
+                          )).toList(),
+                        ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        _MetaField(
+          label: 'Tareas',
+          child: Consumer<TasksProvider>(
+            builder: (context, tasks, _) {
+              final selectedTasks = tasks.tasks.where((t) => taskIds.contains(t.id)).toList();
+              return InkWell(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                  _showTaskPicker(context, tasks.tasks, taskIds, onTaskIdsChanged);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: selectedTasks.isEmpty
+                      ? Text(
+                          'Seleccionar tareas',
+                          style: TextStyle(color: BrainTheme.textTertiary),
+                        )
+                      : Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: selectedTasks.map((t) => Chip(
+                            label: Text(t.title, style: const TextStyle(fontSize: 12)),
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                            deleteIcon: const Icon(Icons.close, size: 14),
+                            onDeleted: () {
+                              final updated = List<String>.from(taskIds)..remove(t.id);
+                              onTaskIdsChanged(updated);
+                            },
+                          )).toList(),
+                        ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        _MetaField(
+          label: 'Notas',
+          child: Consumer<NotesProvider>(
+            builder: (context, notes, _) {
+              final selectedNotes = notes.notes.where((n) => noteIds.contains(n.id)).toList();
+              return InkWell(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                  _showNotePicker(context, notes.notes, noteIds, onNoteIdsChanged);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: selectedNotes.isEmpty
+                      ? Text(
+                          'Seleccionar notas',
+                          style: TextStyle(color: BrainTheme.textTertiary),
+                        )
+                      : Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: selectedNotes.map((n) => Chip(
+                            label: Text(n.title, style: const TextStyle(fontSize: 12)),
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                            deleteIcon: const Icon(Icons.close, size: 14),
+                            onDeleted: () {
+                              final updated = List<String>.from(noteIds)..remove(n.id);
+                              onNoteIdsChanged(updated);
+                            },
+                          )).toList(),
+                        ),
+                ),
               );
             },
           ),
         ),
       ],
+    );
+  }
+
+  static void _showGoalPicker(BuildContext context, List<Goal> allGoals, List<String> currentIds, ValueChanged<List<String>> onDone) {
+    FocusScope.of(context).unfocus();
+    final searchController = TextEditingController();
+    var searchQuery = '';
+    var selectedIds = currentIds.toList();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: BrainTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final filtered = searchQuery.isEmpty
+                ? allGoals
+                : allGoals.where((g) {
+                    final q = searchQuery.toLowerCase();
+                    return g.title.toLowerCase().contains(q);
+                  }).toList();
+
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40, height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: BrainTheme.textTertiary.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    TextField(
+                      controller: searchController,
+                      onChanged: (v) => setModalState(() => searchQuery = v),
+                      style: const TextStyle(fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Buscar objetivos',
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        suffixIcon: searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 18),
+                                onPressed: () {
+                                  searchController.clear();
+                                  setModalState(() => searchQuery = '');
+                                },
+                              )
+                            : null,
+                        isDense: true,
+                        filled: true,
+                        fillColor: BrainTheme.cardDark,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: BrainTheme.borderDark),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (filtered.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        child: Text(
+                          'No se encontraron objetivos',
+                          style: TextStyle(color: BrainTheme.textTertiary),
+                        ),
+                      )
+                    else
+                      Flexible(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final goal = filtered[index];
+                            final isSelected = selectedIds.contains(goal.id);
+                            final gColor = Color(goal.colorValue);
+                            return ListTile(
+                              leading: Container(
+                                width: 40, height: 40,
+                                decoration: BoxDecoration(
+                                  color: gColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Center(
+                                  child: Icon(Icons.track_changes_outlined, size: 18, color: gColor),
+                                ),
+                              ),
+                              title: Text(
+                                goal.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: BrainTheme.textPrimary,
+                                ),
+                              ),
+                              subtitle: Text(
+                                _horizonLabel(goal.horizon),
+                                style: TextStyle(fontSize: 12, color: BrainTheme.textTertiary),
+                              ),
+                              trailing: isSelected
+                                  ? Icon(Icons.check_circle, color: gColor)
+                                  : Icon(Icons.circle_outlined, color: BrainTheme.textTertiary),
+                              onTap: () {
+                                setModalState(() {
+                                  if (isSelected) {
+                                    selectedIds.remove(goal.id);
+                                  } else {
+                                    selectedIds.add(goal.id);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(AppLocalizations.of(context).cancel),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              onDone(selectedIds);
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: BrainTheme.accentOf(context),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: Text(AppLocalizations.of(context).save),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  static void _showTaskPicker(BuildContext context, List<Task> allTasks, List<String> currentIds, ValueChanged<List<String>> onDone) {
+    FocusScope.of(context).unfocus();
+    final searchController = TextEditingController();
+    var searchQuery = '';
+    var selectedIds = currentIds.toList();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: BrainTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final filtered = searchQuery.isEmpty
+                ? allTasks
+                : allTasks.where((t) {
+                    final q = searchQuery.toLowerCase();
+                    return t.title.toLowerCase().contains(q);
+                  }).toList();
+
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40, height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: BrainTheme.textTertiary.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    TextField(
+                      controller: searchController,
+                      onChanged: (v) => setModalState(() => searchQuery = v),
+                      style: const TextStyle(fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Buscar tareas',
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        suffixIcon: searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 18),
+                                onPressed: () {
+                                  searchController.clear();
+                                  setModalState(() => searchQuery = '');
+                                },
+                              )
+                            : null,
+                        isDense: true,
+                        filled: true,
+                        fillColor: BrainTheme.cardDark,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: BrainTheme.borderDark),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (filtered.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        child: Text(
+                          'No se encontraron tareas',
+                          style: TextStyle(color: BrainTheme.textTertiary),
+                        ),
+                      )
+                    else
+                      Flexible(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final task = filtered[index];
+                            final isSelected = selectedIds.contains(task.id);
+                            return ListTile(
+                              leading: Container(
+                                width: 40, height: 40,
+                                decoration: BoxDecoration(
+                                  color: BrainTheme.accentOf(context).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    task.status == TaskStatus.completed
+                                        ? Icons.check_circle
+                                        : Icons.check_circle_outline,
+                                    size: 18,
+                                    color: task.status == TaskStatus.completed
+                                        ? BrainTheme.accentGreen
+                                        : BrainTheme.textTertiary,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                task.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: BrainTheme.textPrimary,
+                                ),
+                              ),
+                              subtitle: Text(
+                                task.status == TaskStatus.completed ? 'Completada' : 'Pendiente',
+                                style: TextStyle(fontSize: 12, color: BrainTheme.textTertiary),
+                              ),
+                              trailing: isSelected
+                                  ? Icon(Icons.check_circle, color: BrainTheme.accentOf(context))
+                                  : Icon(Icons.circle_outlined, color: BrainTheme.textTertiary),
+                              onTap: () {
+                                setModalState(() {
+                                  if (isSelected) {
+                                    selectedIds.remove(task.id);
+                                  } else {
+                                    selectedIds.add(task.id);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(AppLocalizations.of(context).cancel),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              onDone(selectedIds);
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: BrainTheme.accentOf(context),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: Text(AppLocalizations.of(context).save),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  static void _showNotePicker(BuildContext context, List<Note> allNotes, List<String> currentIds, ValueChanged<List<String>> onDone) {
+    FocusScope.of(context).unfocus();
+    final searchController = TextEditingController();
+    var searchQuery = '';
+    var selectedIds = currentIds.toList();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: BrainTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final filtered = searchQuery.isEmpty
+                ? allNotes
+                : allNotes.where((n) {
+                    final q = searchQuery.toLowerCase();
+                    return n.title.toLowerCase().contains(q);
+                  }).toList();
+
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40, height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: BrainTheme.textTertiary.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    TextField(
+                      controller: searchController,
+                      onChanged: (v) => setModalState(() => searchQuery = v),
+                      style: const TextStyle(fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Buscar notas',
+                        prefixIcon: const Icon(Icons.search, size: 20),
+                        suffixIcon: searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 18),
+                                onPressed: () {
+                                  searchController.clear();
+                                  setModalState(() => searchQuery = '');
+                                },
+                              )
+                            : null,
+                        isDense: true,
+                        filled: true,
+                        fillColor: BrainTheme.cardDark,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: BrainTheme.borderDark),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (filtered.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        child: Text(
+                          'No se encontraron notas',
+                          style: TextStyle(color: BrainTheme.textTertiary),
+                        ),
+                      )
+                    else
+                      Flexible(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final note = filtered[index];
+                            final isSelected = selectedIds.contains(note.id);
+                            return ListTile(
+                              leading: Container(
+                                width: 40, height: 40,
+                                decoration: BoxDecoration(
+                                  color: BrainTheme.accentBlue.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Center(
+                                  child: Text(note.emoji, style: const TextStyle(fontSize: 18)),
+                                ),
+                              ),
+                              title: Text(
+                                note.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: BrainTheme.textPrimary,
+                                ),
+                              ),
+                              subtitle: Text(
+                                note.notebook,
+                                style: TextStyle(fontSize: 12, color: BrainTheme.textTertiary),
+                              ),
+                              trailing: isSelected
+                                  ? Icon(Icons.check_circle, color: BrainTheme.accentOf(context))
+                                  : Icon(Icons.circle_outlined, color: BrainTheme.textTertiary),
+                              onTap: () {
+                                setModalState(() {
+                                  if (isSelected) {
+                                    selectedIds.remove(note.id);
+                                  } else {
+                                    selectedIds.add(note.id);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(AppLocalizations.of(context).cancel),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              onDone(selectedIds);
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: BrainTheme.accentOf(context),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: Text(AppLocalizations.of(context).save),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -1900,6 +2490,17 @@ class _ProjectMetaGrid extends StatelessWidget {
         return Icons.check_rounded;
       case ProjectStatus.abandoned:
         return Icons.stop_rounded;
+    }
+  }
+
+  static String _horizonLabel(GoalHorizon h) {
+    switch (h) {
+      case GoalHorizon.monthly:
+        return 'Mensual';
+      case GoalHorizon.quarterly:
+        return 'Trimestral';
+      case GoalHorizon.yearly:
+        return 'Anual';
     }
   }
 

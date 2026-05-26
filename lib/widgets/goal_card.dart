@@ -314,6 +314,7 @@ class GoalCard extends StatelessWidget {
   void _showQuickActions(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
       backgroundColor: BrainTheme.cardDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),

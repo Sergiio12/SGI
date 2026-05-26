@@ -120,11 +120,19 @@ Future<String?> showNotebookPickerModal(
                   child: SafeArea(
                     top: false,
                     child: OutlinedButton.icon(
-                      onPressed: () => showDialog(
-                        context: context,
-                        builder: (_) =>
-                            _CreateNotebookDialog(provider: provider),
-                      ),
+                      onPressed: () async {
+                        final newName = await showModalBottomSheet<String>(
+                          context: context,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          builder: (_) => _CreateNotebookSheet(
+                            provider: provider,
+                          ),
+                        );
+                        if (newName != null && context.mounted) {
+                          Navigator.pop(context, newName);
+                        }
+                      },
                       icon: const Icon(Icons.add, size: 18),
                       label: Text(AppLocalizations.of(context).newNotebook),
                       style: OutlinedButton.styleFrom(
@@ -200,16 +208,16 @@ class _NotebookTile extends StatelessWidget {
   }
 }
 
-class _CreateNotebookDialog extends StatefulWidget {
+class _CreateNotebookSheet extends StatefulWidget {
   final NotesProvider provider;
 
-  const _CreateNotebookDialog({required this.provider});
+  const _CreateNotebookSheet({required this.provider});
 
   @override
-  State<_CreateNotebookDialog> createState() => _CreateNotebookDialogState();
+  State<_CreateNotebookSheet> createState() => _CreateNotebookSheetState();
 }
 
-class _CreateNotebookDialogState extends State<_CreateNotebookDialog> {
+class _CreateNotebookSheetState extends State<_CreateNotebookSheet> {
   final _nameController = TextEditingController();
   late Color _selectedColor;
 
@@ -227,17 +235,43 @@ class _CreateNotebookDialogState extends State<_CreateNotebookDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: BrainTheme.cardDark,
-      title: Text(
-        AppLocalizations.of(context).newNotebook,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-      ),
-      content: SingleChildScrollView(
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Center(
+              child: Container(
+                width: 32,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: BrainTheme.borderDark,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  AppLocalizations.of(context).newNotebook,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _nameController,
               autofocus: true,
@@ -251,68 +285,91 @@ class _CreateNotebookDialogState extends State<_CreateNotebookDialog> {
                 ),
                 isDense: true,
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
               onSubmitted: (_) => _create(),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Text(
               'Color',
               style: TextStyle(
                 color: BrainTheme.textSecondary,
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Wrap(
-              spacing: 10,
-              runSpacing: 10,
+              spacing: 12,
+              runSpacing: 12,
               children: NotebookInfo.palette.map((hex) {
                 final color = NotebookInfo.colorFromHex(hex);
                 final isSelected = color == _selectedColor;
                 return GestureDetector(
                   onTap: () => setState(() => _selectedColor = color),
-                  child: Container(
-                    width: 34,
-                    height: 34,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
                       color: color,
+                      shape: BoxShape.circle,
                       border: Border.all(
-                        width: isSelected ? 3 : 1,
-                        color: isSelected
-                            ? BrainTheme.surfaceDark
-                            : BrainTheme.borderDark,
+                        color: isSelected ? Colors.white : Colors.transparent,
+                        width: isSelected ? 3 : 0,
                       ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: color.withValues(alpha: 0.5),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              ),
+                            ]
+                          : [],
                     ),
+                    child: isSelected
+                        ? const Icon(Icons.check, size: 20, color: Colors.white)
+                        : null,
                   ),
                 );
               }).toList(),
             ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _create,
+                style: FilledButton.styleFrom(
+                  backgroundColor: BrainTheme.accentOf(context),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Crear',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: BrainTheme.accentOf(context).computeLuminance() > 0.5
+                        ? Colors.black
+                        : Colors.white,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(AppLocalizations.of(context).cancel),
-        ),
-        FilledButton(
-          onPressed: _create,
-          style: FilledButton.styleFrom(
-            backgroundColor: BrainTheme.accentOf(context),
-          ),
-          child: const Text('Crear'),
-        ),
-      ],
     );
   }
 
-  void _create() {
+  Future<void> _create() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
-    widget.provider.createNotebook(name, color: _selectedColor);
-    Navigator.pop(context);
+    await widget.provider.createNotebook(name, color: _selectedColor);
+    if (!context.mounted) return;
+    Navigator.pop(context, name);
   }
 }

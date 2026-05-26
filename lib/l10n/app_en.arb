@@ -93,6 +93,7 @@
   "pendingTasks": "Pending",
   "overdueTasks": "Overdue",
   "activeProjects": "Active projects",
+  "totalGoals": "Total goals",
   "activeGoals": "Active goals",
   "recentNotes": "Recent notes",
   "quickStats": "Quick Stats",

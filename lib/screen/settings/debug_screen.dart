@@ -13,7 +13,8 @@ class DebugScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).debug),
       ),
-      body: ListView(
+      body: SafeArea(
+        child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _DebugCard(
@@ -71,6 +72,7 @@ class DebugScreen extends StatelessWidget {
           ),
 
         ],
+      ),
       ),
     );
   }

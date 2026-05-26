@@ -16,8 +16,9 @@ class CalendarScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context).calendar)),
-      body: Consumer<TasksProvider>(
-        builder: (context, provider, _) {
+      body: SafeArea(
+        child: Consumer<TasksProvider>(
+          builder: (context, provider, _) {
           final grouped = _groupTasks(provider.tasks);
           if (grouped.isEmpty) {
             return const EmptyState(
@@ -96,7 +97,8 @@ class CalendarScreen extends StatelessWidget {
               );
             }).toList(),
           );
-        },
+          },
+        ),
       ),
     );
   }

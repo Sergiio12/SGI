@@ -246,6 +246,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get activeProjects => 'Proyectos activos';
 
   @override
+  String get totalGoals => 'Objetivos totales';
+
+  @override
   String get activeGoals => 'Objetivos activos';
 
   @override

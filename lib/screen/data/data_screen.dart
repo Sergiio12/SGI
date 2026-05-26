@@ -28,9 +28,10 @@ class _DataScreenState extends State<DataScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context).dataManagement)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
           _ActionCard(
             icon: Icons.file_download_outlined,
             title: AppLocalizations.of(context).exportData,
@@ -107,7 +108,8 @@ class _DataScreenState extends State<DataScreen> {
             isDestructive: true,
             onPressed: _deleteAll,
           ),
-        ],
+          ],
+        ),
       ),
     );
   }

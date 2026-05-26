@@ -69,7 +69,8 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
         ],
       ),
-      body: Consumer<SearchProvider>(
+      body: SafeArea(
+        child: Consumer<SearchProvider>(
         builder: (context, search, _) {
           if (search.query.isEmpty) {
             return Center(
@@ -109,6 +110,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ],
           );
         },
+      ),
       ),
     );
   }

@@ -34,6 +34,57 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     super.dispose();
   }
 
+  int _activeFilterCount() {
+    var count = 0;
+    if (_statusFilter != null) count++;
+    if (_searchQuery.isNotEmpty) count++;
+    return count;
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _searchQuery = '';
+      _searchController.clear();
+      _statusFilter = null;
+      _sortBy = _ProjectSortBy.updatedAt;
+      _showSearch = false;
+    });
+  }
+
+  List<Widget> _buildFilterChips(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final chips = <Widget>[];
+    if (_statusFilter != null) {
+      final label = switch (_statusFilter!) {
+        ProjectStatus.active => l10n.active,
+        ProjectStatus.paused => 'Pausados',
+        ProjectStatus.completed => l10n.statusCompleted,
+        ProjectStatus.abandoned => 'Abandonados',
+      };
+      chips.add(_buildActiveFilterChip(label, () {
+        setState(() => _statusFilter = null);
+      }));
+    }
+    if (_searchQuery.isNotEmpty) {
+      chips.add(_buildActiveFilterChip('"$_searchQuery"', () {
+        _searchController.clear();
+        setState(() => _searchQuery = '');
+      }));
+    }
+    return chips;
+  }
+
+  Widget _buildActiveFilterChip(String label, VoidCallback onRemove) {
+    return InputChip(
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      onDeleted: onRemove,
+      deleteIcon: const Icon(Icons.close, size: 16),
+      backgroundColor: BrainTheme.cardDark,
+      labelStyle: TextStyle(color: BrainTheme.textPrimary),
+      visualDensity: VisualDensity.compact,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ProjectsProvider>(
@@ -93,6 +144,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               searchQuery: _searchQuery,
               showSearch: _showSearch,
               sortBy: _sortBy,
+              activeFilterCount: _activeFilterCount(),
               onStatusFilterChanged: (s) => setState(() => _statusFilter = s),
               onSortChanged: (s) => setState(() => _sortBy = s),
               onToggleSearch: () => setState(() {
@@ -102,6 +154,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   _searchController.clear();
                 }
               }),
+              onClearFilters: _clearFilters,
             ),
             if (_showSearch)
               Padding(
@@ -134,6 +187,50 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                     .animate()
                     .fadeIn(duration: 200.ms)
                     .slideY(begin: -0.2, end: 0),
+              ),
+            if (_buildFilterChips(context).isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      ..._buildFilterChips(context),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: _clearFilters,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: BrainTheme.accentRed.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color:
+                                  BrainTheme.accentRed.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.clear_all,
+                                  size: 12, color: BrainTheme.accentRed),
+                              const SizedBox(width: 4),
+                              Text(
+                                AppLocalizations.of(context).clearFilters,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: BrainTheme.accentRed,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             if (filtered.isEmpty)
               Expanded(
@@ -460,18 +557,22 @@ class _FilterBar extends StatelessWidget {
   final String searchQuery;
   final bool showSearch;
   final _ProjectSortBy sortBy;
+  final int activeFilterCount;
   final ValueChanged<ProjectStatus?> onStatusFilterChanged;
   final ValueChanged<_ProjectSortBy> onSortChanged;
   final VoidCallback onToggleSearch;
+  final VoidCallback onClearFilters;
 
-  _FilterBar({
+  const _FilterBar({
     required this.statusFilter,
     required this.searchQuery,
     required this.showSearch,
     required this.sortBy,
+    required this.activeFilterCount,
     required this.onStatusFilterChanged,
     required this.onSortChanged,
     required this.onToggleSearch,
+    required this.onClearFilters,
   });
 
   @override
@@ -551,6 +652,14 @@ class _FilterBar extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               _SortDropdown(sortBy: sortBy, onChanged: onSortChanged),
+              const SizedBox(width: 6),
+              _FilterIconButton(
+                icon: Icons.filter_list,
+                isActive: activeFilterCount > 0,
+                activeColor: BrainTheme.accentOf(context),
+                badgeCount: activeFilterCount,
+                onTap: onClearFilters,
+              ),
             ],
           ),
         ],
@@ -636,6 +745,55 @@ class _IconButton extends StatelessWidget {
           icon,
           size: 18,
           color: isActive ? activeColor : BrainTheme.textSecondary,
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterIconButton extends StatelessWidget {
+  final IconData icon;
+  final bool isActive;
+  final Color activeColor;
+  final int badgeCount;
+  final VoidCallback onTap;
+
+  const _FilterIconButton({
+    required this.icon,
+    required this.isActive,
+    required this.activeColor,
+    required this.badgeCount,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? activeColor.withValues(alpha: 0.12)
+              : BrainTheme.cardDark,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isActive
+                ? activeColor.withValues(alpha: 0.3)
+                : BrainTheme.borderDark,
+            width: 1,
+          ),
+        ),
+        child: Badge(
+          isLabelVisible: badgeCount > 0,
+          label: Text('$badgeCount',
+              style:
+                  const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+          child: Icon(
+            icon,
+            size: 18,
+            color: isActive ? activeColor : BrainTheme.textSecondary,
+          ),
         ),
       ),
     );

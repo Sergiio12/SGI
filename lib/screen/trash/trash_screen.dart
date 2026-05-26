@@ -31,8 +31,9 @@ class TrashScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer<TrashProvider>(
-        builder: (context, trash, _) {
+      body: SafeArea(
+        child: Consumer<TrashProvider>(
+          builder: (context, trash, _) {
           if (!trash.isLoaded) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -62,7 +63,8 @@ class TrashScreen extends StatelessWidget {
             },
             ),
           );
-        },
+          },
+        ),
       ),
     );
   }

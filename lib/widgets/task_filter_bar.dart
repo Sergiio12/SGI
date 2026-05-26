@@ -62,6 +62,7 @@ class TaskFilterBar extends StatelessWidget {
             icon: Icons.filter_list,
             isActive: activeFilterCount > 0,
             activeColor: BrainTheme.statusColor(TaskStatus.inProgress),
+            activeFilterCount: activeFilterCount,
             onTap: onToggleFilters,
           ),
         ],
@@ -74,12 +75,14 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final bool isActive;
   final Color activeColor;
+  final int activeFilterCount;
   final VoidCallback onTap;
 
   const _ActionButton({
     required this.icon,
     required this.isActive,
     required this.activeColor,
+    required this.activeFilterCount,
     required this.onTap,
   });
 
@@ -101,10 +104,16 @@ class _ActionButton extends StatelessWidget {
             width: 1,
           ),
         ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: isActive ? activeColor : BrainTheme.textSecondary,
+        child: Badge(
+          isLabelVisible: activeFilterCount > 0,
+          label: Text('$activeFilterCount',
+              style:
+                  const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+          child: Icon(
+            icon,
+            size: 18,
+            color: isActive ? activeColor : BrainTheme.textSecondary,
+          ),
         ),
       ),
     );

@@ -17,8 +17,9 @@ class FocusScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).focusMode),
       ),
-      body: Consumer<TasksProvider>(
-        builder: (context, provider, _) {
+      body: SafeArea(
+        child: Consumer<TasksProvider>(
+          builder: (context, provider, _) {
           final tasks = provider.focusTasks;
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
@@ -76,7 +77,8 @@ class FocusScreen extends StatelessWidget {
                 ),
             ],
           );
-        },
+          },
+        ),
       ),
     );
   }

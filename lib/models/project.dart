@@ -13,7 +13,7 @@ class Project extends BrainItem {
   final DateTime? deadline;
   final TaskPriority priority;
   final String objective;
-  final String? goalId;
+  final List<String> goalIds;
   final List<String> taskIds;
   final List<String> noteIds;
   final List<String> areas; // Areas de responsabilidad (metodo PARA)
@@ -29,7 +29,7 @@ class Project extends BrainItem {
     this.deadline,
     this.priority = TaskPriority.medium,
     this.objective = '',
-    this.goalId,
+    this.goalIds = const [],
     this.taskIds = const [],
     this.noteIds = const [],
     this.areas = const [],
@@ -48,12 +48,11 @@ class Project extends BrainItem {
     DateTime? deadline,
     TaskPriority? priority,
     String? objective,
-    String? goalId,
+    List<String>? goalIds,
     List<String>? taskIds,
     List<String>? noteIds,
     List<String>? areas,
     List<String>? tags,
-    bool clearGoalId = false,
     bool clearDeadline = false,
   }) {
     return Project(
@@ -67,7 +66,7 @@ class Project extends BrainItem {
       deadline: clearDeadline ? null : (deadline ?? this.deadline),
       priority: priority ?? this.priority,
       objective: objective ?? this.objective,
-      goalId: clearGoalId ? null : (goalId ?? this.goalId),
+      goalIds: goalIds ?? this.goalIds,
       taskIds: taskIds ?? this.taskIds,
       noteIds: noteIds ?? this.noteIds,
       areas: areas ?? this.areas,
@@ -95,7 +94,7 @@ class Project extends BrainItem {
         'deadline': deadline?.toIso8601String(),
         'priority': priority.name,
         'objective': objective,
-        'goalId': goalId,
+        'goalIds': goalIds,
         'taskIds': taskIds,
         'noteIds': noteIds,
         'areas': areas,
@@ -121,7 +120,7 @@ class Project extends BrainItem {
           json['deadline'] != null ? DateTime.parse(json['deadline']) : null,
       priority: _priorityFromJson(json['priority']),
       objective: json['objective'] ?? '',
-      goalId: json['goalId'],
+      goalIds: List<String>.from(json['goalIds'] ?? []),
       taskIds: List<String>.from(json['taskIds'] ?? []),
       noteIds: List<String>.from(json['noteIds'] ?? []),
       areas: List<String>.from(json['areas'] ?? []),

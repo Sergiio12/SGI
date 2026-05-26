@@ -1,14 +1,11 @@
 import 'brain_item.dart';
 
-enum NoteType { freeform, checklist, journal, reference, meetingNotes }
-
 enum SortOption { updatedAt, createdAt, title }
 
 class Note extends BrainItem {
   final String title;
   final String content;
   final List<NoteAttachment> attachments;
-  final NoteType type;
   final String notebook;
   final String? projectId;
   final List<String> linkedTaskIds;
@@ -23,7 +20,6 @@ class Note extends BrainItem {
     required this.title,
     this.content = '',
     this.attachments = const [],
-    this.type = NoteType.freeform,
     this.notebook = 'General',
     this.projectId,
     this.linkedTaskIds = const [],
@@ -41,7 +37,6 @@ class Note extends BrainItem {
     String? title,
     String? content,
     List<NoteAttachment>? attachments,
-    NoteType? type,
     String? notebook,
     String? projectId,
     List<String>? linkedTaskIds,
@@ -57,7 +52,6 @@ class Note extends BrainItem {
       title: title ?? this.title,
       content: content ?? this.content,
       attachments: attachments ?? this.attachments,
-      type: type ?? this.type,
       notebook: notebook ?? this.notebook,
       projectId: clearProjectId ? null : (projectId ?? this.projectId),
       linkedTaskIds: linkedTaskIds ?? this.linkedTaskIds,
@@ -77,7 +71,7 @@ class Note extends BrainItem {
         'title': title,
         'content': content,
         'attachments': attachments.map((a) => a.toJson()).toList(),
-        'type': type.index,
+
         'notebook': notebook,
         'projectId': projectId,
         'linkedTaskIds': linkedTaskIds,
@@ -100,7 +94,6 @@ class Note extends BrainItem {
                     NoteAttachment.fromJson(Map<String, dynamic>.from(a)))
                 .toList() ??
             [],
-        type: NoteType.values[json['type'] ?? 0],
         notebook: json['notebook'] ?? 'General',
         projectId: json['projectId'],
         linkedTaskIds: List<String>.from(json['linkedTaskIds'] ?? []),

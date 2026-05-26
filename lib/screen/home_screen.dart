@@ -227,6 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showSyncStatus(BuildContext context, SyncProvider sync) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
     showModalBottomSheet(
       context: context,
       useSafeArea: true,
@@ -235,113 +236,116 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: sync.status == SyncStatus.synced
-                          ? BrainTheme.accentGreen.withValues(alpha: 0.1)
-                          : sync.status == SyncStatus.error
-                              ? BrainTheme.accentRed.withValues(alpha: 0.1)
-                              : BrainTheme.accentOf(context).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20, 20, 20, bottomPadding + 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: sync.status == SyncStatus.synced
+                            ? BrainTheme.accentGreen.withValues(alpha: 0.1)
+                            : sync.status == SyncStatus.error
+                                ? BrainTheme.accentRed.withValues(alpha: 0.1)
+                                : BrainTheme.accentOf(context).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        sync.status == SyncStatus.synced
+                            ? Icons.cloud_done
+                            : sync.status == SyncStatus.error
+                                ? Icons.cloud_off
+                                : Icons.cloud_sync,
+                        color: sync.status == SyncStatus.synced
+                            ? BrainTheme.accentGreen
+                            : sync.status == SyncStatus.error
+                                ? BrainTheme.accentRed
+                                : BrainTheme.accentOf(context),
+                      ),
                     ),
-                    child: Icon(
-                      sync.status == SyncStatus.synced
-                          ? Icons.cloud_done
-                          : sync.status == SyncStatus.error
-                              ? Icons.cloud_off
-                              : Icons.cloud_sync,
-                      color: sync.status == SyncStatus.synced
-                          ? BrainTheme.accentGreen
-                          : sync.status == SyncStatus.error
-                              ? BrainTheme.accentRed
-                              : BrainTheme.accentOf(context),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Estado de sincronización',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: BrainTheme.textPrimary,
+                      ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _syncInfoRow('Estado', sync.statusLabel),
+                if (sync.lastSync != null)
+                  _syncInfoRow(
+                    'Última sincronización',
+                    _formatTimeAgo(sync.lastSync!),
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Estado de sincronización',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: BrainTheme.textPrimary,
+                if (sync.hasConflicts) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: BrainTheme.accentRed.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: BrainTheme.accentRed.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.warning_amber_rounded,
+                            color: BrainTheme.accentRed, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${sync.conflicts.length} conflicto(s) detectado(s)',
+                            style: TextStyle(
+                              color: BrainTheme.accentRed,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 16),
-              _syncInfoRow('Estado', sync.statusLabel),
-              if (sync.lastSync != null)
-                _syncInfoRow(
-                  'Última sincronización',
-                  _formatTimeAgo(sync.lastSync!),
-                ),
-              if (sync.hasConflicts) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: BrainTheme.accentRed.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: BrainTheme.accentRed.withValues(alpha: 0.3),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: sync.status == SyncStatus.syncing
+                        ? null
+                        : () {
+                            // TODO: Implementar lógica real de sincronización
+                            sync.triggerSync();
+                            Navigator.pop(ctx);
+                          },
+                    icon: sync.status == SyncStatus.syncing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.sync, size: 18),
+                    label: Text('Sincronizar ahora'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: BrainTheme.accentOf(context),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.warning_amber_rounded,
-                          color: BrainTheme.accentRed, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          '${sync.conflicts.length} conflicto(s) detectado(s)',
-                          style: TextStyle(
-                            color: BrainTheme.accentRed,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ],
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: sync.status == SyncStatus.syncing
-                      ? null
-                      : () {
-                          sync.triggerSync();
-                          Navigator.pop(ctx);
-                        },
-                  icon: sync.status == SyncStatus.syncing
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.sync, size: 18),
-                  label: Text('Sincronizar ahora'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: BrainTheme.accentOf(context),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -442,7 +446,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         backgroundColor: BrainTheme.primaryDark,
                         appBar:
                             _buildAppBar(context, currentTab, hasSidebar: true),
-                        body: _buildBody(context, tabs),
+                        body: SafeArea(
+                          child: _buildBody(context, tabs),
+                        ),
                         floatingActionButton: QuickCaptureFAB(
                           onCapture: _handleQuickCapture,
                         ),
@@ -452,7 +458,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-          );
+        );
         }
 
         // ── NARROW: Drawer + Bottom Nav ──
@@ -616,6 +622,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       )
                     : Icon(syncIcon, size: 18, color: syncColor),
+                // TODO: La sincronización está pendiente de implementación real
                 onPressed: () => _showSyncStatus(context, sync),
                 tooltip: sync.statusLabel,
               ),

@@ -12,7 +12,8 @@ class AppearanceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context).appearance)),
-      body: Consumer<SettingsProvider>(
+      body: SafeArea(
+        child: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -151,6 +152,7 @@ class AppearanceScreen extends StatelessWidget {
             ],
           );
         },
+      ),
       ),
     );
   }

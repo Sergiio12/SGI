@@ -24,7 +24,6 @@ class NavigationSidebar extends StatefulWidget {
 
 class _NavigationSidebarState extends State<NavigationSidebar> {
   bool _mainSectionExpanded = true;
-  bool _planningSectionExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -38,13 +37,6 @@ class _NavigationSidebarState extends State<NavigationSidebar> {
       _SidebarItemData(Icons.folder_open_outlined, l10n.navProjects, 2),
       _SidebarItemData(Icons.track_changes_outlined, l10n.navGoals, 3),
       _SidebarItemData(Icons.sticky_note_2_outlined, l10n.navNotes, 4),
-    ];
-
-    final planningItems = [
-      _PlanningItemData(Icons.today_rounded, l10n.todayView, '/today'),
-      _PlanningItemData(Icons.calendar_month_outlined, l10n.calendar, '/calendar'),
-      _PlanningItemData(Icons.center_focus_strong_outlined, l10n.focusMode, '/focus'),
-      _PlanningItemData(Icons.bar_chart_outlined, l10n.statistics, '/stats'),
     ];
 
     return Container(
@@ -82,22 +74,7 @@ class _NavigationSidebarState extends State<NavigationSidebar> {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 4),
-                _buildSection(
-                  title: l10n.sectionPlanning,
-                  isExpanded: _planningSectionExpanded,
-                  onToggle: () => setState(() => _planningSectionExpanded = !_planningSectionExpanded),
-                  children: planningItems.map((item) {
-                    return _SidebarNavItem(
-                      icon: item.icon,
-                      label: item.label,
-                      onTap: () {
-                        HapticHelper.selection();
-                        Navigator.pushNamed(context, item.route);
-                      },
-                    );
-                  }).toList(),
-                ),
+
               ],
             ),
           ),
@@ -304,13 +281,6 @@ class _SidebarItemData {
   final String label;
   final int index;
   const _SidebarItemData(this.icon, this.label, this.index);
-}
-
-class _PlanningItemData {
-  final IconData icon;
-  final String label;
-  final String route;
-  const _PlanningItemData(this.icon, this.label, this.route);
 }
 
 class _SidebarNavItem extends StatelessWidget {

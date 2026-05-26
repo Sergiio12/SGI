@@ -121,9 +121,6 @@ class NotesProvider extends ChangeNotifier {
   List<Note> getNotesByProject(String projectId) =>
       _notes.where((n) => n.projectId == projectId).toList();
 
-  List<Note> getNotesByType(NoteType type) =>
-      _notes.where((n) => n.type == type).toList();
-
   List<Note> getNotesByNotebook(String notebook) =>
       _notes.where((n) => n.notebook == notebook).toList();
 
@@ -138,7 +135,6 @@ class NotesProvider extends ChangeNotifier {
   Future<Result<Note>> addNote({
     required String title,
     String content = '',
-    NoteType type = NoteType.freeform,
     String notebook = 'General',
     String? projectId,
     String emoji = '\u{1F4DD}',
@@ -152,7 +148,6 @@ class NotesProvider extends ChangeNotifier {
         title: title,
         content: content,
         attachments: attachments,
-        type: type,
         notebook: notebook,
         projectId: projectId,
         emoji: emoji,
@@ -356,7 +351,6 @@ class NotesProvider extends ChangeNotifier {
   }
 
   List<Note> filteredNotes({
-    NoteType? type,
     String? notebook,
     String? searchQuery,
     String? projectId,
@@ -366,9 +360,6 @@ class NotesProvider extends ChangeNotifier {
 
     if (projectId != null) {
       result = result.where((n) => n.projectId == projectId).toList();
-    }
-    if (type != null) {
-      result = result.where((n) => n.type == type).toList();
     }
     if (notebook != null) {
       result = result.where((n) => n.notebook == notebook).toList();

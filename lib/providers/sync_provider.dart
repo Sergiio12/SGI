@@ -27,6 +27,10 @@ class SyncConflict {
   });
 }
 
+// TODO: La sincronización en la nube está pendiente de implementación completa.
+// El servicio Firebase está configurado pero requiere revisión y pruebas.
+// La funcionalidad actual es un esqueleto preparado para desarrollo futuro.
+
 class SyncProvider extends ChangeNotifier {
   final SyncService _syncService;
   final IStorageService _storage;
@@ -42,6 +46,7 @@ class SyncProvider extends ChangeNotifier {
   })  : _syncService = syncService,
         _storage = storage {
     _connectionSubscription = _syncService.connectionState.listen((connected) {
+      // TODO: Implementar lógica real de conexión con Firebase
       if (!connected) {
         _status = SyncStatus.disconnected;
       } else if (_status == SyncStatus.disconnected) {
@@ -100,6 +105,7 @@ class SyncProvider extends ChangeNotifier {
     }
   }
 
+  // TODO: Implementar lógica real de sincronización
   Future<void> triggerSync() async {
     if (!_syncService.isAvailable) {
       _status = SyncStatus.error;
@@ -114,6 +120,7 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // TODO: Reemplazar con llamadas reales a Firebase cuando esté listo
       final localTasks = await _storage.loadTasks();
       await _syncService.uploadTasks(localTasks);
       final cloudTasks = await _syncService.downloadTasks();
@@ -180,6 +187,7 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // TODO: Implementar resolución de conflictos real
   Future<void> resolveConflictKeepLocal(String id, String type) async {
     _conflicts.removeWhere((c) => c.id == id && c.type == type);
     if (!hasConflicts) {
@@ -188,6 +196,7 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // TODO: Implementar resolución de conflictos real
   Future<void> resolveConflictKeepCloud(String id, String type) async {
     _conflicts.removeWhere((c) => c.id == id && c.type == type);
     if (!hasConflicts) {
@@ -196,11 +205,13 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // TODO: Implementar resolución de conflictos real
   Future<void> resolveAllConflictsKeepLocal() async {
     _conflicts.clear();
     notifyListeners();
   }
 
+  // TODO: Implementar resolución de conflictos real
   Future<void> resolveAllConflictsKeepCloud() async {
     _conflicts.clear();
     await _reapplyCloud();

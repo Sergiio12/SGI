@@ -312,6 +312,50 @@ class _TasksScreenState extends State<TasksScreen> {
                 }).toList(),
               ),
             ),
+            if (_buildFilterChips(context).isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      ..._buildFilterChips(context),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: _clearFilters,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: BrainTheme.accentRed.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: BrainTheme.accentRed
+                                  .withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.clear_all,
+                                  size: 12, color: BrainTheme.accentRed),
+                              const SizedBox(width: 4),
+                              Text(
+                                AppLocalizations.of(context).clearFilters,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: BrainTheme.accentRed,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             const SizedBox(height: 8),
             Expanded(
               child: _buildBoard(context, provider, planner),
@@ -676,6 +720,7 @@ class _TasksScreenState extends State<TasksScreen> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: BrainTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -1042,6 +1087,88 @@ class _TasksScreenState extends State<TasksScreen> {
     if (_onlyWithProject) count++;
     if (_selectedProjectId != null) count++;
     return count;
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _searchQuery = '';
+      _searchController.clear();
+      _projectSearchQuery = '';
+      _projectSearchController.clear();
+      _selectedPriorities = TaskPriority.values.toSet();
+      _dueDateFilter = _TaskDueDateFilter.all;
+      _onlyWithDescription = false;
+      _onlyWithProject = false;
+      _selectedProjectId = null;
+      _dateRangeFilter = DateRangeFilter.all;
+    });
+  }
+
+  List<Widget> _buildFilterChips(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final chips = <Widget>[];
+    if (_selectedPriorities.length != TaskPriority.values.length) {
+      final priorityLabels = _selectedPriorities.map((p) {
+        switch (p) {
+          case TaskPriority.low:
+            return l10n.priorityLow;
+          case TaskPriority.medium:
+            return l10n.priorityMedium;
+          case TaskPriority.high:
+            return l10n.priorityHigh;
+          case TaskPriority.urgent:
+            return l10n.priorityUrgent;
+        }
+      }).join(', ');
+      chips.add(_buildActiveFilterChip('Prioridad: $priorityLabels', () {
+        setState(() => _selectedPriorities = TaskPriority.values.toSet());
+      }));
+    }
+    if (_dueDateFilter != _TaskDueDateFilter.all) {
+      final label = switch (_dueDateFilter) {
+        _TaskDueDateFilter.today => l10n.today,
+        _TaskDueDateFilter.thisWeek => l10n.thisWeek,
+        _TaskDueDateFilter.overdue => l10n.overdueTasks,
+        _TaskDueDateFilter.noDate => 'Sin fecha',
+        _TaskDueDateFilter.all => '',
+      };
+      chips.add(_buildActiveFilterChip(label, () {
+        setState(() => _dueDateFilter = _TaskDueDateFilter.all);
+      }));
+    }
+    if (_selectedProjectId != null) {
+      chips.add(_buildActiveFilterChip(l10n.project, () {
+        setState(() => _selectedProjectId = null);
+      }));
+    }
+    if (_onlyWithDescription) {
+      chips.add(_buildActiveFilterChip('Con descripción', () {
+        setState(() => _onlyWithDescription = false);
+      }));
+    }
+    if (_onlyWithProject) {
+      chips.add(_buildActiveFilterChip('Con proyecto', () {
+        setState(() => _onlyWithProject = false);
+      }));
+    }
+    if (_searchQuery.isNotEmpty) {
+      chips.add(_buildActiveFilterChip('"$_searchQuery"', () {
+        _searchController.clear();
+        setState(() => _searchQuery = '');
+      }));
+    }
+    return chips;
+  }
+
+  Widget _buildActiveFilterChip(String label, VoidCallback onRemove) {
+    return InputChip(
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      onDeleted: onRemove,
+      deleteIcon: const Icon(Icons.close, size: 16),
+      backgroundColor: BrainTheme.cardDark,
+      labelStyle: TextStyle(color: BrainTheme.textPrimary),
+      visualDensity: VisualDensity.compact,
+    );
   }
 
   IconData _statusIcon(TaskStatus status) {

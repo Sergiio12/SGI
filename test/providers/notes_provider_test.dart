@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:second_brain/models/note.dart';
 import 'package:second_brain/providers/notes_provider.dart';
 
 import '../helpers/mock_storage_service.dart';
@@ -33,7 +32,6 @@ void main() {
       final result = await provider.addNote(
         title: 'Full Note',
         content: 'Some content',
-        type: NoteType.journal,
         notebook: 'Work',
         emoji: '📕',
         isPinned: true,
@@ -41,7 +39,6 @@ void main() {
       expect(result.isSuccess, isTrue);
       final note = result.unwrap();
       expect(note.content, 'Some content');
-      expect(note.type, NoteType.journal);
       expect(note.notebook, 'Work');
       expect(note.isPinned, isTrue);
       expect(note.emoji, '📕');
@@ -131,13 +128,11 @@ void main() {
       await provider.addNote(
         title: 'Work note',
         notebook: 'Work',
-        type: NoteType.reference,
       );
       await provider.addNote(title: 'Personal', notebook: 'Personal');
 
       final result = provider.filteredNotes(
         notebook: 'Work',
-        type: NoteType.reference,
       );
       expect(result.length, 1);
     });

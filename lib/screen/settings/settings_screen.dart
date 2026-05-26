@@ -68,8 +68,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
+      body: SafeArea(
+        child: Column(
+          children: [
           if (_showSearch)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -117,6 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -199,6 +201,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               activeThumbColor: BrainTheme.currentAccent,
               onChanged: (v) => settings.setCloudSyncEnabled(v),
             ),
+            // TODO: Implementar sincronización real
             onTap: settings.cloudSyncEnabled ? () => sync.triggerSync() : null,
           ),
         ],

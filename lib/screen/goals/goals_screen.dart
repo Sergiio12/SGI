@@ -420,6 +420,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: BrainTheme.surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -731,7 +732,7 @@ class _StatsBar extends StatelessWidget {
           _StatItem(
             icon: Icons.track_changes_rounded,
             value: '$total',
-            label: AppLocalizations.of(context).totalTasks,
+            label: AppLocalizations.of(context).totalGoals,
             color: BrainTheme.accentOf(context),
           ),
           _StatItem(

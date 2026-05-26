@@ -572,6 +572,12 @@ abstract class AppLocalizations {
   /// **'Active projects'**
   String get activeProjects;
 
+  /// No description provided for @totalGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Total goals'**
+  String get totalGoals;
+
   /// No description provided for @activeGoals.
   ///
   /// In en, this message translates to:

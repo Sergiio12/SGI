@@ -45,8 +45,9 @@ class _TodayScreenState extends State<TodayScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context).today)),
-      body: Consumer2<DailyPlannerProvider, TasksProvider>(
-        builder: (context, planner, tasksProv, _) {
+      body: SafeArea(
+        child: Consumer2<DailyPlannerProvider, TasksProvider>(
+          builder: (context, planner, tasksProv, _) {
           final l10n = AppLocalizations.of(context);
           final now = DateTime.now();
           final dayName = _dayNames[now.weekday - 1];
@@ -159,6 +160,7 @@ class _TodayScreenState extends State<TodayScreen> {
             ],
           );
         },
+      ),
       ),
     );
   }
